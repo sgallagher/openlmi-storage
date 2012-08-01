@@ -1,0 +1,6 @@
+MANIFEST
+dist/
+doc/_build/
+doc/pic/*.png
+*.pyc
+*.pyo
