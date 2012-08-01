@@ -1,0 +1,274 @@
+[Cura_LocalDiskExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_LocalDiskExtent.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+[Cura_DiskPartition]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_DiskPartition.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+[Cura_GPTDiskPartition]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_GPTDiskPartition.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_LogicalDisk]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_LogicalDisk.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_LocalFileSystem]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_LocalFileSystem.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_FileSystemConfigurationService]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_FileSystemConfigurationService.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_ResidesOnExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_ResidesOnExtent.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_DiskPartitionConfigurationCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_DiskPartitionConfigurationCapabilities.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_DiskPartitionConfigurationService]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_DiskPartitionConfigurationService.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_PartitionElementCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_PartitionElementCapabilities.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_HostedService]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_HostedService.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_InstalledParititionTable]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_InstalledParititionTable.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_PartitionExtentBasedOnPartition]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_SystemDevice]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_SystemDevice.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_PartitionBasedOnLocalDiskExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_PartitionBasedOnLocalDiskExtent.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_PartitionBasedOnPartition]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_PartitionBasedOnPartition.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_PartitionExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_LocalDiskBasedOn]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_LocalDiskBasedOn.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_AssociatedRAIDComponentExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_RAIDAllocatedFromStoragePool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_RAIDCompositeExtentBasedOn]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_RAIDCompositeExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_RAIDPool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_PrimordialPool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_AssociatedPrimordialExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_HostedStoragePool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_HostedStoragePool.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_StorageConfigurationService]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_StorageConfigurationService.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_GlobalStorageConfigurationCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_GlobalStorageConfigurationCapabilities.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_GlobalStorageConfigurationElementCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_GlobalStorageConfigurationElementCapabilities.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_RAIDStorageCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_RAIDStorageElementCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_PrimordialStorageCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_PrimordialStorageElementCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_LogicalDiskBasedOn]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_LogicalDiskBasedOn.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_LogicalDiskAllocatedFromStoragePool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_LogicalDiskAllocatedFromStoragePool.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_StorageSetting]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_StorageSetting.py
+   location: pyCmpiProvider
+   type: instance
+   namespace: root/cimv2
+   unload: never
+[Cura_AssociatedVGComponentExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_VGAllocatedFromStoragePool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_VGCompositeExtentBasedOn]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_VGCompositeExtent]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_VGPool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_VGStorageCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never
+[Cura_VGStorageElementCapabilities]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_LVAllocatedFromStoragePool]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_LVLogicalDiskBasedOn]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance association
+   namespace: root/cimv2
+   unload: never
+[Cura_LVLogicalDisk]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
+   location: pyCmpiProvider
+   type: instance method
+   namespace: root/cimv2
+   unload: never

@@ -1,0 +1,322 @@
+[ Abstract, Description("Generic raw block device - not consumable by applications (=filesystems). E.g. a partitioned disk - only the partitions themselves can be used by the OS.")]
+class Cura_StorageExtent: CIM_StorageExtent
+{
+};
+
+[ Description("Local disk, which can be either partitioned or directly formatted.")]
+class Cura_LocalDiskExtent: Cura_StorageExtent
+{
+};
+
+[ Description("Block device consumable by applications (=filesystems).")]
+class Cura_LogicalDisk : CIM_LogicalDisk
+{
+};
+
+[Association]
+class Cura_LogicalDiskBasedOn : CIM_BasedOn
+{
+};
+
+[Association]
+class Cura_LogicalDiskAllocatedFromStoragePool : CIM_AllocatedFromStoragePool
+{
+};
+
+
+[Association]
+class Cura_HostedService : CIM_HostedService
+{
+};
+
+[Association]
+class Cura_SystemDevice : CIM_SystemDevice
+{
+};
+
+[Association]
+class Cura_HostedStoragePool : CIM_HostedStoragePool
+{
+};
+
+[Abstract]
+class Cura_StorageCapabilities : CIM_StorageCapabilities
+{
+    [ Description(
+        "Allocation Type describes if StoragePool can be used only as whole"
+        " (One; typically Linux MD RAID, encrypted volume etc.) or several"
+        " LogicalDisks can be allocated from it (Multiple; typically Volume"
+        " Group)."),
+    ValueMap {"0", "1", "2..32767"},
+    Values {"Multiple", "One"}]
+    uint16 CuraAllocationType;
+};
+
+class Cura_StorageSetting : CIM_StorageSetting
+{
+    [ Description(
+        "Allocation Type describes if StoragePool can be used only as whole"
+        " (One; typically Linux MD RAID, encrypted volume etc.) or several"
+        " LogicalDisks can be allocated from it (Multiple; typically Volume"
+        " Group). If NULL is used, the implementation chooses the best suitable,"
+        " e.g. 'One' when redundancy is requested (=RAID) or 'Multiple' when"
+        " no redundancy is needed. Therefore VolumeGroup will be used instead"
+        " of RAID0 array by default."),
+    ValueMap {"0", "1", "2..32767"},
+    Values {"Multiple", "One"}]
+    uint16 CuraAllocationType;
+};
+
+
+/***************************************************
+ *   File systems
+ ***************************************************/
+
+[ Description("Local file system")]
+class Cura_LocalFileSystem: CIM_LocalFileSystem
+{
+};
+
+[ Description("Cura FileSystemConfigurationService instrumentation. It includes capability to mount a filesystem.")]
+class Cura_FileSystemConfigurationService : CIM_FileSystemConfigurationService
+{
+    [Description("Mount a filesystem to given location."),
+    ValueMap {"0", "1", "2", "3..32767"},
+    Values {"Completed OK", "Not Supported", "Failed", "Reserved"}]
+    uint32 MountFileSystem(
+            [IN, Description ("File system to mount.")]
+            CIM_FileSystem REF TheElement,
+            [IN, Description ("Mount point.")]
+            string Where);
+};
+
+class Cura_ResidesOnExtent : CIM_ResidesOnExtent
+{
+};
+
+/***************************************************
+ *   Partitioning
+ ***************************************************/
+
+[ Description("A LogicalDisk representing storage on a disk partition."
+    " In most cases it represents the same storage as underlying"
+    " Cura_DiskPartition. When the underlying partition is a logical"
+    " partition, this extent represents real data usable by system, while"
+    " the Cura_DiskPartition represents the partition including its metadata."
+    ""
+    " It is a LogicalDisk because of Disk Partition Subprofile, it mandates that"
+    " every DiskPartition must have a LogicalDisk.")]
+class Cura_PartitionExtent: CIM_LogicalDisk
+{
+};
+
+[ Description("A MBR partition. This includes primary, extended and logical partitions.")]
+class Cura_DiskPartition: CIM_DiskPartition
+{
+};
+
+[ Description("A GPT partition.")]
+class Cura_GPTDiskPartition: CIM_GPTDiskPartition
+{
+};
+
+[ Description("Cura Linux partition configuration capabilities.")]
+class Cura_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfigurationCapabilities
+{
+};
+
+[ Description("Cura DiskParitionConfigurationService instrumentation. The partitions MUST be alligned to Cura_DiskPartitionConfigurationCapabilities.Alignment blocks.")]
+class Cura_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationService
+{
+};
+
+[Association, Description("Association between logical partitions and its extended partition.")]
+class Cura_PartitionBasedOnPartition : CIM_BasedOn
+{
+};
+
+[Association, Description("Association between local disk and partitions on it.")]
+class Cura_PartitionBasedOnLocalDiskExtent : CIM_BasedOn
+{
+};
+
+[Association, Description("Association between DiskPartitionConfigurationCapabilities and DiskPartitionConfigurationService.")]
+class Cura_PartitionElementCapabilities : CIM_ElementCapabilities
+{
+};
+
+[Association]
+class Cura_InstalledParititionTable : CIM_InstalledPartitionTable
+{
+};
+
+[Association]
+class Cura_PartitionExtentBasedOnPartition : CIM_LogicalDiskBasedOnPartition
+{
+};
+
+/***************************************************
+ *   RAID
+ ***************************************************/
+
+[ Description("RAID composite extent. Represent data of a RAID. Can be either exposed to OS (via LogicalDisk) or consumed by another pool (e.g. LVM based on RAID).")]
+class Cura_RAIDCompositeExtent : CIM_CompositeExtent
+{
+};
+
+[ Description("RAID pool. Auxiliary object, just to satisfy SMI-S.")]
+class Cura_RAIDPool : CIM_StoragePool
+{
+};
+
+[Association]
+class Cura_RAIDCompositeExtentBasedOn : CIM_CompositeExtentBasedOn
+{
+};
+
+[Association]
+class Cura_RAIDAllocatedFromStoragePool : CIM_AllocatedFromStoragePool
+{
+};
+
+[Association]
+class Cura_AssociatedRAIDComponentExtent : CIM_AssociatedComponentExtent
+{
+};
+
+
+class Cura_RAIDStorageCapabilities : Cura_StorageCapabilities
+{
+};
+
+[Association]
+class Cura_RAIDStorageElementCapabilities : CIM_ElementCapabilities
+{
+};
+
+/***************************************************
+ *   Primordial Pool & stuff
+ ***************************************************/
+
+[ Description("The primordial pool. Auxiliary object, just to satisfy SMI-S.")]
+class Cura_PrimordialPool : CIM_StoragePool
+{
+};
+
+[Association]
+class Cura_AssociatedPrimordialExtent : CIM_AssociatedComponentExtent
+{
+};
+
+class Cura_PrimordialStorageCapabilities : Cura_StorageCapabilities
+{
+};
+
+[Association]
+class Cura_PrimordialStorageElementCapabilities : CIM_ElementCapabilities
+{
+};
+
+
+/***************************************************
+ *   Storage configuration & capabilities
+ ***************************************************/
+
+class Cura_StorageConfigurationService : CIM_StorageConfigurationService
+{
+    [Description(
+        "Create RAID with given local disks and format it as ext3. "
+        "This function creates GPT partition table on the disks and creates "
+        "one huge partition on each of them. The partitions are then added to "
+        "RAID array."),
+    ValueMap {"0", "1", "2", "3..32767"},
+    Values {"Completed OK", "Not Supported", "Failed", "Reserved"}]
+    uint32 CreateRaid(
+            [IN, Description(
+                "Array of strings containing representations of "
+                "references to Cura_LocalDiskExtent instances, that "
+                "are used to create the Pool or modify the source "
+                "extents." )]
+            string InExtents[],
+        
+            [IN, Description("Desired RAID type."),
+                ValueMap {"0", "1", "5"},
+                Values {"RAID0", "RAID1", "RAID5"}]
+            uint16 RaidType,
+            
+            [IN (false), OUT, Description("Created LogicalDisk.")]
+            CIM_LogicalDisk REF Disk,
+            
+            [IN (false), OUT, Description("Created filesystem.")]
+            CIM_LocalFileSystem REF FilesyStem
+    );
+};
+
+class Cura_GlobalStorageConfigurationCapabilities : CIM_StorageConfigurationCapabilities
+{
+};
+
+[Association]
+class Cura_GlobalStorageConfigurationElementCapabilities : CIM_ElementCapabilities
+{
+
+};
+
+
+/***************************************************
+ *   LVM Volume Groups
+ ***************************************************/
+[ Description("Volume Group composite extent. Represent data of a Volume Group.")]
+class Cura_VGCompositeExtent : CIM_CompositeExtent
+{
+};
+
+[ Description("Volume Group pool. Auxiliary object, just to satisfy SMI-S.")]
+class Cura_VGPool : CIM_StoragePool
+{
+};
+
+[Association]
+class Cura_VGCompositeExtentBasedOn : CIM_CompositeExtentBasedOn
+{
+};
+
+[Association]
+class Cura_VGAllocatedFromStoragePool : CIM_AllocatedFromStoragePool
+{
+};
+
+[Association]
+class Cura_AssociatedVGComponentExtent : CIM_AssociatedComponentExtent
+{
+};
+
+
+class Cura_VGStorageCapabilities : Cura_StorageCapabilities
+{
+};
+
+[Association]
+class Cura_VGStorageElementCapabilities : CIM_ElementCapabilities
+{
+};
+
+/***************************************************
+ *   LVM
+ ***************************************************/
+[ Description("Logical Volume. This extent can be used in"
+  " StorageConfigurationService.CreatePool as InExtent to create another"
+  " StorageExtent on top of a Logical Volume.")]
+class Cura_LVLogicalDisk : CIM_LogicalDisk
+{
+};
+
+[Association]
+class Cura_LVLogicalDiskBasedOn : CIM_BasedOn
+{
+};
+
+[Association]
+class Cura_LVAllocatedFromStoragePool : CIM_AllocatedFromStoragePool
+{
+};
