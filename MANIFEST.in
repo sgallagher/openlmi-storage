@@ -1,7 +1,4 @@
-include COPYING cura-storage.spec
+include COPYING
 include doc/Makefile doc/curatheme/theme.conf doc/conf.py doc/*.rst doc/pic/*.dia doc/_static/*
 include mof/cura-storage.mof mof/cura-storage.sfcb.reg mof/cura-storage.pegasus.reg
 include client/client-highlevel.py
-
-
-
