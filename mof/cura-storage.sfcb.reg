@@ -98,12 +98,6 @@
    type: instance method
    namespace: root/cimv2
    unload: never
-[Cura_LocalDiskBasedOn]
-   provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_LocalDiskBasedOn.py
-   location: pyCmpiProvider
-   type: instance association
-   namespace: root/cimv2
-   unload: never
 [Cura_AssociatedRAIDComponentExtent]
    provider: /usr/lib/python2.7/site-packages/cura/storage/Cura_Wrappers.py
    location: pyCmpiProvider
