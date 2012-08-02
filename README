@@ -45,3 +45,16 @@ To compile the documentation to readable format install Dia and python-sphinx.
 
   $ cd doc
   $ make html
+
+
+Contact
+=======
+Homepage: https://fedorahosted.org/cura/
+Code: http://git.fedorahosted.org/cgit/cura-storage.git
+
+Mailing list: cura-devel [at] lists.fedorahosted.org
+  Archive: https://lists.fedorahosted.org/mailman/listinfo/cura-devel
+
+Bugs: use Fedora bugzilla at https://bugzilla.redhat.com
+  Use Fedora as Product and cura-storage as component
+  New bug: https://bugzilla.redhat.com/enter_bug.cgi?format=guided&product=Fedora&component=cura-storage
