@@ -14,8 +14,6 @@ BEWARE! The CIM API is not stable at all! SMI-S is still being evaluated.
 
 Installation
 ============
-Tested on Fedora 17.
-
 Prepare software (using sblim here, might be different for Pegasus):
     $ yum install sblim-sfcb cmpi-bindings-pywbem
 
@@ -23,18 +21,9 @@ Install cura-storage somewhere, using /usr/lib/python2.7/site-packages/cura/stor
     $ mkdir /usr/lib/python2.7/site-packages/cura/storage/
     $ cp -r providers/* /usr/lib/python2.7/site-packages/cura/storage/
 
-Register python providers and MOF file (again, sblim specific):
-    $ sfcbstage -n root/cimv2 mof/cura-storage.mof
-    $ vim mof/cura-storage.sfcb.reg     # change the paths in the file
-    $ sfcbstage -r mof/cura-storage.sfcb.reg
-    $ sfcbrepos -f
-
-Done! Now just start sfcb as usual:
-    $ service sfcb start
-
-Or, for extra debugging output, use sfcbd directly, python "print" command will
-write to stdout:
-    $ sfcbd
+Register python providers and MOF file:
+    $ vim mof/cura-storage.reg     # change the paths in the file
+    $ tools/register.sh register mof/cura-storage.mof mof/cura-storage.reg
 
 
 Documentation
