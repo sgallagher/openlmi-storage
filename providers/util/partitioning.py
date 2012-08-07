@@ -57,15 +57,26 @@ def getLogicalPartitionStart(partition):
     return metadata.geometry.start
 
 def deletePartition(partition):
-    # Removing runs as a transaction, I get errors when using
+    # I get errors when using
     #action = pyanaconda.storage.deviceaction.ActionDestroyDevice(partition)
     #storage.devicetree.registerAction(action)
     #action.execute()
     #storage.devicetree._actions = []
-    storage.destroyDevice(partition)
-    storage.devicetree.processActions(dryRun=False)
-    storage.devicetree._actions = []
-    
+    #
+    # Because:
+    # - execute() calls devicetree._removeDevice
+    #    -> it calls 
+    #        part.disk.format.removePartition(part.partedPartition)
+    #
+    # - execute calls part->destroy()
+    #    -> it calls again part.disk.format.removePartition(part.partedPartition)
+
+    # TODO: fix Anaconda to reliably remove partitions.
+    # dirty hack
+    storage.devicetree._removeDevice(partition)
+    partition.disk.format.commit()
+    partition.partedDevice.removeFromCache()
+
 def createPartition(partition):
     action = pyanaconda.storage.deviceaction.ActionCreateDevice(partition)
     storage.devicetree.registerAction(action)
