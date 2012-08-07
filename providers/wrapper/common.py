@@ -47,8 +47,13 @@ def initAnaconda(forceReload = False):
         # hack to insert RAID modules
         for module in ('raid0', 'raid1', 'raid5', 'raid10'):
             os.system('modprobe ' + module)
-        
-        storage.devicetree.populate()
+
+        platform = pyanaconda.platform.getPlatform(None)
+        newStorage = pyanaconda.storage.Storage(platform=platform)
+        newStorage.devicetree.populate()
+        global storage
+        storage = newStorage
+
         # hack to re-create MD arrays, lost during populate()
         # see bug #817064
         for array in storage.mdarrays:
@@ -450,6 +455,5 @@ wrapperManager = WrapperManager()
 settingManager = SettingManager(curaConfig)
 logicalDiskManager = LogicalDiskManager(curaConfig)
 
-platform = pyanaconda.platform.getPlatform(None)
-storage = pyanaconda.storage.Storage(platform=platform)
-anacondaInitialized = False
+storage = None
+initAnaconda()
