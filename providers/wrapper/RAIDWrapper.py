@@ -313,8 +313,8 @@ class RAIDWrapper(DeviceWrapper):
             params['PackageRedundancyMin'] = pywbem.Uint16(65535)
             params['PackageRedundancyMax'] = pywbem.Uint16(65535)
             params['PackageRedundancyDefault'] = pywbem.Uint16(65535)
-            params['ExtentStripeLengthDefault'] = pywbem.Uint16(65535)
-            for base in device.partents:
+            params['ExtentStripeLengthDefault'] = pywbem.Uint16(0)
+            for base in device.parents:
                 baseWrapper = wrapperManager.getWrapperForDevice(base)
                 baseParams = baseWrapper.getParameters(base)
                 params['DataRedundancyMin'] = pywbem.Uint16(min(baseParams['DataRedundancyDefault'], params['DataRedundancyMin']))
