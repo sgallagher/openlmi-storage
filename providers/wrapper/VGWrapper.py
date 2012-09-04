@@ -29,14 +29,14 @@ class VGWrapper(DeviceWrapper):
         For each Anaconda LVMVolumeGroupDevices, following CIM instances are
         created:
 
-        - one Cura_VGPool
-        - one Cura_VGCompositeExtent with Cura_AssociatedVGComponentExtent
-          association to its Cura_VGPool
-        - one Cura_VGStorageCapabilities with
-          Cura_VGStorageElementCapabilities association to Cura_VGPool
-        - one or more Cura_VGCompositeExtentBasedOn associations to all physical
+        - one LMI_VGPool
+        - one LMI_VGCompositeExtent with LMI_AssociatedVGComponentExtent
+          association to its LMI_VGPool
+        - one LMI_VGStorageCapabilities with
+          LMI_VGStorageElementCapabilities association to LMI_VGPool
+        - one or more LMI_VGCompositeExtentBasedOn associations to all physical
           volumes.
-        - one or more Cura_VGAllocatedFromStoragePool associations to pools of
+        - one or more LMI_VGAllocatedFromStoragePool associations to pools of
           all physical volumes.
 
         Logical volumes allocated from the volume groups are managed by
@@ -51,22 +51,22 @@ class VGWrapper(DeviceWrapper):
         """
             CIM class name of device's CIM_StorageExtent class.
 
-            This property is overriden to have Cura_VGCompositeExtent as name of
+            This property is overriden to have LMI_VGCompositeExtent as name of
             VG's StorageExtent class. Vanilla DeviceWrapper would provide
-            Cura_VGExtent.
+            LMI_VGExtent.
         """
-        return 'Cura_' + self.prefix + 'CompositeExtent'
+        return 'LMI_' + self.prefix + 'CompositeExtent'
 
     @property
     def basedOnClassName(self):
         """
             CIM class name of device's CIM_BasedOn class.
 
-            This property is overriden to have Cura_VGCompositeExtentBasedOn as
+            This property is overriden to have LMI_VGCompositeExtentBasedOn as
             name of VG's BasedOn class. Vanilla DeviceWrapper would provide
-            Cura_VGExtentBasedOn.
+            LMI_VGExtentBasedOn.
         """
-        return 'Cura_' + self.prefix + 'CompositeExtentBasedOn'
+        return 'LMI_' + self.prefix + 'CompositeExtentBasedOn'
 
     def enumDevices(self):
         """
@@ -90,7 +90,7 @@ class VGWrapper(DeviceWrapper):
 
     def getPoolInstance(self, env, model, device):
         """
-            Fill instance of Cura_VGPool for given LVMVolumeGroupDevices.
+            Fill instance of LMI_VGPool for given LVMVolumeGroupDevices.
         """
         #model['AllocationUnits'] = ''
         #model['Capacity'] = pywbem.Uint64()
@@ -132,7 +132,7 @@ class VGWrapper(DeviceWrapper):
 
     def getExtentInstance(self, env, model, device):
         """
-            Fill instance of Cura_VGCompositeExtent for given
+            Fill instance of LMI_VGCompositeExtent for given
             LVMVolumeGroupDevices.
         """
         params = self.getParameters(device)
@@ -203,7 +203,7 @@ class VGWrapper(DeviceWrapper):
 
     def getAllocatedFromInstance(self, env, model, device, base):
         """
-            Fill instance of Cura_VGAllocatedFromStoragePool for given
+            Fill instance of LMI_VGAllocatedFromStoragePool for given
             LVMVolumeGroupDevices.
         """
         # TODO: is there any metadata?
@@ -213,7 +213,7 @@ class VGWrapper(DeviceWrapper):
 
     def getBasedOnInstance(self, env, model, device, base):
         """
-            Fill instance of Cura_VGCompositeExtentBasedOn for given
+            Fill instance of LMI_VGCompositeExtentBasedOn for given
             LVMVolumeGroupDevices.
         """
         try:
@@ -264,12 +264,12 @@ class VGWrapper(DeviceWrapper):
                         
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
             
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyStoragePool
         """
         if not setting:
             return 1 # we can create it, but if someone else wants...
@@ -289,7 +289,7 @@ class VGWrapper(DeviceWrapper):
             
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
 
@@ -342,7 +342,7 @@ class VGWrapper(DeviceWrapper):
             Allocate a LogicalVolume from a pool represented by given
             Anaconda device.
             
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param device: Anaconda storage device, representing the pool to
                 allocate from. The pool is managed by this wrapper.
             :param size: Expected size of the resulting LogicalDisk.
@@ -358,7 +358,7 @@ class VGWrapper(DeviceWrapper):
                 be created from provided pool.
 
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyElementFromStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyElementFromStoragePool
 
         """
 

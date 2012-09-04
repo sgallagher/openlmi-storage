@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_*Pool """
+"""Python Provider for LMI_*Pool """
 
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
 class WrappedExtent(CIMProvider2):
-    """Instrument the CIM class Cura_*Extent"""
+    """Instrument the CIM class LMI_*Extent"""
 
     def __init__ (self, env, wrapper):
         logger = env.get_logger()
@@ -446,4 +446,4 @@ class WrappedExtent(CIMProvider2):
             Not_Configured = pywbem.Uint16(20)
             Quiesced = pywbem.Uint16(21)
 
-## end of class Cura_RAIDCompositeExtentProvider
+## end of class LMI_RAIDCompositeExtentProvider

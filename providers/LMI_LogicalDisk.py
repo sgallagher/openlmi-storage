@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_LogicalDisk
+"""Python Provider for LMI_LogicalDisk
 
-Instruments the CIM class Cura_LogicalDisk
+Instruments the CIM class LMI_LogicalDisk
 
 """
 
@@ -26,8 +26,8 @@ import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 import pyanaconda.storage.devices
 
-class Cura_LogicalDisk(CIMProvider2):
-    """Instrument the CIM class Cura_LogicalDisk 
+class LMI_LogicalDisk(CIMProvider2):
+    """Instrument the CIM class LMI_LogicalDisk 
 
     Block device consumable by applications (=filesystems).
     
@@ -65,9 +65,9 @@ class Cura_LogicalDisk(CIMProvider2):
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
   
-        if (model['SystemName'] != CURA_SYSTEM_NAME
-                or model['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or model['CreationClassName'] != 'Cura_LogicalDisk'):
+        if (model['SystemName'] != LMI_SYSTEM_NAME
+                or model['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or model['CreationClassName'] != 'LMI_LogicalDisk'):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
         
         path = model['DeviceID']
@@ -124,9 +124,9 @@ class Cura_LogicalDisk(CIMProvider2):
                 if wrapper is None:
                     print 'Warning: no wrapper for', device.path
                     continue
-                model['SystemName'] = CURA_SYSTEM_NAME    
-                model['SystemCreationClassName'] = CURA_SYSTEM_CLASS_NAME
-                model['CreationClassName'] = 'Cura_LogicalDisk'    
+                model['SystemName'] = LMI_SYSTEM_NAME    
+                model['SystemCreationClassName'] = LMI_SYSTEM_CLASS_NAME
+                model['CreationClassName'] = 'LMI_LogicalDisk'    
                 model['DeviceID'] = device.path
                 if keys_only:
                     yield model
@@ -202,7 +202,7 @@ class Cura_LogicalDisk(CIMProvider2):
         raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED) # Remove to implement
         
     def cim_method_reset(self, env, object_name):
-        """Implements Cura_LogicalDisk.Reset()
+        """Implements LMI_LogicalDisk.Reset()
 
         Requests a reset of the LogicalDevice. The return value should be 0
         if the request was successfully executed, 1 if the request is not
@@ -248,7 +248,7 @@ class Cura_LogicalDisk(CIMProvider2):
     def cim_method_requeststatechange(self, env, object_name,
                                       param_requestedstate=None,
                                       param_timeoutperiod=None):
-        """Implements Cura_LogicalDisk.RequestStateChange()
+        """Implements LMI_LogicalDisk.RequestStateChange()
 
         Requests that the state of the element be changed to the value
         specified in the RequestedState parameter. When the requested
@@ -325,7 +325,7 @@ class Cura_LogicalDisk(CIMProvider2):
     def cim_method_setpowerstate(self, env, object_name,
                                  param_powerstate=None,
                                  param_time=None):
-        """Implements Cura_LogicalDisk.SetPowerState()
+        """Implements LMI_LogicalDisk.SetPowerState()
 
         Note: The use of this method has been deprecated. Instead, use the
         SetPowerState method in the associated PowerManagementService
@@ -374,7 +374,7 @@ class Cura_LogicalDisk(CIMProvider2):
         
     def cim_method_quiescedevice(self, env, object_name,
                                  param_quiesce=None):
-        """Implements Cura_LogicalDisk.QuiesceDevice()
+        """Implements LMI_LogicalDisk.QuiesceDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -439,7 +439,7 @@ class Cura_LogicalDisk(CIMProvider2):
         
     def cim_method_enabledevice(self, env, object_name,
                                 param_enabled=None):
-        """Implements Cura_LogicalDisk.EnableDevice()
+        """Implements LMI_LogicalDisk.EnableDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -497,7 +497,7 @@ class Cura_LogicalDisk(CIMProvider2):
         
     def cim_method_onlinedevice(self, env, object_name,
                                 param_online=None):
-        """Implements Cura_LogicalDisk.OnlineDevice()
+        """Implements LMI_LogicalDisk.OnlineDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -574,7 +574,7 @@ class Cura_LogicalDisk(CIMProvider2):
         return (rval, out_params)
         
     def cim_method_saveproperties(self, env, object_name):
-        """Implements Cura_LogicalDisk.SaveProperties()
+        """Implements LMI_LogicalDisk.SaveProperties()
 
         Note: The use of this method is deprecated. Its function is handled
         more generally by the ConfigurationData subclass of SettingData.
@@ -625,7 +625,7 @@ class Cura_LogicalDisk(CIMProvider2):
         return (rval, out_params)
         
     def cim_method_restoreproperties(self, env, object_name):
-        """Implements Cura_LogicalDisk.RestoreProperties()
+        """Implements LMI_LogicalDisk.RestoreProperties()
 
         Note: The use of this method is deprecated. Its function is handled
         more generally by the ConfigurationData subclass of SettingData.
@@ -1012,11 +1012,11 @@ class Cura_LogicalDisk(CIMProvider2):
             Not_Configured = pywbem.Uint16(20)
             Quiesced = pywbem.Uint16(21)
 
-## end of class Cura_LogicalDiskProvider
+## end of class LMI_LogicalDiskProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_logicaldisk_prov = Cura_LogicalDisk(env)  
-    return {'Cura_LogicalDisk': cura_logicaldisk_prov} 
+    LMI_logicaldisk_prov = LMI_LogicalDisk(env)  
+    return {'LMI_LogicalDisk': LMI_logicaldisk_prov} 

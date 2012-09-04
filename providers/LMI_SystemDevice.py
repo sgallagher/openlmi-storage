@@ -15,24 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for CuraResidesOnExtent
+"""Python Provider for LMI_SystemDevice
 
-Instruments the CIM class CuraResidesOnExtent
+Instruments the CIM class LMI_SystemDevice
 
 """
 
 from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-import pyanaconda.storage.formats.fs
 
-class Cura_ResidesOnExtent(CIMProvider2):
-    """Instrument the CIM class Cura_ResidesOnExtent 
+class LMI_SystemDevice(CIMProvider2):
+    """Instrument the CIM class LMI_SystemDevice 
 
-    An association between a LogicalElement and the StorageExtent where it
-    is located. Typically, a FileSystem ResidesOn a LogicalDisk. However,
-    it is possible for a logical file or other internal data store to
-    reside directly on a StorageExtent or appropriate subclass.
+    LogicalDevices can be aggregated by a System. This relationship is made
+    explicit by the SystemDevice association.
     
     """
 
@@ -69,9 +66,7 @@ class Cura_ResidesOnExtent(CIMProvider2):
                 % self.__class__.__name__)
         
 
-        # TODO fetch system resource matching the following keys:
-        #   model['Dependent']
-        #   model['Antecedent']
+        # TODO: checking
 
         return model
 
@@ -105,23 +100,18 @@ class Cura_ResidesOnExtent(CIMProvider2):
         # Prime model.path with knowledge of the keys, so key values on
         # the CIMInstanceName (model.path) will automatically be set when
         # we set property values on the model. 
-        model.path.update({'Dependent': None, 'Antecedent': None})
+        model.path.update({'GroupComponent': None, 'PartComponent': None})
         
-        for device in storage.devices:
-            if device.format.type != None and isinstance(device.format, pyanaconda.storage.formats.fs.FS):
-                fs = device.format
-                model['Dependent'] = pywbem.CIMInstanceName(classname='Cura_LocalFileSystem', namespace=CURA_NAMESPACE,
-                        keybindings = { 'CSName' : CURA_SYSTEM_NAME,
-                            'CSCreationClassName' : CURA_SYSTEM_CLASS_NAME,
-                            'Name' : device.path,
-                            'CreationClassName' : 'Cura_LocalFileSystem'
-                        })
-                model['Antecedent'] = pywbem.CIMInstanceName(classname='Cura_LogicalDisk', namespace="root/cimv2",
-                        keybindings = { 'CreationClassName' : 'Cura_LogicalDisk',
-                            'SystemCreationClassName' : CURA_SYSTEM_CLASS_NAME,
-                            'SystemName' : CURA_SYSTEM_NAME,
-                            'DeviceID' : device.path
-                })
+        ch = env.get_cimom_handle()
+        # get the only one (?) CIM_ComputerSystem
+        systems = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='Linux_ComputerSystem')
+        system = systems.next()
+        
+        for className in ['LMI_LogicalDisk', 'LMI_DiskPartition', 'LMI_GPTDiskPartition', 'LMI_LocalDiskExtent', 'LMI_RAIDCompositeExtent']:
+            devices = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn=className)
+            for device in devices:
+                model['PartComponent'] = device
+                model['GroupComponent'] = system
                 yield model
 
     def set_instance(self, env, instance, modify_existing):
@@ -255,19 +245,18 @@ class Cura_ResidesOnExtent(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_LogicalElement') or \
+                          super='CIM_System') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_StorageExtent'):
+                               super='CIM_LogicalDevice'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
 
-## end of class CuraResidesOnExtentProvider
+## end of class LMI_SystemDeviceProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_residesonextent_prov = Cura_ResidesOnExtent(env)  
-    return {'CuraResidesOnExtent': cura_residesonextent_prov}
-
+    LMI_systemdevice_prov = LMI_SystemDevice(env)  
+    return {'LMI_SystemDevice': LMI_systemdevice_prov} 

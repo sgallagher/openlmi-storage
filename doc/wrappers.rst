@@ -47,50 +47,50 @@ To implement new wrapper, following steps are necessary:
 #. Add appripriate CIM classes to cura-storage.mof file.
 #. Implement a subclass of the DeviceWrapper. Override appropriate methods -
    look at RAIDWrapper as an example.
-#. Add initialization of the wrapper instance to Cura_Wrappers.py. This python
+#. Add initialization of the wrapper instance to LMI_Wrappers.py. This python
    module serves as entry point from CIMOM.
-#. Register your new CIM classes in your CIMOM. Cura_Wrappers.py should be used
+#. Register your new CIM classes in your CIMOM. LMI_Wrappers.py should be used
    as the provider. E.g. this registration code can be used for SFCB:
 
   .. parsed-literal::
-    [Cura_AssociatedVGComponentExtent]
-       provider: Cura_Wrappers
+    [LMI_AssociatedVGComponentExtent]
+       provider: LMI_Wrappers
        location: pyCmpiProvider
        type: instance association
        namespace: root/cimv2
        unload: never
-    [Cura_VGAllocatedFromStoragePool]
-       provider: Cura_Wrappers
+    [LMI_VGAllocatedFromStoragePool]
+       provider: LMI_Wrappers
        location: pyCmpiProvider
        type: instance association
        namespace: root/cimv2
        unload: never
-    [Cura_VGCompositeExtentBasedOn]
-       provider: Cura_Wrappers
+    [LMI_VGCompositeExtentBasedOn]
+       provider: LMI_Wrappers
        location: pyCmpiProvider
        type: instance association
        namespace: root/cimv2
        unload: never
-    [Cura_VGCompositeExtent]
-       provider: Cura_Wrappers
+    [LMI_VGCompositeExtent]
+       provider: LMI_Wrappers
        location: pyCmpiProvider
        type: instance method
        namespace: root/cimv2
        unload: never
-    [Cura_VGPool]
-       provider: Cura_Wrappers
+    [LMI_VGPool]
+       provider: LMI_Wrappers
        location: pyCmpiProvider
        type: instance method
        namespace: root/cimv2
        unload: never
-    [Cura_VGStorageCapabilities]
-       provider: Cura_Wrappers
+    [LMI_VGStorageCapabilities]
+       provider: LMI_Wrappers
        location: pyCmpiProvider
        type: instance method
        namespace: root/cimv2
        unload: never
-    [Cura_VGStorageElementCapabilities]
-       provider: Cura_Wrappers
+    [LMI_VGStorageElementCapabilities]
+       provider: LMI_Wrappers
        location: pyCmpiProvider
        type: instance association
        namespace: root/cimv2

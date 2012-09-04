@@ -15,21 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_SystemDevice
+"""Python Provider for LMI_PartitionBasedOnPartition
 
-Instruments the CIM class Cura_SystemDevice
+Instruments the CIM class LMI_PartitionBasedOnPartition
 
 """
 
 from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
+import pyanaconda.storage.devices
+import util.partitioning
 
-class Cura_SystemDevice(CIMProvider2):
-    """Instrument the CIM class Cura_SystemDevice 
+class LMI_PartitionBasedOnPartition(CIMProvider2):
+    """Instrument the CIM class LMI_PartitionBasedOnPartition 
 
-    LogicalDevices can be aggregated by a System. This relationship is made
-    explicit by the SystemDevice association.
+    Association between logical partitions and its extended partition.
     
     """
 
@@ -65,9 +66,25 @@ class Cura_SystemDevice(CIMProvider2):
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
         
-
         # TODO: checking
+        
+        path = model['Dependent']['DeviceID']
+        partition = storage.devicetree.getDeviceByPath(path)
+        if not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong Dependent InstanceID')
 
+        path = model['Antecedent']['DeviceID']
+        extended = storage.devicetree.getDeviceByPath(path)
+        if not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong Antecedent InstanceID')
+
+        pstart = util.partitioning.getLogicalPartitionStart(partition)
+        pend = partition.partedPartition.geometry.end
+        estart = extended.partedPartition.geometry.start
+        
+        model['EndingAddress'] = pywbem.Uint64(pend - estart)
+        model['OrderIndex'] = pywbem.Uint16(partition.partedPartition.number) 
+        model['StartingAddress'] = pywbem.Uint64(pstart - estart)
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -100,19 +117,37 @@ class Cura_SystemDevice(CIMProvider2):
         # Prime model.path with knowledge of the keys, so key values on
         # the CIMInstanceName (model.path) will automatically be set when
         # we set property values on the model. 
-        model.path.update({'GroupComponent': None, 'PartComponent': None})
+        model.path.update({'Dependent': None, 'Antecedent': None})
         
-        ch = env.get_cimom_handle()
-        # get the only one (?) CIM_ComputerSystem
-        systems = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Linux_ComputerSystem')
-        system = systems.next()
-        
-        for className in ['Cura_LogicalDisk', 'Cura_DiskPartition', 'Cura_GPTDiskPartition', 'Cura_LocalDiskExtent', 'Cura_RAIDCompositeExtent']:
-            devices = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn=className)
-            for device in devices:
-                model['PartComponent'] = device
-                model['GroupComponent'] = system
+        for partition in storage.partitions:
+            if not partition.isLogical:
+                continue
+            extendedPath = partition.partedPartition.disk.getExtendedPartition().path
+            extended = storage.devicetree.getDeviceByPath(extendedPath)
+            
+            model['Dependent'] = pywbem.CIMInstanceName(classname='LMI_DiskPartition',
+                    namespace=LMI_NAMESPACE,
+                    keybindings={'CreationClassName': 'LMI_DiskPartition',
+                                 'DeviceID': partition.path,
+                                 'SystemCreationClassName': LMI_SYSTEM_CLASS_NAME,
+                                 'SystemName': LMI_SYSTEM_NAME
+                    })
+            model['Antecedent'] = pywbem.CIMInstanceName(classname='LMI_DiskPartition',
+                    namespace=LMI_NAMESPACE,
+                    keybindings={'CreationClassName': 'LMI_DiskPartition',
+                                 'DeviceID': extended.path,
+                                 'SystemCreationClassName': LMI_SYSTEM_CLASS_NAME,
+                                 'SystemName': LMI_SYSTEM_NAME
+                    })
+            if keys_only:
                 yield model
+            else:
+                try:
+                    yield self.get_instance(env, model)
+                except pywbem.CIMError, (num, msg):
+                    if num not in (pywbem.CIM_ERR_NOT_FOUND, 
+                                   pywbem.CIM_ERR_ACCESS_DENIED):
+                        raise
 
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
@@ -245,18 +280,18 @@ class Cura_SystemDevice(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_System') or \
+                          super='CIM_StorageExtent') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_LogicalDevice'):
+                               super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
-
-## end of class Cura_SystemDeviceProvider
+                          
+## end of class LMI_PartitionBasedOnPartitionProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_systemdevice_prov = Cura_SystemDevice(env)  
-    return {'Cura_SystemDevice': cura_systemdevice_prov} 
+    LMI_partitionbasedonpartition_prov = LMI_PartitionBasedOnPartition(env)  
+    return {'LMI_PartitionBasedOnPartition': LMI_partitionbasedonpartition_prov} 

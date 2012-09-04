@@ -15,28 +15,66 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_FileSystemConfigurationService
-
-Instruments the CIM class Cura_FileSystemConfigurationService
+"""Python Provider for LMI_DiskPartitionConfigurationService
+Instruments the CIM class LMI_DiskPartitionConfigurationService
 
 """
 
 from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-import util.fs
+import pyanaconda.storage.devices
+import parted
+import util.partitioning
 
-class Cura_FileSystemConfigurationService(CIMProvider2):
-    """Instrument the CIM class Cura_FileSystemConfigurationService 
+class LMI_DiskPartitionConfigurationService(CIMProvider2):
+    """Instrument the CIM class LMI_DiskPartitionConfigurationService 
 
-    POC FileSystemConfigurationService instrumentation.
+    POC DiskParitionConfigurationService instrumentation. The partitions
+    MUST be alligned to
+    LMI_DiskPartitionConfigurationCapabilities.Alignment blocks.
     
     """
 
+    def createMBR(self, disk):
+        try:
+            util.partitioning.createMBR(disk)
+        except Exception, err:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, err.__class__.__name__ + ': '  + str(err))
+        return self.Values.SetPartitionStyle.Success
+        
+    def createGPT(self, disk):
+        try:
+            util.partitioning.createGPT(disk)
+        except Exception, err:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, err.__class__.__name__ + ': '  + str(err))            
+        return self.Values.SetPartitionStyle.Success
+
+    def createEMBR(self, partition):
+        return self.Values.SetPartitionStyle.Not_Supported
+
+    def createPartition(self, disk, logical, fromSector, toSector):
+        if logical:
+            partType = parted.PARTITION_LOGICAL
+        else:
+            partType = parted.PARTITION_NORMAL
+            
+        print "Partitioning: ", fromSector, toSector
+        try:
+            part = storage.newPartition(disks=[disk], #start=fromSector, end=toSector,
+                    size=pyanaconda.storage.partitioning.sectorsToSize(toSector-fromSector, disk.partedDevice.sectorSize),
+                    partType=partType, grow=False)
+            util.partitioning.createPartition(part)
+        except Exception, err:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, err.__class__.__name__ + ': '  + str(err))
+        return (self.Values.CreateOrModifyPartition.Success, part)
+
+    
     def __init__ (self, env):
         logger = env.get_logger()
         logger.log_debug('Initializing provider %s from %s' \
                 % (self.__class__.__name__, __file__))
+        self.name = 'LMI_PartitionService'
 
     def get_instance(self, env, model):
         """Return an instance.
@@ -66,26 +104,34 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
                 % self.__class__.__name__)
         
 
+        if (model['SystemName'] != LMI_SYSTEM_NAME
+                or model['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or model['CreationClassName'] != 'LMI_DiskPartitionConfigurationService'
+                or model['Name'] != self.name):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong keys.')
+        
+
         #model['AvailableRequestedStates'] = [self.Values.AvailableRequestedStates.<VAL>,] # TODO 
         #model['Caption'] = '' # TODO 
-        model['CommunicationStatus'] = self.Values.CommunicationStatus.Communication_OK
-        model['Description'] = 'Filesystem creation and mounting service'
+        #model['CommunicationStatus'] = self.Values.CommunicationStatus.<VAL> # TODO 
+        #model['Description'] = '' # TODO 
         #model['DetailedStatus'] = self.Values.DetailedStatus.<VAL> # TODO 
         #model['ElementName'] = '' # TODO 
         model['EnabledDefault'] = self.Values.EnabledDefault.Enabled
-        model['EnabledState'] = self.Values.EnabledState.Enabled
+        #model['EnabledState'] = self.Values.EnabledState.Not_Applicable # TODO 
         #model['Generation'] = pywbem.Uint64() # TODO 
-        model['HealthState'] = self.Values.HealthState.OK
+        model['HealthState'] = self.Values.HealthState.OK 
         #model['InstallDate'] = pywbem.CIMDateTime() # TODO 
         #model['InstanceID'] = '' # TODO 
-        model['OperatingStatus'] = self.Values.OperatingStatus.Servicing
-        model['OperationalStatus'] = [self.Values.OperationalStatus.OK,] # TODO 
+        #model['OperatingStatus'] = self.Values.OperatingStatus.<VAL> # TODO 
+        model['OperationalStatus'] = [self.Values.OperationalStatus.OK,] 
         #model['OtherEnabledState'] = '' # TODO 
+        model['PartitioningSchemes'] = self.Values.PartitioningSchemes.Volumes_may_be_partitioned_or_treated_as_whole 
         #model['PrimaryOwnerContact'] = '' # TODO 
-        model['PrimaryOwnerName'] = 'I am my own master!'
+        #model['PrimaryOwnerName'] = '' # TODO 
         model['PrimaryStatus'] = self.Values.PrimaryStatus.OK
-        model['RequestedState'] = self.Values.RequestedState.Unknown
-        model['Started'] = True
+        model['RequestedState'] = self.Values.RequestedState.Not_Applicable
+        model['Started'] = bool(True) 
         #model['StartMode'] = self.Values.StartMode.<VAL> # TODO 
         #model['Status'] = self.Values.Status.<VAL> # TODO 
         #model['StatusDescriptions'] = ['',] # TODO 
@@ -126,10 +172,10 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
         model.path.update({'CreationClassName': None, 'SystemName': None,
             'Name': None, 'SystemCreationClassName': None})
         
-        model['SystemName'] = CURA_SYSTEM_NAME
-        model['SystemCreationClassName'] = CURA_SYSTEM_CLASS_NAME
-        model['CreationClassName'] = 'Cura_FileSystemConfigurationService'    
-        model['Name'] = 'Cura_FileSystemConfigurationService'
+        model['SystemName'] = LMI_SYSTEM_NAME
+        model['SystemCreationClassName'] = LMI_SYSTEM_CLASS_NAME    
+        model['CreationClassName'] = 'LMI_DiskPartitionConfigurationService'    
+        model['Name'] = self.name
         if keys_only:
             yield model
         else:
@@ -137,7 +183,7 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
                 yield self.get_instance(env, model)
             except pywbem.CIMError, (num, msg):
                 if num not in (pywbem.CIM_ERR_NOT_FOUND, 
-                               pywbem.CIM_ERR_ACCESS_DENIED):
+                                pywbem.CIM_ERR_ACCESS_DENIED):
                     raise
 
     def set_instance(self, env, instance, modify_existing):
@@ -206,7 +252,7 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
     def cim_method_requeststatechange(self, env, object_name,
                                       param_requestedstate=None,
                                       param_timeoutperiod=None):
-        """Implements Cura_FileSystemConfigurationService.RequestStateChange()
+        """Implements LMI_DiskPartitionConfigurationService.RequestStateChange()
 
         Requests that the state of the element be changed to the value
         specified in the RequestedState parameter. When the requested
@@ -277,11 +323,11 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
         out_params = []
         #out_params+= [pywbem.CIMParameter('job', type='reference', 
         #                   value=pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...))] # TODO
-        #rval = # TODO (type pywbem.Uint32 self.Values.RequestStateChange)
-        #return (rval, out_params)
+        rval = None # TODO (type pywbem.Uint32 self.Values.RequestStateChange)
+        return (rval, out_params)
         
     def cim_method_stopservice(self, env, object_name):
-        """Implements Cura_FileSystemConfigurationService.StopService()
+        """Implements LMI_DiskPartitionConfigurationService.StopService()
 
         The StopService method places the Service in the stopped state.
         Note that the function of this method overlaps with the
@@ -330,96 +376,66 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        #rval = # TODO (type pywbem.Uint32)
-        #return (rval, out_params)
+        rval = None # TODO (type pywbem.Uint32)
+        return (rval, out_params)
         
-    def cim_method_modifyfilesystem(self, env, object_name,
-                                    param_elementname=None,
-                                    param_inuseoptions=None,
-                                    param_goal=None,
-                                    param_waittime=None,
-                                    param_theelement=None):
-        """Implements Cura_FileSystemConfigurationService.ModifyFileSystem()
+    def cim_method_createormodifypartition(self, env, object_name,
+                                           param_devicefilename=None,
+                                           param_partition=None,
+                                           param_extent=None,
+                                           param_endingaddress=None,
+                                           param_startingaddress=None):
+        """Implements LMI_DiskPartitionConfigurationService.CreateOrModifyPartition()
 
-        Start a job to modify a previously created FileSystem. If the
-        operation completes successfully and did not require a
-        long-running ConcreteJob, it will return 0. If 4096/0x1000 is
-        returned, a ConcreteJob will be started to modify the element. A
-        Reference to the ConcreteJob will be returned in the output
-        parameter Job. If any other value is returned, either the job will
-        not be started, or if started, no action will be taken. \nThis
-        method MUST return a CIM_Error representing that a single named
-        property of a setting (or other) parameter (either reference or
-        embedded object) has an invalid value or that an invalid
-        combination of named properties of a setting (or other) parameter
-        (either reference or embedded object) has been requested. \nThe
-        parameter TheElement specifies the FileSystem to be modified. This
-        element MUST be associated via ElementSettingData with a
-        FileSystemSetting which is in turn associated via
-        SettingGeneratedByCapabilities to a FileSystemCapabilities
-        supported by this FileSystemConfigurationService. \nThe desired
-        settings for the FileSystem are specified by the Goal parameter.
-        Goal is an element of class CIM_FileSystemSetting, or a derived
-        class, encoded as a string-valued embedded instance parameter;
-        this allows the client to specify the properties desired for the
-        file system. The Goal parameter includes information that can be
-        used by the vendor to compute the required size of the FileSystem.
-        If the operation would result in a change in the size of the file
-        system, the StorageExtent identified by the ResidesOnExtent
-        association will be used to determine how to implement the change.
-        If the StorageExtent cannot be expanded to support the goal size,
-        an appropriate error value will be returned, and no action will be
-        taken. If the operation succeeds, the ResidesOnExtent association
-        might reference a different StorageExtent.
+        This method creates a new partition if the Partition parameter is
+        null or modifies the partition specified. If the starting and
+        ending address parameters are null, the resulting partition will
+        occupy the entire underlying extent. If the starting address is
+        non-null and the ending address is null, the resulting partition
+        will extend to the end of the underlying extent. \n\nIf a
+        partition is being created, a LogicalDisk instance is also created
+        BasedOn the partition. The NumberOfBlocks and ComsumableBlocks
+        properties MUST be the same value and MUST be common to the
+        partition and LogicalDisk (since partition metadata is part of the
+        partition table, not part of partitions). The StartingAddress of
+        the LogicalDisk MUST be 0, the ConsumableBlocks of the LogicalDisk
+        and partition MUST be the same, and the difference between the
+        StartingAddress and EndingAddress of the partition and LogicalDisk
+        must be the same - one less than ConsumableBlocks/NumberOfBlocks.
+        \n\nThe underlying extent MUST be associated to a capabilities
+        class describing the installed partition style (partition table);
+        this association is established using SetPartitionStyle().
         
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
         object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
-            specifying the object on which the method ModifyFileSystem() 
+            specifying the object on which the method CreateOrModifyPartition() 
             should be invoked.
-        param_elementname --  The input parameter ElementName (type unicode) 
-            A end user relevant name for the FileSystem being modified. If
-            NULL, then the name will not be changed. If not NULL, this
-            parameter will supply a new name for the FileSystem element.
+        param_devicefilename --  The input parameter DeviceFileName (type unicode) 
+            The platform-specific special file name to be assigned to the
+            LogicalDisk instance BasedOn the new DiskPartition instance.
             
-        param_inuseoptions --  The input parameter InUseOptions (type pywbem.Uint16 self.Values.ModifyFileSystem.InUseOptions) 
-            An enumerated integer that specifies the action to take if the
-            FileSystem is still in use when this request is made. This
-            option is only relevant if the FileSystem must be made
-            unavailable while the request is being executed.
+        param_partition --  The input parameter Partition (type REF (pywbem.CIMInstanceName(classname='CIM_GenericDiskPartition', ...)) 
+            A reference an existing partition instance to modify or null to
+            request a new partition.
             
-        param_goal --  The input parameter Goal (type pywbem.CIMInstance(classname='CIM_FileSystemSetting', ...)) 
-            The requirements for the FileSystem element to maintain. This
-            is an element of class CIM_FileSystemSetting, or a derived
-            class, encoded as a string-valued embedded instance parameter;
-            this allows the client to specify the properties desired for
-            the file system. If NULL or the empty string, the FileSystem
-            service attributes will not be changed. If not NULL, this
-            parameter will supply new settings that replace or are merged
-            with the current settings of the FileSystem element.
+        param_extent --  The input parameter extent (type REF (pywbem.CIMInstanceName(classname='CIM_StorageExtent', ...)) 
+            A reference to the underlying extent the partition is base on.
             
-        param_waittime --  The input parameter WaitTime (type pywbem.Uint32) 
-            An integer that indicates the time (in seconds) that the
-            provider must wait before performing the request on this
-            FileSystem. If WaitTime is not zero, the method will create a
-            job, if supported by the provider, and return immediately. If
-            the provider does not support asynchronous jobs, there is a
-            possibility that the client could time-out before the job is
-            completed. \nThe combination of InUseOptions = \'4\' and
-            WaitTime =\'0\' (the default) is interpreted as \'Wait
-            (forever) until Quiescence, then Execute Request\' and will be
-            performed asynchronously if possible.
+        param_endingaddress --  The input parameter EndingAddress (type pywbem.Uint64) 
+            The ending block number.
             
-        param_theelement --  The input parameter TheElement (type REF (pywbem.CIMInstanceName(classname='CIM_FileSystem', ...)) 
-            The FileSystem element to modify.
+        param_startingaddress --  The input parameter StartingAddress (type pywbem.Uint64) 
+            The starting block number.
             
 
-        Returns a two-tuple containing the return value (type pywbem.Uint32 self.Values.ModifyFileSystem)
+        Returns a two-tuple containing the return value (type pywbem.Uint32 self.Values.CreateOrModifyPartition)
         and a list of CIMParameter objects representing the output parameters
 
         Output parameters:
-        Job -- (type REF (pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...)) 
-            Reference to the job (may be null if job completed).
+        Partition -- (type REF (pywbem.CIMInstanceName(classname='CIM_GenericDiskPartition', ...)) 
+            A reference an existing partition instance to modify or null to
+            request a new partition.
             
 
         Possible Errors:
@@ -435,93 +451,93 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
         """
 
         logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_modifyfilesystem()' \
+        logger.log_debug('Entering %s.cim_method_createormodifypartition()' \
                 % self.__class__.__name__)
 
-        # TODO do something
-        raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
-        out_params = []
-        #out_params+= [pywbem.CIMParameter('job', type='reference', 
-        #                   value=pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...))] # TODO
-        #rval = # TODO (type pywbem.Uint32 self.Values.ModifyFileSystem)
-        #return (rval, out_params)
+        # check object_name
+        if (object_name['SystemName'] != LMI_SYSTEM_NAME
+                or object_name['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or object_name['CreationClassName'] != 'LMI_DiskPartitionConfigurationService'
+                or object_name['Name'] != self.name):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong service keys.')
+
+        # check start/end addresses
+        if param_endingaddress is not None:
+            if param_startingaddress is None:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'startingAddress must be specified if endingAddress is set')
+            if param_startingaddress > param_endingaddress:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'startingAddress must be lower than endingAddress')
         
-    def cim_method_deletefilesystem(self, env, object_name,
-                                    param_waittime=None,
-                                    param_thefilesystem=None,
-                                    param_inuseoptions=None):
-        """Implements Cura_FileSystemConfigurationService.DeleteFileSystem()
-
-        Start a job to delete a FileSystem. If the FileSystem cannot be
-        deleted, no action will be taken, and the Return Value will be
-        4097/0x1001. If the method completed successfully and did not
-        require a long-running ConcreteJob, it will return 0. If
-        4096/0x1000 is returned, a ConcreteJob will be started to delete
-        the FileSystem. A Reference to the ConcreteJob will be returned in
-        the output parameter Job.
+        # check param_extent
+        if (param_extent['SystemName'] != LMI_SYSTEM_NAME
+                or param_extent['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong extent keys.')
         
-        Keyword arguments:
-        env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
-            specifying the object on which the method DeleteFileSystem() 
-            should be invoked.
-        param_waittime --  The input parameter WaitTime (type pywbem.Uint32) 
-            An integer that indicates the time (in seconds) that the
-            provider must wait before deleting this FileSystem. If
-            WaitTime is not zero, the method will create a job, if
-            supported by the provider, and return immediately. If the
-            provider does not support asynchronous jobs, there is a
-            possibility that the client could time-out before the job is
-            completed. \nThe combination of InUseOptions = \'4\' and
-            WaitTime =\'0\' (the default) is interpreted as \'Wait
-            (forever) until Quiescence, then Delete Filesystem\' and will
-            be performed asynchronously if possible.
+        extent = storage.devicetree.getDeviceByPath(param_extent['DeviceID'])
+        if not extent:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Cannot find DeviceID')
+        
+        gpt = False
+        logical = False
+
+        if isinstance(extent, pyanaconda.storage.devices.PartitionDevice):
+            # creating logical partition
+            if param_extent['CreationClassName'] != 'LMI_DiskPartition':
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'extent is LMI_DiskPartition')
+            if not extent.isExtended:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'extent is not an extended partition')
+
+            # calculate start/end if omitted            
+            if param_startingaddress is None:
+                param_startingaddress = extent.disk.format.format.alignment.grainSize / extent.disk.partedDevice.sectorSize
+            if param_endingaddress is None:
+                param_endingaddress = extent.partedPartition.geometry.length - 1
             
-        param_thefilesystem --  The input parameter TheFileSystem (type REF (pywbem.CIMInstanceName(classname='CIM_ManagedElement', ...)) 
-            An element or association that uniquely identifies the
-            FileSystem to be deleted.
+            # we must recalculate start/end sector from extended-partition based to disk-based
+            param_startingaddress += extent.partedPartition.geometry.start 
+            param_endingaddress += extent.partedDevice.length - 1
+            disk = extent.disk
+            logical = True
             
-        param_inuseoptions --  The input parameter InUseOptions (type pywbem.Uint16 self.Values.DeleteFileSystem.InUseOptions) 
-            An enumerated integer that specifies the action to take if the
-            FileSystem is still in use when this request is made.
+        elif isinstance(extent, pyanaconda.storage.devices.DiskDevice):
+            # creating physical partition
+            if param_extent['CreationClassName'] != 'LMI_LocalDiskExtent':
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'extent is LMI_LocalDiskExtent')
+            if extent.format.labelType == util.partitioning.LABEL_GPT:
+                gpt = True
+            # calculate start/end if omitted            
+            if param_startingaddress is None:
+                param_startingaddress = extent.format.alignment.grainSize
+            if param_endingaddress is None:
+                if gpt:
+                    # don't rewrite secondary GPT!
+                    param_endingaddress = extent.partedDevice.length - util.partitioning.GPT_SIZE
+                else:
+                    param_endingaddress = extent.partedDevice.length - 1
+            disk = extent
+        else:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'extent is not LMI_LocalDiskExtent nor LMI_DiskPartition')
             
-
-        Returns a two-tuple containing the return value (type pywbem.Uint32 self.Values.DeleteFileSystem)
-        and a list of CIMParameter objects representing the output parameters
-
-        Output parameters:
-        Job -- (type REF (pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...)) 
-            Reference to the job (may be null if job completed).
-            
-
-        Possible Errors:
-        CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
-            unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
-            exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
-            the invocation request)
-        CIM_ERR_FAILED (some other unspecified error occurred)
-
-        """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_deletefilesystem()' \
-                % self.__class__.__name__)
-
-        # TODO do something
-        raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
+        (ret, partition) = self.createPartition(disk, logical, param_startingaddress, param_endingaddress)
         out_params = []
-        #out_params+= [pywbem.CIMParameter('job', type='reference', 
-        #                   value=pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...))] # TODO
-        #rval = # TODO (type pywbem.Uint32 self.Values.DeleteFileSystem)
-        #return (rval, out_params)
+        if gpt:
+            classname = 'LMI_GPTDiskPartition'
+        else:
+            classname = 'LMI_DiskPartition'
+        out_params+= [pywbem.CIMParameter('partition', type='reference', 
+                value=pywbem.CIMInstanceName(classname = classname,
+                        namespace=LMI_NAMESPACE,
+                        keybindings={'CreationClassName': classname,
+                                 'DeviceID': partition.path,
+                                 'SystemCreationClassName': LMI_SYSTEM_CLASS_NAME,
+                                 'SystemName': LMI_SYSTEM_NAME
+                }))]
+        return (ret, out_params)
         
     def cim_method_changeaffectedelementsassignedsequence(self, env, object_name,
                                                           param_managedelements,
                                                           param_assignedsequence):
-        """Implements Cura_FileSystemConfigurationService.ChangeAffectedElementsAssignedSequence()
+        """Implements LMI_DiskPartitionConfigurationService.ChangeAffectedElementsAssignedSequence()
 
         This method is called to change relative sequence in which order
         the ManagedElements associated to the Service through
@@ -600,90 +616,41 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
         out_params = []
         #out_params+= [pywbem.CIMParameter('job', type='reference', 
         #                   value=pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...))] # TODO
-        #rval = # TODO (type pywbem.Uint32 self.Values.ChangeAffectedElementsAssignedSequence)
-        #return (rval, out_params)
+        rval = None # TODO (type pywbem.Uint32 self.Values.ChangeAffectedElementsAssignedSequence)
+        return (rval, out_params)
         
-    def cim_method_createfilesystem(self, env, object_name,
-                                    param_goal=None,
-                                    param_elementname=None,
-                                    param_theelement=None,
-                                    param_inextent=None):
-        """Implements Cura_FileSystemConfigurationService.CreateFileSystem()
+    def cim_method_setpartitionstyle(self, env, object_name,
+                                     param_extent=None,
+                                     param_partitionstyle=None):
+        """Implements LMI_DiskPartitionConfigurationService.SetPartitionStyle()
 
-        Start a job to create a FileSystem on a StorageExtent. If the
-        operation completes successfully and did not require a
-        long-running ConcreteJob, it will return 0. If 4096/0x1000 is
-        returned, a ConcreteJob will be started to create the element. A
-        Reference to the ConcreteJob will be returned in the output
-        parameter Job. If any other value is returned, the job will not be
-        started, and no action will be taken. \nThis method MUST return a
-        CIM_Error representing that a single named property of a setting
-        (or other) parameter (either reference or embedded object) has an
-        invalid value or that an invalid combination of named properties
-        of a setting (or other) parameter (either reference or embedded
-        object) has been requested. \nThe parameter TheElement will
-        contain a Reference to the FileSystem if this operation completed
-        successfully. \nThe StorageExtent to use is specified by the
-        InExtent parameter. If this is NULL, a default StorageExtent will
-        be created in a vendor-specific way and used. One way to create
-        the default StorageExtent is to use one of the canned settings
-        supported by the StorageConfigurationService hosted by the host
-        hosting the FileSystemConfigurationService. \nThe desired settings
-        for the FileSystem are specified by the Goal parameter. Goal is an
-        element of class CIM_FileSystemSetting, or a derived class,
-        encoded as a string-valued embedded object parameter; this allows
-        the client to specify the properties desired for the file system.
-        The Goal parameter includes information that can be used by the
-        vendor to compute the size of the FileSystem. If the StorageExtent
-        specified here cannot support the goal size, an appropriate error
-        value will be returned, and no action will be taken. \nA
-        ResidesOnExtent association is created between the created
-        FileSystem and the StorageExtent used for it.
+        This method installs a partition table on an extent of the
+        specified partition style; creating an association between the
+        extent and that capabilities instances referenced as method
+        parameters. As a side effect, the consumable block size of the
+        underlying extent is reduced by the block size of the metadata
+        reserved by the partition table and associated metadata. This size
+        is in the PartitionTableSize property of the associated
+        DiskPartitionConfigurationCapabilities instance.
         
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
         object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
-            specifying the object on which the method CreateFileSystem() 
+            specifying the object on which the method SetPartitionStyle() 
             should be invoked.
-        param_goal --  The input parameter Goal (type pywbem.CIMInstance(classname='CIM_FileSystemSetting', ...)) 
-            The requirements for the FileSystem element to maintain. This
-            is an element of class CIM_FileSystemSetting, or a derived
-            class, encoded as a string-valued embedded instance parameter;
-            this allows the client to specify the properties desired for
-            the file system. If NULL or the empty string, the
-            FileSystemConfigurationService will use a vendor-specific
-            default Goal obtained by using the FileSystemCapabilities
-            element specified by the DefaultElementCapabilities
-            association to obtain a default FileSystemSetting element.
+        param_extent --  The input parameter Extent (type REF (pywbem.CIMInstanceName(classname='CIM_StorageExtent', ...)) 
+            A reference to the extent (volume or partition) where this
+            style (partition table) will be installed.
             
-        param_elementname --  The input parameter ElementName (type unicode) 
-            A end user relevant name for the FileSystem being created. If
-            NULL, a system-supplied default name can be used. The value
-            will be stored in the \'ElementName\' property for the created
-            element.
-            
-        param_theelement --  The input parameter TheElement (type REF (pywbem.CIMInstanceName(classname='CIM_FileSystem', ...)) 
-            The newly created FileSystem.
-            
-        param_inextent --  The input parameter InExtent (type REF (pywbem.CIMInstanceName(classname='CIM_StorageExtent', ...)) 
-            The StorageExtent on which the created FileSystem will reside.
-            If this is NULL, a default StorageExtent will be created in a
-            vendor-specific way and used. One way to create the default
-            StorageExtent is to use one of the default settings supported
-            by the StorageConfigurationService on the same hosting
-            ComputerSystem as the FileSystemConfigurationService.
+        param_partitionstyle --  The input parameter PartitionStyle (type REF (pywbem.CIMInstanceName(classname='CIM_DiskPartitionConfigurationCapabilities', ...)) 
+            A reference to the DiskPartitionConfigurationCapabilities
+            instance describing the desired partition style.
             
 
-        Returns a two-tuple containing the return value (type pywbem.Uint32 self.Values.CreateFileSystem)
+        Returns a two-tuple containing the return value (type pywbem.Uint32 self.Values.SetPartitionStyle)
         and a list of CIMParameter objects representing the output parameters
 
-        Output parameters:
-        Job -- (type REF (pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...)) 
-            Reference to the job (may be null if job completed).
-            
-        TheElement -- (type REF (pywbem.CIMInstanceName(classname='CIM_FileSystem', ...)) 
-            The newly created FileSystem.
-            
+        Output parameters: none
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
@@ -698,42 +665,65 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
         """
 
         logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_createfilesystem()' \
+        logger.log_debug('Entering %s.cim_method_setpartitionstyle()' \
                 % self.__class__.__name__)
 
-        if param_goal is not None:
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, "Goal parameter is not supported.")
-        if param_theelement is not None:
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, "TheElement parameter is not supported.")
-        if param_inextent is None:
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, "InExtent parameter must be specified.")
-        if param_inextent["CreationClassName"] != "Cura_LogicalDisk":
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, "InExtent parameter must be Cura_LogicalDisk.")
+        ret = self.Values.SetPartitionStyle.Failed
+        
+        # check object_name
+        if (object_name['SystemName'] != LMI_SYSTEM_NAME
+                or object_name['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or object_name['CreationClassName'] != 'LMI_DiskPartitionConfigurationService'
+                or object_name['Name'] != self.name):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong service keys.')
+        
+        # check param_extent
+        if (param_extent['SystemName'] != LMI_SYSTEM_NAME
+                or param_extent['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong extent keys.')
+        
+        extent = storage.devicetree.getDeviceByPath(param_extent['DeviceID'])
+        if not extent:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Cannot find DeviceID')
+        
+        if (not isinstance(extent, pyanaconda.storage.devices.PartitionDevice)
+                and not isinstance(extent, pyanaconda.storage.devices.DiskDevice)):
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Partitions can be created only on LMI_DiskPartition or LMI_LocalDiskExtent')
+        
+        if (isinstance(extent, pyanaconda.storage.devices.PartitionDevice)
+                and param_extent['CreationClassName'] != 'LMI_DiskPartition'):
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'extent is LMI_DiskPartition')
 
-        label = param_elementname
-        path = param_inextent["DeviceID"]
-
-        device = storage.devicetree.getDeviceByPath(path)
-        if not logicalDiskManager.isExposed(device):
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, "InExtent parameter must be valid Cura_LogicalDisk.")
+        if (isinstance(extent, pyanaconda.storage.devices.DiskDevice) 
+                and param_extent['CreationClassName'] != 'LMI_LocalDiskExtent'):
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'extent is LMI_LocalDiskExtent')
+        
+        # check param_partitionstyle and create the partition table
+        styleName = param_partitionstyle['InstanceID']
+        if styleName == util.partitioning.TYPE_MBR:
+            if param_extent['CreationClassName'] != 'LMI_LocalDiskExtent':
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'MBR can be created only on LMI_LocalDiskExtent')
+            ret = self.createMBR(extent)
             
-        fs = util.fs.createFilesystem(device, label)
-        if fs:
-            out_params = []
-            out_params+= [pywbem.CIMParameter('TheElement', type='reference', 
-                value=pywbem.CIMInstanceName(classname='Cura_LocalFileSystem', namespace=CURA_NAMESPACE,
-                    keybindings = {"CreationClassName" : "Cura_LocalFileSystem",
-                        "CSCreationClassName" : CURA_SYSTEM_CLASS_NAME,
-                        "CSName" : CURA_SYSTEM_NAME,
-                        "Name" : device.path
-                }))]
-            rval = self.Values.CreateFileSystem.Job_Completed_with_No_Error
-            return (rval, out_params)
-        else:
-            return (self.Values.CreateFileSystem.Failed, [])
+        elif styleName == util.partitioning.TYPE_EMBR:
+            if param_extent['CreationClassName'] != 'LMI_DiskPartition':
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'EMBR can be created only on LMI_DiskPartition')
+            if not extent.isPrimary:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'EMBR can be created only on primary LMI_DiskPartition')
+            ret = self.createEMBR(extent)
 
+        elif styleName == util.partitioning.TYPE_GPT:
+            if param_extent['CreationClassName'] != 'LMI_LocalDiskExtent':
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'GPT can be created only on LMI_LocalDiskExtent')
+            ret = self.createGPT(extent)
+        else:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Unsupported PartitionStyle')
+
+        out_params = []
+        return (ret, out_params)
+        
     def cim_method_startservice(self, env, object_name):
-        """Implements Cura_FileSystemConfigurationService.StartService()
+        """Implements LMI_DiskPartitionConfigurationService.StartService()
 
         The StartService method places the Service in the started state.
         Note that the function of this method overlaps with the
@@ -782,51 +772,8 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        #rval = # TODO (type pywbem.Uint32)
-        #return (rval, out_params)
-
-    def cim_method_mountfilesystem(self, env, object_name,
-                                   param_where=None,
-                                   param_theelement=None):
-        """Implements Cura_FileSystemConfigurationService.MountFileSystem()
-
-        Mount a filesystem to given location.
-        
-        Keyword arguments:
-        env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
-            specifying the object on which the method MountFileSystem() 
-            should be invoked.
-        param_where --  The input parameter Where (type unicode) 
-            Mount point.
-            
-        param_theelement --  The input parameter TheElement (type REF (pywbem.CIMInstanceName(classname='CIM_FileSystem', ...)) 
-            File system to mount.
-            
-
-        Returns a two-tuple containing the return value (type pywbem.Uint32 self.Values.MountFileSystem)
-        and a list of CIMParameter objects representing the output parameters
-
-        Output parameters: none
-
-        Possible Errors:
-        CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
-            unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
-            exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
-            the invocation request)
-        CIM_ERR_FAILED (some other unspecified error occurred)
-
-        """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_mountfilesystem()' \
-                % self.__class__.__name__)
-
-        raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
-
+        rval = None # TODO (type pywbem.Uint32)
+        return (rval, out_params)
         
     class Values(object):
         class DetailedStatus(object):
@@ -866,45 +813,6 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Specific = 32768..65535
 
-        class ModifyFileSystem(object):
-            Job_Completed_with_No_Error = pywbem.Uint32(0)
-            Not_Supported = pywbem.Uint32(1)
-            Unknown = pywbem.Uint32(2)
-            Timeout = pywbem.Uint32(3)
-            Failed = pywbem.Uint32(4)
-            Invalid_Parameter = pywbem.Uint32(5)
-            FileSystem_In_Use__cannot_Modify = pywbem.Uint32(6)
-            Cannot_satisfy_new_Goal_ = pywbem.Uint32(7)
-            # DMTF_Reserved = ..
-            Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
-            # Method_Reserved = 4098..32767
-            # Vendor_Specific = 32768..65535
-            class InUseOptions(object):
-                Do_Not_Execute_Request = pywbem.Uint16(2)
-                Wait_for_specified_time__then_Execute_Request_Immediately = pywbem.Uint16(3)
-                Try_to_Quiesce_for_specified_time__then_Execute_Request_Immediately = pywbem.Uint16(4)
-                # DMTF_Reserved = ..
-                # Vendor_Defined = 0x1000..0xFFFF
-
-        class DeleteFileSystem(object):
-            Job_Completed_with_No_Error = pywbem.Uint32(0)
-            Not_Supported = pywbem.Uint32(1)
-            Unknown = pywbem.Uint32(2)
-            Timeout = pywbem.Uint32(3)
-            Failed__Unspecified_Reasons = pywbem.Uint32(4)
-            Invalid_Parameter = pywbem.Uint32(5)
-            FileSystem_in_use__Failed = pywbem.Uint32(6)
-            # DMTF_Reserved = ..
-            # Method_Parameters_Checked___Job_Started = 0x1000
-            # Method_Reserved = 0x1001..0x7FFF
-            # Vendor_Specific = 0x8000..
-            class InUseOptions(object):
-                Do_Not_Delete = pywbem.Uint16(2)
-                Wait_for_specified_time__then_Delete_Immediately = pywbem.Uint16(3)
-                Attempt_Quiescence_for_specified_time__then_Delete_Immediately = pywbem.Uint16(4)
-                # DMTF_Reserved = ..
-                # Vendor_Defined = 0x1000..0xFFFF
-
         class ChangeAffectedElementsAssignedSequence(object):
             Completed_with_No_Error = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
@@ -915,6 +823,22 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
             Access_Denied = pywbem.Uint32(6)
             # DMTF_Reserved = 7..32767
             # Vendor_Specified = 32768..65535
+
+        class CreateOrModifyPartition(object):
+            Success = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Unknown = pywbem.Uint32(2)
+            Timeout = pywbem.Uint32(3)
+            Failed = pywbem.Uint32(4)
+            Invalid_Parameter = pywbem.Uint32(5)
+            # DMTF_Reserved = ..
+            # Overlap_Not_Supported = 0x1000
+            # No_Available_Partitions = 0x1001
+            # Specified_partition_not_on_specified_extent = 0x1002
+            # Device_File_Name_not_valid = 0x1003
+            # LogicalDisk_with_different_DeviceFileName_exists = 0x1004
+            # Method_Reserved = ..
+            # Vendor_Specific = 0x8000..
 
         class TransitioningToState(object):
             Unknown = pywbem.Uint16(0)
@@ -1065,19 +989,24 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
                 # DMTF_Reserved = ..
                 # Vendor_Reserved = 32768..65535
 
-        class CreateFileSystem(object):
-            Job_Completed_with_No_Error = pywbem.Uint32(0)
+        class SetPartitionStyle(object):
+            Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
             Unknown = pywbem.Uint32(2)
             Timeout = pywbem.Uint32(3)
             Failed = pywbem.Uint32(4)
             Invalid_Parameter = pywbem.Uint32(5)
-            StorageExtent_is_not_big_enough_to_satisfy_the_request_ = pywbem.Uint32(6)
-            StorageExtent_specified_by_default_cannot_be_created_ = pywbem.Uint32(7)
             # DMTF_Reserved = ..
-            Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
-            # Method_Reserved = 4098..32767
-            # Vendor_Specific = 32768..65535
+            # Extent_already_has_partition_table = 0x1000
+            # Requested_Extent_too_large = 0x1001
+            # Style_not_supported_by_Service = 0x1002
+            # Method_Reserved = ..
+            # Vendor_Specific = 0x8000..
+
+        class PartitioningSchemes(object):
+            No_partitions_allowed = pywbem.Uint16(2)
+            Volumes_may_be_partitioned_or_treated_as_whole = pywbem.Uint16(3)
+            Volumes_must_be_partitioned = pywbem.Uint16(4)
 
         class StartMode(object):
             Automatic = 'Automatic'
@@ -1091,18 +1020,11 @@ class Cura_FileSystemConfigurationService(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Reserved = 0x8000..
 
-        class MountFileSystem(object):
-            Completed_OK = pywbem.Uint32(0)
-            Not_Supported = pywbem.Uint32(1)
-            Failed = pywbem.Uint32(2)
-            # Reserved = 3..32767
-
-## end of class Cura_FileSystemConfigurationServiceProvider
+## end of class LMI_DiskPartitionConfigurationServiceProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    Cura_FileSystemConfigurationService_prov = Cura_FileSystemConfigurationService(env)  
-    return {'Cura_FileSystemConfigurationService': Cura_FileSystemConfigurationService_prov}
-
+    LMI_diskpartitionconfigurationservice_prov = LMI_DiskPartitionConfigurationService(env)  
+    return {'LMI_DiskPartitionConfigurationService': LMI_diskpartitionconfigurationservice_prov} 

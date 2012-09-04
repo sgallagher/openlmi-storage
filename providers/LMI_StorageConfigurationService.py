@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_StorageConfigurationService
+"""Python Provider for LMI_StorageConfigurationService
 
-Instruments the CIM class Cura_StorageConfigurationService
+Instruments the CIM class LMI_StorageConfigurationService
 
 """
 
@@ -25,8 +25,8 @@ from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
-class Cura_StorageConfigurationService(CIMProvider2):
-    """Instrument the CIM class Cura_StorageConfigurationService 
+class LMI_StorageConfigurationService(CIMProvider2):
+    """Instrument the CIM class LMI_StorageConfigurationService 
 
     This service allows the active management of a Storage Server. It
     allows jobs to be started for the creation, modification and deletion
@@ -67,9 +67,9 @@ class Cura_StorageConfigurationService(CIMProvider2):
                 % self.__class__.__name__)
         
 
-        if (model['SystemName'] != CURA_SYSTEM_NAME
-                or model['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or model['CreationClassName'] != 'Cura_StorageConfigurationService'
+        if (model['SystemName'] != LMI_SYSTEM_NAME
+                or model['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or model['CreationClassName'] != 'LMI_StorageConfigurationService'
                 or model['Name'] != 'StorageConfigurationService'):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong keys.')
 
@@ -133,9 +133,9 @@ class Cura_StorageConfigurationService(CIMProvider2):
         model.path.update({'CreationClassName': None, 'SystemName': None,
             'Name': None, 'SystemCreationClassName': None})
         
-        model['SystemName'] = CURA_SYSTEM_NAME
-        model['SystemCreationClassName'] = CURA_SYSTEM_CLASS_NAME
-        model['CreationClassName'] = 'Cura_StorageConfigurationService'    
+        model['SystemName'] = LMI_SYSTEM_NAME
+        model['SystemCreationClassName'] = LMI_SYSTEM_CLASS_NAME
+        model['CreationClassName'] = 'LMI_StorageConfigurationService'    
         model['Name'] = 'StorageConfigurationService'
         if keys_only:
             yield model
@@ -212,7 +212,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
         
     def cim_method_deletestoragepool(self, env, object_name,
                                      param_pool=None):
-        """Implements Cura_StorageConfigurationService.DeleteStoragePool()
+        """Implements LMI_StorageConfigurationService.DeleteStoragePool()
 
         Start a job to delete a StoragePool. The freed space is returned
         source StoragePools (indicated by AllocatedFrom StoragePool) or
@@ -276,7 +276,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                                      param_goal=None,
                                                      param_theelement=None,
                                                      param_size=None):
-        """Implements Cura_StorageConfigurationService.CreateOrModifyElementFromElements()
+        """Implements LMI_StorageConfigurationService.CreateOrModifyElementFromElements()
 
         Start a job to create (or modify) a specified storage element from
         specified input StorageExtents. The created or modified storage
@@ -395,7 +395,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
         #return (rval, out_params)
         
     def cim_method_stopservice(self, env, object_name):
-        """Implements Cura_StorageConfigurationService.StopService()
+        """Implements LMI_StorageConfigurationService.StopService()
 
         The StopService method places the Service in the stopped state.
         Note that the function of this method overlaps with the
@@ -451,7 +451,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                            param_host,
                                            param_targetpool=None,
                                            param_targetelement=None):
-        """Implements Cura_StorageConfigurationService.CreateReplicationBuffer()
+        """Implements LMI_StorageConfigurationService.CreateReplicationBuffer()
 
         Create (or start a job to create) a replication buffer that buffers
         asynchronous write operations for remote mirror pairs. The buffer
@@ -531,7 +531,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                  param_targetpool=None,
                                  param_targetsettinggoal=None,
                                  param_copytype=None):
-        """Implements Cura_StorageConfigurationService.CreateReplica()
+        """Implements LMI_StorageConfigurationService.CreateReplica()
 
         Start a job to create a new storage object which is a replica of
         the specified source storage object. (SourceElement). Note that
@@ -616,7 +616,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
     def cim_method_changeaffectedelementsassignedsequence(self, env, object_name,
                                                           param_managedelements,
                                                           param_assignedsequence):
-        """Implements Cura_StorageConfigurationService.ChangeAffectedElementsAssignedSequence()
+        """Implements LMI_StorageConfigurationService.ChangeAffectedElementsAssignedSequence()
 
         This method is called to change relative sequence in which order
         the ManagedElements associated to the Service through
@@ -703,7 +703,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                            param_elementtype=None,
                                            param_thepool=None,
                                            param_criteria=None):
-        """Implements Cura_StorageConfigurationService.GetElementsBasedOnUsage()
+        """Implements LMI_StorageConfigurationService.GetElementsBasedOnUsage()
 
         Allows retrieving elements that meet the specified Usage. The
         criteria can be "available only", "in use only", or both.
@@ -768,7 +768,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                                  param_goal=None,
                                                  param_inpool=None,
                                                  param_elementtype=None):
-        """Implements Cura_StorageConfigurationService.CreateElementsFromStoragePool()
+        """Implements LMI_StorageConfigurationService.CreateElementsFromStoragePool()
 
         Start a job to create (or modify) a specified elements (for example
         StorageVolumes or StorageExtents) from a StoragePool. One of the
@@ -867,7 +867,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                                  param_resourcetype,
                                                  param_storageresources,
                                                  param_storageprocessor=None):
-        """Implements Cura_StorageConfigurationService.AssignStorageResourceAffinity()
+        """Implements LMI_StorageConfigurationService.AssignStorageResourceAffinity()
 
         Start a job to assign affinity of a StoragePool(s) or
         StorageVolume(s) to a storage processor. At the conclusion of the
@@ -939,7 +939,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                                         param_theelement=None,
                                                         param_elementtype=None,
                                                         param_size=None):
-        """Implements Cura_StorageConfigurationService.CreateOrModifyElementFromStoragePool()
+        """Implements LMI_StorageConfigurationService.CreateOrModifyElementFromStoragePool()
 
         Start a job to create (or modify) a specified element (for example
         a StorageVolume or StorageExtent) from a StoragePool. One of the
@@ -1073,7 +1073,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                                  param_replicationpipe=None,
                                                  param_sourceendpoint=None,
                                                  param_targetendpoint=None):
-        """Implements Cura_StorageConfigurationService.CreateOrModifyReplicationPipe()
+        """Implements LMI_StorageConfigurationService.CreateOrModifyReplicationPipe()
 
         This method establishes a peer-to-peer connection identified by a
         NetworkPipe element and two ProtocolEndpoint elements created by
@@ -1171,7 +1171,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                              param_inextents=None,
                                              param_pool=None,
                                              param_size=None):
-        """Implements Cura_StorageConfigurationService.CreateOrModifyStoragePool()
+        """Implements LMI_StorageConfigurationService.CreateOrModifyStoragePool()
 
         Starts a job to create (or modify) a StoragePool. The StoragePool
         will be (or must be) scoped to the same System as this Service.
@@ -1306,7 +1306,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                  param_sourceelement,
                                  param_targetelement=None,
                                  param_copytype=None):
-        """Implements Cura_StorageConfigurationService.AttachReplica()
+        """Implements LMI_StorageConfigurationService.AttachReplica()
 
         Create (or start a job to create) a StorageSynchronized
         relationship between two existing storage objects. Note that using
@@ -1375,7 +1375,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
         
     def cim_method_returntostoragepool(self, env, object_name,
                                        param_theelement=None):
-        """Implements Cura_StorageConfigurationService.ReturnToStoragePool()
+        """Implements LMI_StorageConfigurationService.ReturnToStoragePool()
 
         Start a job to delete an element previously created from a
         StoragePool. The freed space is returned to the source
@@ -1436,7 +1436,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                          param_targetelement,
                                          param_goal=None,
                                          param_replicationpipe=None):
-        """Implements Cura_StorageConfigurationService.AttachOrModifyReplica()
+        """Implements LMI_StorageConfigurationService.AttachOrModifyReplica()
 
         Create (or start a job to create) a StorageSynchronized mirror
         relationship between two storage elements. The target element may
@@ -1523,7 +1523,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
     def cim_method_returnelementstostoragepool(self, env, object_name,
                                                param_theelements,
                                                param_options=None):
-        """Implements Cura_StorageConfigurationService.ReturnElementsToStoragePool()
+        """Implements LMI_StorageConfigurationService.ReturnElementsToStoragePool()
 
         Start a job to delete elements previously created from
         StoragePools. The freed space is returned to the source
@@ -1584,7 +1584,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
     def cim_method_requeststatechange(self, env, object_name,
                                       param_requestedstate=None,
                                       param_timeoutperiod=None):
-        """Implements Cura_StorageConfigurationService.RequestStateChange()
+        """Implements LMI_StorageConfigurationService.RequestStateChange()
 
         Requests that the state of the element be changed to the value
         specified in the RequestedState parameter. When the requested
@@ -1659,7 +1659,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
         #return (rval, out_params)
         
     def cim_method_startservice(self, env, object_name):
-        """Implements Cura_StorageConfigurationService.StartService()
+        """Implements LMI_StorageConfigurationService.StartService()
 
         The StartService method places the Service in the started state.
         Note that the function of this method overlaps with the
@@ -1714,7 +1714,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
     def cim_method_modifysynchronization(self, env, object_name,
                                          param_operation=None,
                                          param_synchronization=None):
-        """Implements Cura_StorageConfigurationService.ModifySynchronization()
+        """Implements LMI_StorageConfigurationService.ModifySynchronization()
 
         Modify (or start a job to modify) the synchronization association
         between two storage objects. If 0 is returned, the function
@@ -1801,7 +1801,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
         
     def cim_method_scsiscan(self, env, object_name,
                             param_job=None):
-        """Implements Cura_StorageConfigurationService.ScsiScan()
+        """Implements LMI_StorageConfigurationService.ScsiScan()
 
         This method requests that the system rescan SCSI devices for
         changes in their configuration. If called on a general-purpose
@@ -1860,7 +1860,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
                                       param_operation=None,
                                       param_theelement=None,
                                       param_otherusagedescription=None):
-        """Implements Cura_StorageConfigurationService.RequestUsageChange()
+        """Implements LMI_StorageConfigurationService.RequestUsageChange()
 
         Allows a client to request the Usage to be set if the client has
         access to the element supplied and the request is valid.
@@ -1920,7 +1920,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
     def cim_method_createraid(self, env, object_name,
                               param_raidtype=None,
                               param_inextents=None):
-        """Implements Cura_StorageConfigurationService.CreateRaid()
+        """Implements LMI_StorageConfigurationService.CreateRaid()
 
         Create RAID with given local disks and format it as ext3. This
         function creates GPT partition table on the disks and creates one
@@ -1937,7 +1937,7 @@ class Cura_StorageConfigurationService(CIMProvider2):
             
         param_inextents --  The input parameter InExtents (type [unicode,]) 
             Array of strings containing representations of references to
-            Cura_LocalDiskExtent instances, that are used to create the
+            LMI_LocalDiskExtent instances, that are used to create the
             Pool or modify the source extents.
             
 
@@ -1971,13 +1971,13 @@ class Cura_StorageConfigurationService(CIMProvider2):
         cliconn = env.get_cimom_handle()
 
         # create GPT partition table on them, i.e. call
-        # Cura_DiskPartitionConfigurationService.SetPartitionStyle(disk, partitionStyle) 
-        # - get reference to Cura_DiskPartitionConfigurationService instance
-        partServices = cliconn.EnumerateInstanceNames(ns=CURA_NAMESPACE, cn='Cura_DiskPartitionConfigurationService')
+        # LMI_DiskPartitionConfigurationService.SetPartitionStyle(disk, partitionStyle) 
+        # - get reference to LMI_DiskPartitionConfigurationService instance
+        partServices = cliconn.EnumerateInstanceNames(ns=LMI_NAMESPACE, cn='LMI_DiskPartitionConfigurationService')
         partService = partServices.next()
 
         # - create reference to PartitionStyle we want to create
-        partStyle = pywbem.CIMInstanceName(classname='Cura_DiskPartitionConfigurationCapabilities', namespace=CURA_NAMESPACE, keybindings = {'InstanceID':'GPT'})
+        partStyle = pywbem.CIMInstanceName(classname='LMI_DiskPartitionConfigurationCapabilities', namespace=LMI_NAMESPACE, keybindings = {'InstanceID':'GPT'})
 
         for disk in param_inextents:
             # - call partService.SetPartitionStyle(disk)
@@ -1985,18 +1985,18 @@ class Cura_StorageConfigurationService(CIMProvider2):
             print 'SetPartitionStyle(', disk['DeviceID'], ')=', ret
 
         # create one huge partition on the disks, i.e. call
-        # Cura_DiskPartitionConfigurationService.CreateOrModifyPartition(disk)
+        # LMI_DiskPartitionConfigurationService.CreateOrModifyPartition(disk)
         for disk in param_inextents: 
             # - call partService.SetPartitionStyle(disk)
             (ret, outparams) = cliconn.InvokeMethod(partService, 'CreateOrModifyPartition', Extent = disk)
             print 'CreateOrModifyPartition(', disk['DeviceID'], ')=', ret
 
         # create RAID out of them, i.e. call
-        # Cura_StorageConfigurationService.CreateOrModifyStoragePool(settings, pool)
+        # LMI_StorageConfigurationService.CreateOrModifyStoragePool(settings, pool)
         # - find the primordial pool
-        pool = cliconn.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Cura_PrimordialPool').next()
-        # - find the Cura_StorageConfigurationService
-        storageService = cliconn.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Cura_StorageConfigurationService').next()
+        pool = cliconn.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_PrimordialPool').next()
+        # - find the LMI_StorageConfigurationService
+        storageService = cliconn.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_StorageConfigurationService').next()
         # - find appropriate setting
         if param_raidtype == self.Values.CreateRaid.RaidType.RAID0:
             settingName = 'STATIC:RAID0'
@@ -2006,25 +2006,25 @@ class Cura_StorageConfigurationService(CIMProvider2):
             settingName = 'STATIC:RAID5'
         else:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Invalid RaidType')
-        setting = pywbem.CIMInstanceName(classname = 'Cura_StorageSetting', namespace = CURA_NAMESPACE, keybindings = {'InstanceID' : 'STATIC:RAID0'})
+        setting = pywbem.CIMInstanceName(classname = 'LMI_StorageSetting', namespace = LMI_NAMESPACE, keybindings = {'InstanceID' : 'STATIC:RAID0'})
         (ret, outparams) = cliconn.InvokeMethod(storageService, 'CreateOrModifyStoragePool', Goal = setting, InPools = [pool])
         print 'CreateOrModifyStoragePool()=', ret
         print 'created pool:', outparams['Pool']
         myRaidPool = outparams['Pool']
         
         # allocate LogicalDisk out of the pool, i.e. call
-        # Cura_StorageConfigurationService.CreateOrModifyElementFromStoragePool(pool)
+        # LMI_StorageConfigurationService.CreateOrModifyElementFromStoragePool(pool)
         (ret, outparams) = cliconn.InvokeMethod(storageService, 'CreateOrModifyElementFromStoragePool', InPool = myRaidPool, ElementType = pywbem.Uint16(4)) # 4 = create LogicalDisk
         print 'CreateOrModifyElementFromStoragePool()=', ret
         print 'created element:', outparams['TheElement']
         myRaidDisk = outparams['TheElement']
 
         # create a filesystem on the RAID, i.e. call
-        # Cura_FileSystemConfigurationService.CreateFileSystem
-        # - find the Cura_FileSystemConfigurationService
-        fsService = cliconn.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Cura_FileSystemConfigurationService').next()
+        # LMI_FileSystemConfigurationService.CreateFileSystem
+        # - find the LMI_FileSystemConfigurationService
+        fsService = cliconn.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_FileSystemConfigurationService').next()
         (ret, outparams) = cliconn.InvokeMethod(fsService, 'CreateFileSystem', InExtent = myRaidDisk)
-        print 'Cura_FileSystemConfigurationService()=', ret
+        print 'LMI_FileSystemConfigurationService()=', ret
         myFs = outparams['TheElement']
 
         out_params = [
@@ -2587,11 +2587,11 @@ class Cura_StorageConfigurationService(CIMProvider2):
                 RAID1 = pywbem.Uint16(1)
                 RAID5 = pywbem.Uint16(5)
                 
-## end of class Cura_StorageConfigurationServiceProvider
+## end of class LMI_StorageConfigurationServiceProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_storageconfigurationservice_prov = Cura_StorageConfigurationService(env)  
-    return {'Cura_StorageConfigurationService': cura_storageconfigurationservice_prov} 
+    LMI_storageconfigurationservice_prov = LMI_StorageConfigurationService(env)  
+    return {'LMI_StorageConfigurationService': LMI_storageconfigurationservice_prov} 

@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_StorageCapabilities
+"""Python Provider for LMI_StorageCapabilities
 
-Instruments the CIM class Cura_StorageCapabilities
+Instruments the CIM class LMI_StorageCapabilities
 
 """
 
@@ -26,7 +26,7 @@ import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
 class WrappedStorageCapabilities(CIMProvider2):
-    """Instrument the CIM class Cura_*Capabilities""" 
+    """Instrument the CIM class LMI_*Capabilities""" 
 
     def __init__ (self, env, wrapper):
         logger = env.get_logger()
@@ -146,7 +146,7 @@ class WrappedStorageCapabilities(CIMProvider2):
         i = settingManager.generateId()
         setting = {
                 'InstanceID': str(i),
-                'ChangeableType': pywbem.Uint16(1), #Cura_StorageSetting.Values.ChangeableType.Changeable___Transient,
+                'ChangeableType': pywbem.Uint16(1), #LMI_StorageSetting.Values.ChangeableType.Changeable___Transient,
                 'ElementName': str(i),
                 'Caption': '',
                 'Description': ''
@@ -294,4 +294,4 @@ class WrappedStorageCapabilities(CIMProvider2):
                 Default = pywbem.Uint16(2)
                 Goal = pywbem.Uint16(3)
 
-## end of class Cura_StorageCapabilitiesProvider
+## end of class LMI_StorageCapabilitiesProvider

@@ -39,17 +39,17 @@ cliconn = pywbem.WBEMConnection(addr, (user, password))
 cliconn.default_namespace = namespace
 
 # Get all /dev/sd* disks
-disks = cliconn.ExecQuery('WQL', 'SELECT * FROM Cura_LocalDiskExtent WHERE DeviceID LIKE "/dev/sd%"')
+disks = cliconn.ExecQuery('WQL', 'SELECT * FROM LMI_LocalDiskExtent WHERE DeviceID LIKE "/dev/sd%"')
 
 
 # create GPT partition table on them, i.e. call
-# Cura_DiskPartitionConfigurationService.SetPartitionStyle(disk, partitionStyle) 
-# - get reference to Cura_DiskPartitionConfigurationService instance
-partServices = cliconn.EnumerateInstanceNames('Cura_DiskPartitionConfigurationService')
+# LMI_DiskPartitionConfigurationService.SetPartitionStyle(disk, partitionStyle) 
+# - get reference to LMI_DiskPartitionConfigurationService instance
+partServices = cliconn.EnumerateInstanceNames('LMI_DiskPartitionConfigurationService')
 partService = partServices[0]
 
 # - get reference to PartitionStyle we want to create
-partStyle = cliconn.ExecQuery('WQL', 'SELECT * FROM Cura_DiskPartitionConfigurationCapabilities WHERE InstanceID = "GPT"')[0]
+partStyle = cliconn.ExecQuery('WQL', 'SELECT * FROM LMI_DiskPartitionConfigurationCapabilities WHERE InstanceID = "GPT"')[0]
 
 for disk in disks:
     # - call partService.SetPartitionStyle(disk)
@@ -57,35 +57,35 @@ for disk in disks:
     print 'SetPartitionStyle(', disk['DeviceID'], ')=', ret
 
 # create one huge partition on the disks, i.e. call
-# Cura_DiskPartitionConfigurationService.CreateOrModifyPartition(disk)
+# LMI_DiskPartitionConfigurationService.CreateOrModifyPartition(disk)
 for disk in disks: 
     # - call partService.SetPartitionStyle(disk)
     (ret, outparams) = cliconn.InvokeMethod('CreateOrModifyPartition', partService, Extent = disk.path)
     print 'CreateOrModifyPartition(', disk['DeviceID'], ')=', ret
 
 # create RAID out of them, i.e. call
-# Cura_StorageConfigurationService.CreateOrModifyStoragePool(settings, pool)
+# LMI_StorageConfigurationService.CreateOrModifyStoragePool(settings, pool)
 # - find the primordial pool
-pool = cliconn.EnumerateInstanceNames('Cura_PrimordialPool')[0]
-# - find the Cura_StorageConfigurationService
-storageService = cliconn.EnumerateInstanceNames('Cura_StorageConfigurationService')[0]
+pool = cliconn.EnumerateInstanceNames('LMI_PrimordialPool')[0]
+# - find the LMI_StorageConfigurationService
+storageService = cliconn.EnumerateInstanceNames('LMI_StorageConfigurationService')[0]
 # - find (or create) appropriate setting
-setting = cliconn.ExecQuery('WQL', 'SELECT * FROM Cura_StorageSetting WHERE InstanceID = "STATIC:RAID%s"' % level)[0]
+setting = cliconn.ExecQuery('WQL', 'SELECT * FROM LMI_StorageSetting WHERE InstanceID = "STATIC:RAID%s"' % level)[0]
 (ret, outparams) = cliconn.InvokeMethod('CreateOrModifyStoragePool', storageService, Goal = setting.path, InPools = [pool])
 print 'CreateOrModifyStoragePool()=', ret
 print 'created pool:', outparams['Pool']
 myRaidPool = outparams['Pool']
 
 # allocate LogicalDisk out of the pool, i.e. call
-# Cura_StorageConfigurationService.CreateOrModifyElementFromStoragePool(pool)
+# LMI_StorageConfigurationService.CreateOrModifyElementFromStoragePool(pool)
 (ret, outparams) = cliconn.InvokeMethod('CreateOrModifyElementFromStoragePool', storageService, InPool = myRaidPool, ElementType = pywbem.Uint16(4)) # 4 = create LogicalDisk
 print 'CreateOrModifyElementFromStoragePool()=', ret
 print 'created element:', outparams['TheElement']
 myRaidDisk = outparams['TheElement']
 
 # create a filesystem on the RAID, i.e. call
-# Cura_FileSystemConfigurationService.CreateFileSystem
-# - find the Cura_FileSystemConfigurationService
-fsService = cliconn.EnumerateInstanceNames('Cura_FileSystemConfigurationService')[0]
+# LMI_FileSystemConfigurationService.CreateFileSystem
+# - find the LMI_FileSystemConfigurationService
+fsService = cliconn.EnumerateInstanceNames('LMI_FileSystemConfigurationService')[0]
 (ret, outparams) = cliconn.InvokeMethod('CreateFileSystem', fsService, InExtent = myRaidDisk)
-print 'Cura_FileSystemConfigurationService()=', ret
+print 'LMI_FileSystemConfigurationService()=', ret

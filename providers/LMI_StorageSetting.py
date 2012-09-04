@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_StorageSetting
+"""Python Provider for LMI_StorageSetting
 
-Instruments the CIM class Cura_StorageSetting
+Instruments the CIM class LMI_StorageSetting
 
 """
 
@@ -25,8 +25,8 @@ from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
-class Cura_StorageSetting(CIMProvider2):
-    """Instrument the CIM class Cura_StorageSetting 
+class LMI_StorageSetting(CIMProvider2):
+    """Instrument the CIM class LMI_StorageSetting 
 
     StorageSetting is roughly equivalent to a Service Level Agreement (SLA)
     It defines the characteristics, qualities of service and goals when
@@ -388,11 +388,11 @@ class Cura_StorageSetting(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Reserved = 32768..65535
 
-## end of class Cura_StorageSettingProvider
+## end of class LMI_StorageSettingProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_storagesetting_prov = Cura_StorageSetting(env)  
-    return {'Cura_StorageSetting': cura_storagesetting_prov} 
+    LMI_storagesetting_prov = LMI_StorageSetting(env)  
+    return {'LMI_StorageSetting': LMI_storagesetting_prov} 

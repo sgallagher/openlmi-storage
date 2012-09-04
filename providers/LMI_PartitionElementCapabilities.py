@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_HostedStoragePool
+"""Python Provider for LMI_PartitionElementCapabilities
 
-Instruments the CIM class Cura_HostedStoragePool
+Instruments the CIM class LMI_PartitionElementCapabilities
 
 """
 
@@ -25,12 +25,11 @@ from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
-class Cura_HostedStoragePool(CIMProvider2):
-    """Instrument the CIM class Cura_HostedStoragePool 
+class LMI_PartitionElementCapabilities(CIMProvider2):
+    """Instrument the CIM class LMI_PartitionElementCapabilities 
 
-    HostedStoragePool is a specialization of HostedResourcePool association
-    that establishes that the StoragePool is defined in the context of the
-    System.
+    Association between DiskPartitionConfigurationCapabilities and
+    DiskPartitionConfigurationService.
     
     """
 
@@ -67,10 +66,7 @@ class Cura_HostedStoragePool(CIMProvider2):
                 % self.__class__.__name__)
         
 
-        # TODO fetch system resource matching the following keys:
-        #   model['GroupComponent']
-        #   model['PartComponent']
-
+        # TODO: checking
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -103,20 +99,19 @@ class Cura_HostedStoragePool(CIMProvider2):
         # Prime model.path with knowledge of the keys, so key values on
         # the CIMInstanceName (model.path) will automatically be set when
         # we set property values on the model. 
-        model.path.update({'GroupComponent': None, 'PartComponent': None})
+        model.path.update({'Capabilities': None, 'ManagedElement': None})
         
         ch = env.get_cimom_handle()
-        # get the only one (?) CIM_ComputerSystem
-        systems = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Linux_ComputerSystem')
-        system = systems.next()
+        # get the only one LMI_DiskPartitionConfigurationService
+        services = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_DiskPartitionConfigurationService')
+        service = services.next()
         
-        # find all pools on the system starting with 'Cura' and associate them with the system
-        pools = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='CIM_StoragePool')
-        for pool in pools:
-            if pool.classname.startswith('Cura'):
-                model['PartComponent'] = pool
-                model['GroupComponent'] = system
-                yield model
+        # find all services on the system starting with 'Cura' and associate them with the system
+        capabilities = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_DiskPartitionConfigurationCapabilities')
+        for capability in capabilities:
+            model['Capabilities'] = capability
+            model['ManagedElement'] = service
+            yield model
 
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
@@ -249,19 +244,25 @@ class Cura_HostedStoragePool(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_System') or \
+                          super='CIM_Capabilities') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_StoragePool'):
+                               super='CIM_ManagedElement'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
                           
+    class Values(object):
+        class Characteristics(object):
+            Default = pywbem.Uint16(2)
+            Current = pywbem.Uint16(3)
+            # DMTF_Reserved = ..
+            # Vendor_Specific = 32768..65535
 
-## end of class Cura_HostedStoragePoolProvider
+## end of class LMI_PartitionElementCapabilitiesProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_hostedstoragepool_prov = Cura_HostedStoragePool(env)  
-    return {'Cura_HostedStoragePool': cura_hostedstoragepool_prov} 
+    LMI_partitionelementcapabilities_prov = LMI_PartitionElementCapabilities(env)  
+    return {'LMI_PartitionElementCapabilities': LMI_partitionelementcapabilities_prov} 

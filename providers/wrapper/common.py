@@ -30,11 +30,11 @@ anaconda_log.init()
 import pyanaconda.storage
 import pyanaconda.platform
 
-CURA_SYSTEM_CLASS_NAME='Linux_ComputerSystem'
-CURA_SYSTEM_NAME=socket.getfqdn()
-CURA_NAMESPACE='root/cimv2'
+LMI_SYSTEM_CLASS_NAME='Linux_ComputerSystem'
+LMI_SYSTEM_NAME=socket.getfqdn()
+LMI_NAMESPACE='root/cimv2'
 
-__all__ = ['initAnaconda', 'WrapperManager', 'wrapperManager', 'storage', 'CURA_SYSTEM_CLASS_NAME', 'CURA_SYSTEM_NAME', 'CURA_NAMESPACE', 'storage', 'curaConfig', 'settingManager', 'logicalDiskManager', 'initAnaconda']
+__all__ = ['initAnaconda', 'WrapperManager', 'wrapperManager', 'storage', 'LMI_SYSTEM_CLASS_NAME', 'LMI_SYSTEM_NAME', 'LMI_NAMESPACE', 'storage', 'curaConfig', 'settingManager', 'logicalDiskManager', 'initAnaconda']
 
 def initAnaconda(forceReload = False):
     """ (Re-)load Anaconda storage, i.e. re-scan local storage devices.
@@ -133,7 +133,7 @@ class WrapperManager(object):
             
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
 
@@ -147,7 +147,7 @@ class WrapperManager(object):
                 from provided devices.
                 
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyStoragePool
         """
         highest = None
         highestScore = 0
@@ -157,7 +157,7 @@ class WrapperManager(object):
                 highest = wrapper
         if highest:
             return highest.createPool(devices, setting, size, name)
-        raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Cannot create any pool for given Cura_StorageSetting.')
+        raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Cannot create any pool for given LMI_StorageSetting.')
 
 
 ##############################################################################
@@ -419,8 +419,8 @@ class SettingManager(object):
     def getSettingName(self, setting):
         """ Return CIMInstanceName for given setting.
         """
-        return pywbem.CIMInstanceName(classname='Cura_StorageSetting',
-                        namespace = CURA_NAMESPACE,
+        return pywbem.CIMInstanceName(classname='LMI_StorageSetting',
+                        namespace = LMI_NAMESPACE,
                         keybindings = {
                                 'InstanceID' : setting['InstanceID'],
                         })

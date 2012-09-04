@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_Associated*ComponentExtent"""
+"""Python Provider for LMI_Associated*ComponentExtent"""
 
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
 class WrappedAssociatedComponentExtent(CIMProvider2):
-    """Instrument the CIM class Cura_Associated*ComponentExtent"""
+    """Instrument the CIM class LMI_Associated*ComponentExtent"""
 
     def __init__ (self, env, wrapper):
         logger = env.get_logger()
@@ -76,4 +76,4 @@ class WrappedAssociatedComponentExtent(CIMProvider2):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
                           
-## end of class Cura_AssociatedRAIDComponentExtentProvider
+## end of class LMI_AssociatedRAIDComponentExtentProvider

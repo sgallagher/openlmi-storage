@@ -52,21 +52,21 @@ def initialize():
     
 # wrapper -> dictionary for get_providers
 def add_providers(env, wrapper):
-    cura_raidallocatedfromstoragepool_prov = WrappedAllocatedFromStoragePool(env, wrapper)
-    cura_raidcompositeextent_prov = WrappedExtent(env, wrapper)  
-    cura_raidcompositeextentbasedon_prov = WrappedExtentBasedOn(env, wrapper)  
-    cura_raidpool_prov = WrappedPool(env, wrapper)  
-    cura_raidstoragecapabilities_prov = WrappedStorageCapabilities(env, wrapper)  
-    cura_raidstorageelementcapabilities_prov = WrappedStorageElementCapabilities(env, wrapper)  
-    cura_associatedraidcomponentextent_prov = WrappedAssociatedComponentExtent(env, wrapper)
+    LMI_raidallocatedfromstoragepool_prov = WrappedAllocatedFromStoragePool(env, wrapper)
+    LMI_raidcompositeextent_prov = WrappedExtent(env, wrapper)  
+    LMI_raidcompositeextentbasedon_prov = WrappedExtentBasedOn(env, wrapper)  
+    LMI_raidpool_prov = WrappedPool(env, wrapper)  
+    LMI_raidstoragecapabilities_prov = WrappedStorageCapabilities(env, wrapper)  
+    LMI_raidstorageelementcapabilities_prov = WrappedStorageElementCapabilities(env, wrapper)  
+    LMI_associatedraidcomponentextent_prov = WrappedAssociatedComponentExtent(env, wrapper)
     return{
-            wrapper.allocatedFromClassName: cura_raidallocatedfromstoragepool_prov,
-            wrapper.extentClassName: cura_raidcompositeextent_prov,
-            wrapper.basedOnClassName: cura_raidcompositeextentbasedon_prov,
-            wrapper.poolClassName: cura_raidpool_prov,
-            wrapper.capabilitiesClassName: cura_raidstoragecapabilities_prov,
-            wrapper.elementCapabilitiesClassName: cura_raidstorageelementcapabilities_prov,
-            wrapper.associatedExtentClassName: cura_associatedraidcomponentextent_prov
+            wrapper.allocatedFromClassName: LMI_raidallocatedfromstoragepool_prov,
+            wrapper.extentClassName: LMI_raidcompositeextent_prov,
+            wrapper.basedOnClassName: LMI_raidcompositeextentbasedon_prov,
+            wrapper.poolClassName: LMI_raidpool_prov,
+            wrapper.capabilitiesClassName: LMI_raidstoragecapabilities_prov,
+            wrapper.elementCapabilitiesClassName: LMI_raidstorageelementcapabilities_prov,
+            wrapper.associatedExtentClassName: LMI_associatedraidcomponentextent_prov
     }
 
 # cmpi-bindings function to get all providers in this module

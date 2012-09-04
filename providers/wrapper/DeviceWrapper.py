@@ -113,71 +113,71 @@ class DeviceWrapper(object):
     def poolClassName(self):
         """
             CIM class name of device's CIM_StoragePool class.
-            By default, Cura_<prefix>Pool.
+            By default, LMI_<prefix>Pool.
             
             Override this method if different CIM class name is required.
         """
-        return 'Cura_' + self.prefix + 'Pool'
+        return 'LMI_' + self.prefix + 'Pool'
     
     @property
     def extentClassName(self):
         """
             CIM class name of device's CIM_StorageExtent class.
-            By default, Cura_<prefix>Extent.
+            By default, LMI_<prefix>Extent.
             
             Override this method if different CIM class name is required.
         """
-        return 'Cura_' + self.prefix + 'Extent'
+        return 'LMI_' + self.prefix + 'Extent'
 
     @property
     def associatedExtentClassName(self):
         """
             CIM class name of device's CIM_AssociatedComponentExtent class.
-            By default, Cura_Associated<prefix>ComponentExtent.
+            By default, LMI_Associated<prefix>ComponentExtent.
             
             Override this method if different CIM class name is required.
         """
-        return 'Cura_Associated' + self.prefix + 'ComponentExtent'
+        return 'LMI_Associated' + self.prefix + 'ComponentExtent'
     
     @property
     def allocatedFromClassName(self):
         """
             CIM class name of device's CIM_AllocatedFromStoragePool class.
-            By default, Cura_<prefix>AllocatedFromStoragePool.
+            By default, LMI_<prefix>AllocatedFromStoragePool.
             
             Override this method if different CIM class name is required.
         """
-        return 'Cura_' + self.prefix + 'AllocatedFromStoragePool'
+        return 'LMI_' + self.prefix + 'AllocatedFromStoragePool'
 
     @property
     def capabilitiesClassName(self):
         """
             CIM class name of device's CIM_StorageCapabilities class.
-            By default, Cura_<prefix>StorageCapabilities.
+            By default, LMI_<prefix>StorageCapabilities.
             
             Override this method if different CIM class name is required.
         """
-        return 'Cura_' + self.prefix + 'StorageCapabilities'
+        return 'LMI_' + self.prefix + 'StorageCapabilities'
 
     @property
     def basedOnClassName(self):
         """
             CIM class name of device's CIM_BasedOn class.
-            By default, Cura_<prefix>StorageCapabilities.
+            By default, LMI_<prefix>StorageCapabilities.
             
             Override this method if different CIM class name is required.
         """
-        return 'Cura_' + self.prefix + 'ExtentBasedOn'
+        return 'LMI_' + self.prefix + 'ExtentBasedOn'
 
     @property
     def elementCapabilitiesClassName(self):
         """
             CIM class name of device's CIM_ElementCapabilities class.
-            By default, Cura_<prefix>StorageElementCapabilities.
+            By default, LMI_<prefix>StorageElementCapabilities.
             
             Override this method if different CIM class name is required.
         """
-        return 'Cura_' + self.prefix + 'StorageElementCapabilities'
+        return 'LMI_' + self.prefix + 'StorageElementCapabilities'
 
     def getDevice(self, instanceName):
         """
@@ -203,8 +203,8 @@ class DeviceWrapper(object):
                 return None
         elif classname == self.extentClassName:
             path = instanceName['DeviceID']
-            if (instanceName['SystemName'] != CURA_SYSTEM_NAME or
-                    instanceName['SystemCreationClassName'] !=CURA_SYSTEM_CLASS_NAME or
+            if (instanceName['SystemName'] != LMI_SYSTEM_NAME or
+                    instanceName['SystemCreationClassName'] !=LMI_SYSTEM_CLASS_NAME or
                     instanceName['CreationClassName'] != self.extentClassName):
                 return None
         elif classname == self.associatedExtentClassName:
@@ -320,7 +320,7 @@ class DeviceWrapper(object):
         poolId = self.getPoolId(device)
         if poolId is None:
             return None
-        return pywbem.CIMInstanceName(classname=self.poolClassName, namespace=CURA_NAMESPACE,
+        return pywbem.CIMInstanceName(classname=self.poolClassName, namespace=LMI_NAMESPACE,
                 keybindings = {
                     'InstanceID' : poolId,
         })
@@ -372,10 +372,10 @@ class DeviceWrapper(object):
         extentId = self.getDeviceId(device)
         if extentId is None:
             return None
-        return pywbem.CIMInstanceName(classname=self.extentClassName, namespace=CURA_NAMESPACE,
+        return pywbem.CIMInstanceName(classname=self.extentClassName, namespace=LMI_NAMESPACE,
                 keybindings = {
-                        'SystemName' : CURA_SYSTEM_NAME,    
-                        'SystemCreationClassName': CURA_SYSTEM_CLASS_NAME,    
+                        'SystemName' : LMI_SYSTEM_NAME,    
+                        'SystemCreationClassName': LMI_SYSTEM_CLASS_NAME,    
                         'CreationClassName': self.extentClassName,    
                          'DeviceID': extentId
                 })
@@ -443,7 +443,7 @@ class DeviceWrapper(object):
 
             Return None if there is no pool for given device (e.g. in LVWrapper).
         """
-        return pywbem.CIMInstanceName(classname=self.capabilitiesClassName, namespace=CURA_NAMESPACE,
+        return pywbem.CIMInstanceName(classname=self.capabilitiesClassName, namespace=LMI_NAMESPACE,
                 keybindings = {
                     'InstanceID' : self.getCapabilitiesId(device),
         })
@@ -719,12 +719,12 @@ class DeviceWrapper(object):
             
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
             
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyStoragePool
 
             **Subclasses must override this method.**
         """
@@ -740,7 +740,7 @@ class DeviceWrapper(object):
             
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
 
@@ -754,13 +754,13 @@ class DeviceWrapper(object):
                 from provided devices.
                 
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyStoragePool
 
             **Subclasses must override this method.**
         """
         raise NotImplementedError()
 
-    CREATE_DISK_SIZE_NOT_SUPPORTED = pywbem.Uint32(4097) #Cura_StorageConfigurationService.Values.CreateOrModifyElementFromStoragePool.Size_Not_Supported
+    CREATE_DISK_SIZE_NOT_SUPPORTED = pywbem.Uint32(4097) #LMI_StorageConfigurationService.Values.CreateOrModifyElementFromStoragePool.Size_Not_Supported
     CREATE_DISK_COMPLETED_OK = pywbem.Uint32(0)
 
 
@@ -772,7 +772,7 @@ class DeviceWrapper(object):
             that *Min, Max and Goal properties of the setting can be applied
             to the given capabilities.
             
-            :param setting: CIM Instance of Cura_StorageSetting.
+            :param setting: CIM Instance of LMI_StorageSetting.
             :param minParam: Name of *Min property of the setting, e.g.
                 'DataRedundancyMin'.
             :param maxParam: Name of *Max property of the setting, e.g.
@@ -812,7 +812,7 @@ class DeviceWrapper(object):
             Allocate a CIM_LogicalDisk from a pool represented by given
             Anaconda device.
             
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param device: Anaconda storage device, representing the pool to
                 allocate from. The pool is managed by this wrapper.
             :param size: Expected size of the resulting LogicalDisk.
@@ -828,10 +828,10 @@ class DeviceWrapper(object):
                 be created from provided pool.
 
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyElementFromStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyElementFromStoragePool
 
             The default implementation just creates new auxiliar
-            Cura_LogicalDisk instance. This instance is persistent, i.e.
+            LMI_LogicalDisk instance. This instance is persistent, i.e.
             survives Cura restart. Only whole device can be allocated,
             
             Override this method, if different behavior is expected (e.g.
@@ -861,10 +861,10 @@ class DeviceWrapper(object):
         # expose the device
         logicalDiskManager.setExpose(device, True)
         # compute TheElement return value
-        element = pywbem.CIMInstanceName(classname='Cura_LogicalDisk', namespace=CURA_NAMESPACE,
-                keybindings = {"SystemName" : CURA_SYSTEM_NAME,
-                    "SystemCreationClassName" : CURA_SYSTEM_CLASS_NAME,
-                    "CreationClassName" : 'Cura_LogicalDisk',
+        element = pywbem.CIMInstanceName(classname='LMI_LogicalDisk', namespace=LMI_NAMESPACE,
+                keybindings = {"SystemName" : LMI_SYSTEM_NAME,
+                    "SystemCreationClassName" : LMI_SYSTEM_CLASS_NAME,
+                    "CreationClassName" : 'LMI_LogicalDisk',
                     "DeviceID" : device.path
                 })
         return (self.CREATE_DISK_COMPLETED_OK, element, deviceSize)

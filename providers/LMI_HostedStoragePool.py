@@ -15,22 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_InstalledParititionTable
+"""Python Provider for LMI_HostedStoragePool
 
-Instruments the CIM class Cura_InstalledParititionTable
+Instruments the CIM class LMI_HostedStoragePool
 
 """
 
 from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-import util.partitioning
 
-class Cura_InstalledParititionTable(CIMProvider2):
-    """Instrument the CIM class Cura_InstalledParititionTable 
+class LMI_HostedStoragePool(CIMProvider2):
+    """Instrument the CIM class LMI_HostedStoragePool 
 
-    This association describes the attributes of a partition table
-    installed in an extent. The attributes are in the capabilities class.
+    HostedStoragePool is a specialization of HostedResourcePool association
+    that establishes that the StoragePool is defined in the context of the
+    System.
     
     """
 
@@ -68,8 +68,8 @@ class Cura_InstalledParititionTable(CIMProvider2):
         
 
         # TODO fetch system resource matching the following keys:
-        #   model['Dependent']
-        #   model['Antecedent']
+        #   model['GroupComponent']
+        #   model['PartComponent']
 
         return model
 
@@ -103,43 +103,20 @@ class Cura_InstalledParititionTable(CIMProvider2):
         # Prime model.path with knowledge of the keys, so key values on
         # the CIMInstanceName (model.path) will automatically be set when
         # we set property values on the model. 
-        model.path.update({'Dependent': None, 'Antecedent': None})
+        model.path.update({'GroupComponent': None, 'PartComponent': None})
         
-        for disk in storage.disks:
-            print 'label:', disk.format.labelType
-            if disk.format.labelType == util.partitioning.LABEL_GPT:
-                partType = util.partitioning.TYPE_GPT
-            else: 
-                partType = util.partitioning.TYPE_MBR
-            model['Dependent'] = pywbem.CIMInstanceName(classname='Cura_LocalDiskExtent',
-                    namespace=CURA_NAMESPACE,
-                    keybindings={'CreationClassName': 'Cura_LocalDiskExtent',
-                                 'DeviceID': disk.path,
-                                 'SystemCreationClassName': CURA_SYSTEM_CLASS_NAME,
-                                 'SystemName': CURA_SYSTEM_NAME
-                    })    
-            model['Antecedent'] = pywbem.CIMInstanceName(classname='Cura_DiskPartitionConfigurationCapabilities',
-                    namespace=CURA_NAMESPACE,
-                    keybindings={'InstanceID': partType
-                    })
-            yield model
+        ch = env.get_cimom_handle()
+        # get the only one (?) CIM_ComputerSystem
+        systems = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='Linux_ComputerSystem')
+        system = systems.next()
         
-        for part in storage.partitions:
-            if part.isExtended:
-                model['Dependent'] = pywbem.CIMInstanceName(classname='Cura_DiskPartition',
-                    namespace=CURA_NAMESPACE,
-                    keybindings={'CreationClassName': 'Cura_DiskPartition',
-                                 'DeviceID': part.path,
-                                 'SystemCreationClassName': CURA_SYSTEM_CLASS_NAME,
-                                 'SystemName': CURA_SYSTEM_NAME
-                    })    
-                model['Antecedent'] = pywbem.CIMInstanceName(classname='Cura_DiskPartitionConfigurationCapabilities',
-                    namespace=CURA_NAMESPACE,
-                    keybindings={'InstanceID': util.partitioning.TYPE_EMBR
-                    })
+        # find all pools on the system starting with 'Cura' and associate them with the system
+        pools = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='CIM_StoragePool')
+        for pool in pools:
+            if pool.classname.startswith('Cura'):
+                model['PartComponent'] = pool
+                model['GroupComponent'] = system
                 yield model
-                
-
 
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
@@ -272,18 +249,19 @@ class Cura_InstalledParititionTable(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_StorageExtent') or \
+                          super='CIM_System') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_DiskPartitionConfigurationCapabilities'):
+                               super='CIM_StoragePool'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
                           
-## end of class Cura_InstalledParititionTableProvider
+
+## end of class LMI_HostedStoragePoolProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_installedparititiontable_prov = Cura_InstalledParititionTable(env)  
-    return {'Cura_InstalledParititionTable': cura_installedparititiontable_prov} 
+    LMI_hostedstoragepool_prov = LMI_HostedStoragePool(env)  
+    return {'LMI_HostedStoragePool': LMI_hostedstoragepool_prov} 

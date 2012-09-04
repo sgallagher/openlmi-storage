@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_*StorageElementCapabilities"""
+"""Python Provider for LMI_*StorageElementCapabilities"""
 
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
 class WrappedStorageElementCapabilities(CIMProvider2):
-    """Instrument the CIM class Cura_RAIDStorageElementCapabilities""" 
+    """Instrument the CIM class LMI_RAIDStorageElementCapabilities""" 
 
     def __init__ (self, env, wrapper):
         logger = env.get_logger()
@@ -82,4 +82,4 @@ class WrappedStorageElementCapabilities(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Specific = 32768..65535
 
-## end of class Cura_RAIDStorageElementCapabilitiesProvider
+## end of class LMI_RAIDStorageElementCapabilitiesProvider

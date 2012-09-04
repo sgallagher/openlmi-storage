@@ -15,17 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_GlobalStorageConfigurationCapabilities
+"""Python Provider for LMI_GlobalStorageConfigurationCapabilities
 
-Instruments the CIM class Cura_GlobalStorageConfigurationCapabilities
+Instruments the CIM class LMI_GlobalStorageConfigurationCapabilities
 
 """
 
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
-class Cura_GlobalStorageConfigurationCapabilities(CIMProvider2):
-    """Instrument the CIM class Cura_GlobalStorageConfigurationCapabilities 
+class LMI_GlobalStorageConfigurationCapabilities(CIMProvider2):
+    """Instrument the CIM class LMI_GlobalStorageConfigurationCapabilities 
 
     A subclass of Capabilities that defines the Capabilities of a
     StorageConfigurationService. An instance of
@@ -225,7 +225,7 @@ class Cura_GlobalStorageConfigurationCapabilities(CIMProvider2):
     def cim_method_creategoalsettings(self, env, object_name,
                                       param_supportedgoalsettings=None,
                                       param_templategoalsettings=None):
-        """Implements Cura_GlobalStorageConfigurationCapabilities.CreateGoalSettings()
+        """Implements LMI_GlobalStorageConfigurationCapabilities.CreateGoalSettings()
 
         Method to create a set of supported SettingData elements, from two
         sets of SettingData elements, provided by the caller. \nCreateGoal
@@ -568,10 +568,10 @@ class Cura_GlobalStorageConfigurationCapabilities(CIMProvider2):
             Multiple_Storage_Element_Return = pywbem.Uint16(23)
             # DMTF_Reserved = ..
 
-## end of class Cura_GlobalStorageConfigurationCapabilitiesProvider
+## end of class LMI_GlobalStorageConfigurationCapabilitiesProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
-    cura_globalstorageconfigurationcapabilities_prov = Cura_GlobalStorageConfigurationCapabilities(env)  
-    return {'Cura_GlobalStorageConfigurationCapabilities': cura_globalstorageconfigurationcapabilities_prov} 
+    LMI_globalstorageconfigurationcapabilities_prov = LMI_GlobalStorageConfigurationCapabilities(env)  
+    return {'LMI_GlobalStorageConfigurationCapabilities': LMI_globalstorageconfigurationcapabilities_prov} 

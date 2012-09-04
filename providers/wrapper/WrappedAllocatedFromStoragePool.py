@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_*AllocatedFromStoragePool"""
+"""Python Provider for LMI_*AllocatedFromStoragePool"""
 
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
 class WrappedAllocatedFromStoragePool(CIMProvider2):
-    """Instrument the CIM class Cura_*AllocatedFromStoragePool"""
+    """Instrument the CIM class LMI_*AllocatedFromStoragePool"""
 
     def __init__ (self, env, wrapper):
         logger = env.get_logger()
@@ -75,4 +75,4 @@ class WrappedAllocatedFromStoragePool(CIMProvider2):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
                           
-## end of class Cura_RAIDAllocatedFromStoragePoolProvider
+## end of class LMI_RAIDAllocatedFromStoragePoolProvider

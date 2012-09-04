@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_LogicalDiskAllocatedFromStoragePool
+"""Python Provider for LMI_LogicalDiskBasedOn
 
-Instruments the CIM class Cura_LogicalDiskAllocatedFromStoragePool
+Instruments the CIM class LMI_LogicalDiskBasedOn
 
 """
 
@@ -25,13 +25,16 @@ from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
-class Cura_LogicalDiskAllocatedFromStoragePool(CIMProvider2):
-    """Instrument the CIM class Cura_LogicalDiskAllocatedFromStoragePool 
+class LMI_LogicalDiskBasedOn(CIMProvider2):
+    """Instrument the CIM class LMI_LogicalDiskBasedOn 
 
-    AllocatedFromStoragePool is an association describing how
-    LogicalElements are allocated from underlying StoragePools. These
-    elements typically would be subclasses of StorageExtents or
-    StoragePools.
+    BasedOn is an association describing how StorageExtents can be
+    assembled from lower level Extents. For example, ProtectedSpaceExtents
+    are parts of PhysicalExtents, while VolumeSets are assembled from one
+    or more Physical or ProtectedSpaceExtents. As another example,
+    CacheMemory can be defined independently and realized in a
+    PhysicalElement or can be \'based on\' Volatile or
+    NonVolatileStorageExtents.
     
     """
 
@@ -68,19 +71,18 @@ class Cura_LogicalDiskAllocatedFromStoragePool(CIMProvider2):
                 % self.__class__.__name__)
         
 
-        baseWrapper = wrapperManager.getWrapperForInstance(model['Antecedent'])
         diskName = model['Dependent']
-        disk = storage.devicetree.getDeviceByPath(diskName['DeviceID'])
-        if (diskName['SystemName'] != CURA_SYSTEM_NAME
-                or diskName['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or diskName['CreationClassName'] != 'Cura_LogicalDisk'):
+        if (diskName['SystemName'] != LMI_SYSTEM_NAME
+                or diskName['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or diskName['CreationClassName'] != 'LMI_LogicalDisk'):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong keys.')
-        if not baseWrapper.wrapsDevice(disk):
+        base = wrapperManager.getDevice(model['Antecedent'])
+        if diskName['DeviceID'] != base.path:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'The antecedent is not associated to the dependent.')
 
-        model['SpaceConsumed'] = pywbem.Uint64(disk.partedDevice.sectorSize * disk.partedDevice.length)
-        #model['SpaceLimit'] = pywbem.Uint64(0) # TODO 
-        #model['SpaceLimitWarningThreshold'] = pywbem.Uint16() # TODO 
+        #model['EndingAddress'] = pywbem.Uint64() # TODO 
+        #model['OrderIndex'] = pywbem.Uint16() # TODO 
+        #model['StartingAddress'] = pywbem.Uint64() # TODO 
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -121,10 +123,11 @@ class Cura_LogicalDiskAllocatedFromStoragePool(CIMProvider2):
             wrapper = wrapperManager.getWrapperForDevice(device)
             if wrapper is None:
                 continue
-            model['Antecedent'] = wrapper.getPoolName(device)
-            model['Dependent'] = wrapper.getExtentName(device)
-            model['Dependent']['CreationClassName'] = 'Cura_LogicalDisk'  
-            model['Dependent'].classname = 'Cura_LogicalDisk'  
+            model['Antecedent'] = wrapper.getExtentName(device)
+            diskname = model['Antecedent'].copy()
+            diskname['CreationClassName'] = 'LMI_LogicalDisk'
+            diskname.classname = 'LMI_LogicalDisk'
+            model['Dependent'] = diskname
             if keys_only:
                 yield model
             else:
@@ -266,18 +269,18 @@ class Cura_LogicalDiskAllocatedFromStoragePool(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_LogicalElement') or \
+                          super='CIM_StorageExtent') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_StoragePool'):
+                               super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
                           
-## end of class Cura_LogicalDiskAllocatedFromStoragePoolProvider
+## end of class LMI_LogicalDiskBasedOnProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_logicaldiskallocatedfromstoragepool_prov = Cura_LogicalDiskAllocatedFromStoragePool(env)  
-    return {'Cura_LogicalDiskAllocatedFromStoragePool': cura_logicaldiskallocatedfromstoragepool_prov} 
+    LMI_logicaldiskbasedon_prov = LMI_LogicalDiskBasedOn(env)  
+    return {'LMI_LogicalDiskBasedOn': LMI_logicaldiskbasedon_prov} 

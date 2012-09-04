@@ -33,17 +33,17 @@ class PrimordialWrapper(DeviceWrapper):
         For each Anaconda PartitionDevices, following CIM instances are
         created:
 
-        - one Cura_PartitionExtent with Cura_AssociatedPrimordialExtent
-          association to its Cura_PrimordialPool
-        - one Cura_PartitionExtentBasedOnPartition associations to underlying
+        - one LMI_PartitionExtent with LMI_AssociatedPrimordialExtent
+          association to its LMI_PrimordialPool
+        - one LMI_PartitionExtentBasedOnPartition associations to underlying
           DiskPartition (see :doc:`smis-partitions` for details).
 
         There is no (StoragePool)AllocatedFrom(StoragePool) association, because
         the primordial pool is the base bool and is not allocated from any pool.
 
-        There is only one instance of Cura_PrimordialPool and
-        Cura_PrimordialStorageCapabilities, connected together with
-        Cura_PrimordialStorageElementCapabilities association.
+        There is only one instance of LMI_PrimordialPool and
+        LMI_PrimordialStorageCapabilities, connected together with
+        LMI_PrimordialStorageElementCapabilities association.
 
         In case there is no partition on the system, an instance of the
         primordial pool must still exist. Therefore special device
@@ -60,9 +60,9 @@ class PrimordialWrapper(DeviceWrapper):
             CIM class name of device's CIM_StorageExtent class.
 
             The default name is not suitable, this wrapper creates
-            Cura_PartitionExtent instances.
+            LMI_PartitionExtent instances.
         """
-        return 'Cura_PartitionExtent'
+        return 'LMI_PartitionExtent'
 
     @property
     def basedOnClassName(self):
@@ -70,9 +70,9 @@ class PrimordialWrapper(DeviceWrapper):
             CIM class name of device's CIM_BasedOn class.
 
             The default name is not suitable, this wrapper creates
-            Cura_PartitionExtentBasedOnPartition instances.
+            LMI_PartitionExtentBasedOnPartition instances.
         """
-        return 'Cura_PartitionExtentBasedOnPartition'
+        return 'LMI_PartitionExtentBasedOnPartition'
 
     @property
     def associatedExtentClassName(self):
@@ -80,13 +80,13 @@ class PrimordialWrapper(DeviceWrapper):
             CIM class name of device's CIM_AssociatedComponentExtent class.
 
             The default name is not suitable, this wrapper creates
-            Cura_AssociatedPrimordialExtent instances.
+            LMI_AssociatedPrimordialExtent instances.
         """
-        return 'Cura_AssociatedPrimordialExtent'
+        return 'LMI_AssociatedPrimordialExtent'
 
     def getPoolId(self, device):
         """
-            Return Cura_PrimordialPool.InstanceID for given Anaconda device.
+            Return LMI_PrimordialPool.InstanceID for given Anaconda device.
 
             :param device: Concrete Anaconda storage device, whose InstanceID
                 should be returned.
@@ -114,7 +114,7 @@ class PrimordialWrapper(DeviceWrapper):
             (StoragePool)AllocatedFrom(StoragePool) instances won't be created.
 
             Please notice that enumBasedOns method is overriden in this wrapper,
-            therefore Cura_PartitionExtentBasedOnPartition instances will be
+            therefore LMI_PartitionExtentBasedOnPartition instances will be
             created.
 
             :param device: Anaconda PartitionDevice to get list of
@@ -124,7 +124,7 @@ class PrimordialWrapper(DeviceWrapper):
 
     def enumPools(self,  env, model, keys_only):
         """
-            Enumerate all Cura_PrimordialPools.
+            Enumerate all LMI_PrimordialPools.
 
             There is only one pool for whole system, therefore only one
             CIMInstance is returned.
@@ -137,7 +137,7 @@ class PrimordialWrapper(DeviceWrapper):
 
     def getPoolInstance(self, env, model, device):
         """
-            Fill instance of Cura_PrimordialPool. There is one instance for whole
+            Fill instance of LMI_PrimordialPool. There is one instance for whole
             system, so we ignore the device parameter.
         """
         # Compute managed space
@@ -189,7 +189,7 @@ class PrimordialWrapper(DeviceWrapper):
 
     def getExtentInstance(self, env, model, device):
         """
-            Fill instance of Cura_PartitionExtent for given Anaconda
+            Fill instance of LMI_PartitionExtent for given Anaconda
             PartitionDevice.
         """
         #model['Access'] = self.Values.Access.<VAL>
@@ -264,42 +264,42 @@ class PrimordialWrapper(DeviceWrapper):
 
     def enumBasedOns(self, env, model, keys_only):
         """
-            Enumerate Cura_PartitionExtentBasedOnPartition instances. The default
-            implementation would try to connect Cura_PartitionExtents with their
-            base devices, but since the base device (Cura_DiskPartition) is not
+            Enumerate LMI_PartitionExtentBasedOnPartition instances. The default
+            implementation would try to connect LMI_PartitionExtents with their
+            base devices, but since the base device (LMI_DiskPartition) is not
             managed by any wrapper, the default won't help here and we must
             enumerate the instances manually.
 
-            Upcall to CIMOM is used to get all Cura_DiskPartition instances.
+            Upcall to CIMOM is used to get all LMI_DiskPartition instances.
         """
         # won't help here and special one is  needed
         ch = env.get_cimom_handle()
         # find all partitions on the system starting with 'Cura'
-        partitions = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='CIM_GenericDiskPartition')
+        partitions = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='CIM_GenericDiskPartition')
         for partition in partitions:
             if not partition['CreationClassName'].startswith('Cura'):
                 continue
 
-            model['Dependent'] = pywbem.CIMInstanceName(classname='Cura_PartitionExtent',
-                    namespace=CURA_NAMESPACE,
-                    keybindings={'CreationClassName': 'Cura_PartitionExtent',
+            model['Dependent'] = pywbem.CIMInstanceName(classname='LMI_PartitionExtent',
+                    namespace=LMI_NAMESPACE,
+                    keybindings={'CreationClassName': 'LMI_PartitionExtent',
                                  'DeviceID': partition['DeviceID'],
-                                 'SystemCreationClassName': CURA_SYSTEM_CLASS_NAME,
-                                 'SystemName': CURA_SYSTEM_NAME
+                                 'SystemCreationClassName': LMI_SYSTEM_CLASS_NAME,
+                                 'SystemName': LMI_SYSTEM_NAME
                     })
             model['Antecedent'] = partition
             yield model
 
     def getBasedOnInstance(self, env, model, device, base):
         """
-            Fill instance of Cura_PartitionExtentBasedOnPartition instance for
+            Fill instance of LMI_PartitionExtentBasedOnPartition instance for
             given Anaconda PartitionDevice.
         """
         return model
 
     def getCapabilitiesId(self, device):
         """
-            Return Cura_PrimordialStorageCapabilities.InstanceID for given
+            Return LMI_PrimordialStorageCapabilities.InstanceID for given
             PartitionDevice.
 
             :param device: PartitionDevice, whose InstanceID
@@ -312,7 +312,7 @@ class PrimordialWrapper(DeviceWrapper):
 
     def enumCapabilities(self, env, model, keys_only):
         """
-            Enumerate all Cura_PrimordialStorageCapabilities.
+            Enumerate all LMI_PrimordialStorageCapabilities.
 
             There is only one pool for whole system, therefore only one
             CIMInstance is returned.
@@ -325,7 +325,7 @@ class PrimordialWrapper(DeviceWrapper):
 
     def enumElementCapabilities(self, env, model, keys_only):
         """
-            Enumerate all Cura_PrimordialStorageElementCapabilities.
+            Enumerate all LMI_PrimordialStorageElementCapabilities.
 
             There is only one pool for whole system, therefore only one
             CIMInstance is returned.
@@ -401,8 +401,8 @@ class PrimordialWrapper(DeviceWrapper):
             return wrapperManager.PRIMORDIAL_POOL_DEVICE
         elif classname == self.extentClassName:
             path = instanceName['DeviceID']
-            if (instanceName['SystemName'] != CURA_SYSTEM_NAME or
-                    instanceName['SystemCreationClassName'] !=CURA_SYSTEM_CLASS_NAME or
+            if (instanceName['SystemName'] != LMI_SYSTEM_NAME or
+                    instanceName['SystemCreationClassName'] !=LMI_SYSTEM_CLASS_NAME or
                     instanceName['CreationClassName'] != self.extentClassName):
                 return None
             return storage.devicetree.getDeviceByPath(path)
@@ -444,16 +444,16 @@ class PrimordialWrapper(DeviceWrapper):
             and name.
             
             PrimordialWrapper devices are created by
-            Cura_PartitionConfigurationService, not by
+            LMI_PartitionConfigurationService, not by
             StorageConfigurationService.
         """
         return 0
 
     def createLogicalDisk(self, device, setting, size, name = None):
         """
-            Allocate Cura_LogicalDisk from the primordial pool.
+            Allocate LMI_LogicalDisk from the primordial pool.
             
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param device: Anaconda storage device, representing the pool to
                 allocate from. The pool is managed by this wrapper.
             :param size: Expected size of the resulting LogicalDisk.
@@ -469,7 +469,7 @@ class PrimordialWrapper(DeviceWrapper):
                 be created from provided pool.
 
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyElementFromStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyElementFromStoragePool
         """
         if not name is None:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'ElementName is not supported for allocation fron this pool.')
@@ -509,10 +509,10 @@ class PrimordialWrapper(DeviceWrapper):
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'No free space in the pool.')
         
         logicalDiskManager.setExpose(theElement, True)
-        element = pywbem.CIMInstanceName(classname='Cura_LogicalDisk', namespace=CURA_NAMESPACE,
-                    keybindings = {"SystemName" : CURA_SYSTEM_NAME,
-                        "SystemCreationClassName" : CURA_SYSTEM_CLASS_NAME,
-                        "CreationClassName" : 'Cura_LogicalDisk',
+        element = pywbem.CIMInstanceName(classname='LMI_LogicalDisk', namespace=LMI_NAMESPACE,
+                    keybindings = {"SystemName" : LMI_SYSTEM_NAME,
+                        "SystemCreationClassName" : LMI_SYSTEM_CLASS_NAME,
+                        "CreationClassName" : 'LMI_LogicalDisk',
                         "DeviceID" : device.path
                     }) 
         return (self.CREATE_DISK_COMPLETED_OK, element, size)

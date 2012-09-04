@@ -15,22 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_PartitionBasedOnPartition
+"""Python Provider for LMI_LogicalDiskAllocatedFromStoragePool
 
-Instruments the CIM class Cura_PartitionBasedOnPartition
+Instruments the CIM class LMI_LogicalDiskAllocatedFromStoragePool
 
 """
 
 from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-import pyanaconda.storage.devices
-import util.partitioning
 
-class Cura_PartitionBasedOnPartition(CIMProvider2):
-    """Instrument the CIM class Cura_PartitionBasedOnPartition 
+class LMI_LogicalDiskAllocatedFromStoragePool(CIMProvider2):
+    """Instrument the CIM class LMI_LogicalDiskAllocatedFromStoragePool 
 
-    Association between logical partitions and its extended partition.
+    AllocatedFromStoragePool is an association describing how
+    LogicalElements are allocated from underlying StoragePools. These
+    elements typically would be subclasses of StorageExtents or
+    StoragePools.
     
     """
 
@@ -66,25 +67,20 @@ class Cura_PartitionBasedOnPartition(CIMProvider2):
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
         
-        # TODO: checking
-        
-        path = model['Dependent']['DeviceID']
-        partition = storage.devicetree.getDeviceByPath(path)
-        if not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong Dependent InstanceID')
 
-        path = model['Antecedent']['DeviceID']
-        extended = storage.devicetree.getDeviceByPath(path)
-        if not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong Antecedent InstanceID')
+        baseWrapper = wrapperManager.getWrapperForInstance(model['Antecedent'])
+        diskName = model['Dependent']
+        disk = storage.devicetree.getDeviceByPath(diskName['DeviceID'])
+        if (diskName['SystemName'] != LMI_SYSTEM_NAME
+                or diskName['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or diskName['CreationClassName'] != 'LMI_LogicalDisk'):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong keys.')
+        if not baseWrapper.wrapsDevice(disk):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'The antecedent is not associated to the dependent.')
 
-        pstart = util.partitioning.getLogicalPartitionStart(partition)
-        pend = partition.partedPartition.geometry.end
-        estart = extended.partedPartition.geometry.start
-        
-        model['EndingAddress'] = pywbem.Uint64(pend - estart)
-        model['OrderIndex'] = pywbem.Uint16(partition.partedPartition.number) 
-        model['StartingAddress'] = pywbem.Uint64(pstart - estart)
+        model['SpaceConsumed'] = pywbem.Uint64(disk.partedDevice.sectorSize * disk.partedDevice.length)
+        #model['SpaceLimit'] = pywbem.Uint64(0) # TODO 
+        #model['SpaceLimitWarningThreshold'] = pywbem.Uint16() # TODO 
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -119,26 +115,16 @@ class Cura_PartitionBasedOnPartition(CIMProvider2):
         # we set property values on the model. 
         model.path.update({'Dependent': None, 'Antecedent': None})
         
-        for partition in storage.partitions:
-            if not partition.isLogical:
+        for device in storage.devices:
+            if not logicalDiskManager.isExposed(device):
                 continue
-            extendedPath = partition.partedPartition.disk.getExtendedPartition().path
-            extended = storage.devicetree.getDeviceByPath(extendedPath)
-            
-            model['Dependent'] = pywbem.CIMInstanceName(classname='Cura_DiskPartition',
-                    namespace=CURA_NAMESPACE,
-                    keybindings={'CreationClassName': 'Cura_DiskPartition',
-                                 'DeviceID': partition.path,
-                                 'SystemCreationClassName': CURA_SYSTEM_CLASS_NAME,
-                                 'SystemName': CURA_SYSTEM_NAME
-                    })
-            model['Antecedent'] = pywbem.CIMInstanceName(classname='Cura_DiskPartition',
-                    namespace=CURA_NAMESPACE,
-                    keybindings={'CreationClassName': 'Cura_DiskPartition',
-                                 'DeviceID': extended.path,
-                                 'SystemCreationClassName': CURA_SYSTEM_CLASS_NAME,
-                                 'SystemName': CURA_SYSTEM_NAME
-                    })
+            wrapper = wrapperManager.getWrapperForDevice(device)
+            if wrapper is None:
+                continue
+            model['Antecedent'] = wrapper.getPoolName(device)
+            model['Dependent'] = wrapper.getExtentName(device)
+            model['Dependent']['CreationClassName'] = 'LMI_LogicalDisk'  
+            model['Dependent'].classname = 'LMI_LogicalDisk'  
             if keys_only:
                 yield model
             else:
@@ -280,18 +266,18 @@ class Cura_PartitionBasedOnPartition(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_StorageExtent') or \
+                          super='CIM_LogicalElement') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_StorageExtent'):
+                               super='CIM_StoragePool'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
                           
-## end of class Cura_PartitionBasedOnPartitionProvider
+## end of class LMI_LogicalDiskAllocatedFromStoragePoolProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_partitionbasedonpartition_prov = Cura_PartitionBasedOnPartition(env)  
-    return {'Cura_PartitionBasedOnPartition': cura_partitionbasedonpartition_prov} 
+    LMI_logicaldiskallocatedfromstoragepool_prov = LMI_LogicalDiskAllocatedFromStoragePool(env)  
+    return {'LMI_LogicalDiskAllocatedFromStoragePool': LMI_logicaldiskallocatedfromstoragepool_prov} 

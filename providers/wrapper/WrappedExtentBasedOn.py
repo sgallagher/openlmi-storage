@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_*ExtentBasedOn"""
+"""Python Provider for LMI_*ExtentBasedOn"""
 
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
 class WrappedExtentBasedOn(CIMProvider2):
-    """Instrument the CIM class Cura_*ExtentBasedOn"""
+    """Instrument the CIM class LMI_*ExtentBasedOn"""
 
     def __init__ (self, env, wrapper):
         logger = env.get_logger()
@@ -79,4 +79,4 @@ class WrappedExtentBasedOn(CIMProvider2):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
                           
-## end of class Cura_RAIDCompositeExtentBasedOnProvider
+## end of class LMI_RAIDCompositeExtentBasedOnProvider

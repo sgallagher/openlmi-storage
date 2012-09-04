@@ -38,9 +38,9 @@ class LVWrapper(DeviceWrapper):
         For each Anaconda LVMLogicalVolumeDevice, following CIM instances are
         created:
 
-        - one Cura_LVLogicalDisk
-        - one Cura_LVLogicalDiskBasedOn association to its volume group
-        - one Cura_LVAllocatedFromStoragePool association to pool of its volume
+        - one LMI_LVLogicalDisk
+        - one LMI_LVLogicalDiskBasedOn association to its volume group
+        - one LMI_LVAllocatedFromStoragePool association to pool of its volume
           group.
     """
 
@@ -52,22 +52,22 @@ class LVWrapper(DeviceWrapper):
         """
             CIM class name of device's CIM_StorageExtent class.
 
-            This property is overriden to have Cura_LVLogicalDisk as name of
+            This property is overriden to have LMI_LVLogicalDisk as name of
             LV's StorageExtent class. Vanilla DeviceWrapper would provide
-            Cura_LVExtent.
+            LMI_LVExtent.
         """
-        return 'Cura_' + self.prefix + 'LogicalDisk'
+        return 'LMI_' + self.prefix + 'LogicalDisk'
 
     @property
     def basedOnClassName(self):
         """
             CIM class name of device's CIM_BasedOn class.
 
-            This property is overriden to have Cura_LVLogicalDiskBasedOn as
+            This property is overriden to have LMI_LVLogicalDiskBasedOn as
             name of LV's BasedOn class. Vanilla DeviceWrapper would provide
-            Cura_LVExtentBasedOn.
+            LMI_LVExtentBasedOn.
         """
-        return 'Cura_' + self.prefix + 'LogicalDiskBasedOn'
+        return 'LMI_' + self.prefix + 'LogicalDiskBasedOn'
 
     def enumDevices(self):
         """
@@ -90,7 +90,7 @@ class LVWrapper(DeviceWrapper):
 
     def getExtentInstance(self, env, model, device):
         """
-            Fill instance of Cura_LVLogicalDisk for given
+            Fill instance of LMI_LVLogicalDisk for given
             LVMLogicalVolumeDevice.
         """
         params = self.getParameters(device)
@@ -162,7 +162,7 @@ class LVWrapper(DeviceWrapper):
 
     def enumAllocatedFroms(self, env, model, keys_only):
         """
-            Enumerate all Cura_LVAllocatedFromStoragePool instances.
+            Enumerate all LMI_LVAllocatedFromStoragePool instances.
 
             :param env: Provider Environment (pycimmb.ProviderEnvironment).
             :param model: A template of the pywbem.CIMInstances to be generated.
@@ -190,7 +190,7 @@ class LVWrapper(DeviceWrapper):
 
     def getAllocatedFromInstance(self, env, model, device, base):
         """
-            Fill instance of Cura_LVAllocatedFromStoragePool for given
+            Fill instance of LMI_LVAllocatedFromStoragePool for given
             LVMLogicalVolumeDevice.
         """
         model['SpaceConsumed'] = pywbem.Uint64(device.vgSpaceUsed)
@@ -198,7 +198,7 @@ class LVWrapper(DeviceWrapper):
 
     def getBasedOnInstance(self, env, model, device, base):
         """
-            Fill instance of Cura_LVLogicalDiskBasedOn for given
+            Fill instance of LMI_LVLogicalDiskBasedOn for given
             LVMLogicalVolumeDevice.
         """
         #model['BlockSize'] = pywbem.Uint64()
@@ -353,12 +353,12 @@ class LVWrapper(DeviceWrapper):
                         
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
             
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyStoragePool
         """
         return 0
 

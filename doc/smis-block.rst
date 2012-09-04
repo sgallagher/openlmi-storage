@@ -35,7 +35,7 @@ have any possibility to partition them. Therefore it seems it's the best to have
 
 This gets even more complicated with implementation of Disk Partition
 Subprofile – only the top LogicalDisk is primordial. That's why the top
-LogicalDisk is named as ``Cura_PartitionExtent`` and should not be used directly.
+LogicalDisk is named as ``LMI_PartitionExtent`` and should not be used directly.
 
 .. note:: Anaconda does not support unpartitioned disks, therefore only
    partitions are primordial for now.
@@ -83,7 +83,7 @@ Some storage pools, e.g. volume groups, can be allocated arbitrarily.
    of layering storage pools and appropriate associated extents.
 
 Admin can create new layer (e.g. RAID or volume group) in the pool hierarchy using
-``Cura_StorageConfigurationService.CreateOrModifyStoragePool()``, providing
+``LMI_StorageConfigurationService.CreateOrModifyStoragePool()``, providing
 either list of base StorageExtents or StoragePools or both.
 
 Logical disks
@@ -114,7 +114,7 @@ by ``StorageConfigurationService.CreateOrModifyElementFromStoragePool()`` and
 for all devices with filesystems.
 
 LogicalDisks allocated from a volume group, i.e. logical volumes, are
-different - they are represented as instances of ``Cura_LVLogicalDisk`` class
+different - they are represented as instances of ``LMI_LVLogicalDisk`` class
 and can be used as input extents for creating a new StoragePool (e.g. to have
 dm-crypt based on a logical volume or even RAID on top of a logical volume).
 
@@ -153,31 +153,31 @@ Mapping:
 =============================================== =================================================
 SMI-S                                           Cura
 =============================================== =================================================
-CIM_AllocatedFromStoragePool                    Cura_RAIDAllocatedFromStoragePool
-                                                Cura_LVAllocatedFromStoragePool
-                                                Cura_VGAllocatedFromStoragePool
-                                                Cura_LogicalDiskAllocatedFromStoragePool
-CIM_ElementCapabilities                         Cura_RAIDStorageElementCapabilities
-                                                Cura_PrimordialStorageElementCapabilities
-                                                Cura_VGStorageElementCapabilities
-                                                Cura_GlobalStorageConfigurationElementCapabilities
+CIM_AllocatedFromStoragePool                    LMI_RAIDAllocatedFromStoragePool
+                                                LMI_LVAllocatedFromStoragePool
+                                                LMI_VGAllocatedFromStoragePool
+                                                LMI_LogicalDiskAllocatedFromStoragePool
+CIM_ElementCapabilities                         LMI_RAIDStorageElementCapabilities
+                                                LMI_PrimordialStorageElementCapabilities
+                                                LMI_VGStorageElementCapabilities
+                                                LMI_GlobalStorageConfigurationElementCapabilities
 CIM_ElementSettingData                          *not yet implemented*
-CIM_HostedStoragePool                           Cura_HostedStoragePool
-CIM_LogicalDisk                                 Cura_LogicalDisk
-                                                Cura_LVLogicalDisk
-CIM_StorageCapabilities                         Cura_StorageCapabilities
-                                                Cura_VGStorageCapabilities
-                                                Cura_RAIDStorageCapabilities
-                                                Cura_PrimordialStorageCapabilities
-CIM_StorageConfigurationService                 Cura_StorageConfigurationService
-CIM_StorageConfigurationCapabilities            Cura_GlobalStorageConfigurationCapabilities
-CIM_StoragePool                                 Cura_RAIDPool
-                                                Cura_PrimordialPool
-                                                Cura_VGPool
-CIM_StorageSetting                              Cura_StorageSetting
+CIM_HostedStoragePool                           LMI_HostedStoragePool
+CIM_LogicalDisk                                 LMI_LogicalDisk
+                                                LMI_LVLogicalDisk
+CIM_StorageCapabilities                         LMI_StorageCapabilities
+                                                LMI_VGStorageCapabilities
+                                                LMI_RAIDStorageCapabilities
+                                                LMI_PrimordialStorageCapabilities
+CIM_StorageConfigurationService                 LMI_StorageConfigurationService
+CIM_StorageConfigurationCapabilities            LMI_GlobalStorageConfigurationCapabilities
+CIM_StoragePool                                 LMI_RAIDPool
+                                                LMI_PrimordialPool
+                                                LMI_VGPool
+CIM_StorageSetting                              LMI_StorageSetting
 CIM_StorageSettingsAssociatedToCapabilities     *not yet implemented*
 CIM_StorageSettingsGeneratedFromCapabilities    *not yet implemented*
-CIM_SystemDevice                                Cura_SystemDevice
+CIM_SystemDevice                                LMI_SystemDevice
 =============================================== =================================================
 
 Methods:
@@ -206,29 +206,29 @@ StorageConfigurationService             CreateOrModifyStoragePool               
 .. warning:: Mandatory indications are **not** implemented.
 
 .. warning:: To distinguish creation of RAID0 and volume group, new property to
-   Cura_StorageSetting had to be added. This property tells, if resulting
+   LMI_StorageSetting had to be added. This property tells, if resulting
    StoragePool is to be allocated as whole (=RAID0) or multiple LogicalDisks can
    be allocated from it (=volume group)
 
-.. [#1] With appropriate ``Cura_StorageSetting``, it can create RAID or volume group
+.. [#1] With appropriate ``LMI_StorageSetting``, it can create RAID or volume group
    or any other storage layer.
 .. [#2] Deletes RAID or volume group (if empty).
-.. [#3] Allocates a LogicalDisk, either ``Cura_LogicalDisk`` or
-   ``Cura_LVLogicalDisk`` (=logical volume)
+.. [#3] Allocates a LogicalDisk, either ``LMI_LogicalDisk`` or
+   ``LMI_LVLogicalDisk`` (=logical volume)
 
 Usage
 -----
 
 Create RAID or volume group:
 
-#. Acquire Cura_StorageSetting
+#. Acquire LMI_StorageSetting
 
-  * Either find appropriate Cura_StorageSetting, there are some pre-configured
+  * Either find appropriate LMI_StorageSetting, there are some pre-configured
     for most typical RAID types.
 
   * Or create new setting:
 
-    #. Find appropriate Cura_StorageCapabilities and call its CreateSetting() method.
+    #. Find appropriate LMI_StorageCapabilities and call its CreateSetting() method.
 
     #. Modify the setting.
 
@@ -268,13 +268,13 @@ Create RAID or volume group:
        PackageRedundancyGoal = 1
        CuraAllocationType = 1 (or NULL)
 
-#. Call Cura_StorageConfigurationService.CreateOrModifyStoragePool with following
+#. Call LMI_StorageConfigurationService.CreateOrModifyStoragePool with following
    parameters:
 
    .. parsed-literal::
       ElementName = NULL for RAID, kernel will assign any /dev/mdX 
       ElementName = <name of the volume group> for volume group
-      Goal = refrence to your Cura_StorageSetting from previous step
+      Goal = refrence to your LMI_StorageSetting from previous step
       InPools = list of pools to create the pool from. It can be the primordial
                 pool (all unused partitions will be added to the new pool) or any other
                 pool (whole device will be added to the new pool).
@@ -303,25 +303,25 @@ Delete RAID or volume group:
 
 Allocate a LogicalDisk from a StoragePool:
 
-#. Create Cura_StorageSetting like when creating RAID0
+#. Create LMI_StorageSetting like when creating RAID0
 
 #. Call StorageConfigurationService.CreateOrModifyElementFromStoragePool() with these
    parameters:
 
-   * allocating Cura_LVLolgicalDisk (= logical volume):
+   * allocating LMI_LVLolgicalDisk (= logical volume):
 
      .. parsed-literal::
         ElementName = name of the logical volume
-        Goal = the Cura_StorageSetting
-        InPool = the pool to allocate from (i.e. reference to Cura_VGPool)
+        Goal = the LMI_StorageSetting
+        InPool = the pool to allocate from (i.e. reference to LMI_VGPool)
         ElementType = 4
         Size = size of the volume, in bytes
 
-   * allocating Cura_LogicalDisk for a partition from the primordial pool:
+   * allocating LMI_LogicalDisk for a partition from the primordial pool:
 
      .. parsed-literal::
         ElementName = NULL
-        Goal = the Cura_StorageSetting
+        Goal = the LMI_StorageSetting
         InPool = the primordial pool
         ElementType = 4
         Size = size of the partition to allocate
@@ -329,19 +329,19 @@ Allocate a LogicalDisk from a StoragePool:
      It is not possible to specify, which partition to allocate! Any partition
      with given size will be allocated.
 
-   * allocating Cura_LogicalDisk from any other StoragePool (e.g. RAIDPool):
+   * allocating LMI_LogicalDisk from any other StoragePool (e.g. RAIDPool):
 
      .. parsed-literal::
         ElementName = NULL
-        Goal = the Cura_StorageSetting
+        Goal = the LMI_StorageSetting
         InPool = the pool
         ElementType = 4
         Size = size of the pool
 
      Only whole pool can be allocated!
 
-As alrady noted, Cura_LogicalDisk is artificial object only and represents the
-same Linux device as underlying StoragePool (or Cura_PartitionExtent).
+As alrady noted, LMI_LogicalDisk is artificial object only and represents the
+same Linux device as underlying StoragePool (or LMI_PartitionExtent).
 
 
 

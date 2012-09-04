@@ -15,28 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_HostedService
+"""Python Provider for LMI_PartitionBasedOnLocalDiskExtent
 
-Instruments the CIM class Cura_HostedService
+Instruments the CIM class LMI_PartitionBasedOnLocalDiskExtent
 
 """
 
 from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
+import pyanaconda.storage.devices
+import util.partitioning
 
-class Cura_HostedService(CIMProvider2):
-    """Instrument the CIM class Cura_HostedService 
+class LMI_PartitionBasedOnLocalDiskExtent(CIMProvider2):
+    """Instrument the CIM class LMI_PartitionBasedOnLocalDiskExtent 
 
-    CIM_HostedService is an association between a Service and the System on
-    which the functionality is located. The cardinality of this
-    association is one-to-many. A System can host many Services. Services
-    are weak with respect to their hosting System. Heuristic: A Service is
-    hosted on the System where the LogicalDevices or SoftwareFeatures that
-    implement the Service are located. The model does not represent
-    Services hosted across multiple systems. The model is as an
-    ApplicationSystem that acts as an aggregation point for Services that
-    are each located on a single host.
+    Association between local disk and partitions on it.
     
     """
 
@@ -72,7 +66,16 @@ class Cura_HostedService(CIMProvider2):
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
         
+        # TODO: checking
+        
+        path = model['Dependent']['DeviceID']
+        partition = storage.devicetree.getDeviceByPath(path)
+        if not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong Dependent InstanceID')
 
+        model['EndingAddress'] = pywbem.Uint64(partition.partedPartition.geometry.end)
+        model['OrderIndex'] = pywbem.Uint16(partition.partedPartition.number) 
+        model['StartingAddress'] = pywbem.Uint64(partition.partedPartition.geometry.start)
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -106,19 +109,38 @@ class Cura_HostedService(CIMProvider2):
         # the CIMInstanceName (model.path) will automatically be set when
         # we set property values on the model. 
         model.path.update({'Dependent': None, 'Antecedent': None})
-
-        ch = env.get_cimom_handle()
-        # get the only one (?) CIM_ComputerSystem
-        systems = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Linux_ComputerSystem')
-        system = systems.next()
         
-        # find all services on the system starting with 'Cura' and associate them with the system
-        services = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='CIM_Service')
-        for service in services:
-            if service['CreationClassName'].startswith('Cura'):
-                model['Dependent'] = service
-                model['Antecedent'] = system
+        for partition in storage.partitions:
+            if partition.isLogical:
+                continue
+            if partition.disk.format.labelType == util.partitioning.LABEL_GPT:
+                className = 'LMI_GPTDiskPartition'
+            else:
+                className = 'LMI_DiskPartition'
+                
+            model['Dependent'] = pywbem.CIMInstanceName(classname=className,
+                    namespace=LMI_NAMESPACE,
+                    keybindings={'CreationClassName': className,
+                                 'DeviceID': partition.path,
+                                 'SystemCreationClassName': LMI_SYSTEM_CLASS_NAME,
+                                 'SystemName': LMI_SYSTEM_NAME
+                    })
+            model['Antecedent'] = pywbem.CIMInstanceName(classname='LMI_LocalDiskExtent',
+                    namespace=LMI_NAMESPACE,
+                    keybindings={'CreationClassName': 'LMI_LocalDiskExtent',
+                                 'DeviceID': partition.disk.path,
+                                 'SystemCreationClassName': LMI_SYSTEM_CLASS_NAME,
+                                 'SystemName': LMI_SYSTEM_NAME
+                    })
+            if keys_only:
                 yield model
+            else:
+                try:
+                    yield self.get_instance(env, model)
+                except pywbem.CIMError, (num, msg):
+                    if num not in (pywbem.CIM_ERR_NOT_FOUND, 
+                                   pywbem.CIM_ERR_ACCESS_DENIED):
+                        raise
 
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
@@ -251,18 +273,18 @@ class Cura_HostedService(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_Service') or \
+                          super='CIM_StorageExtent') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_System'):
+                               super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
-
-## end of class Cura_HostedServiceProvider
+                          
+## end of class LMI_PartitionBasedOnLocalDiskExtentProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_hostedservice_prov = Cura_HostedService(env)  
-    return {'Cura_HostedService': cura_hostedservice_prov} 
+    LMI_partitionbasedonlocaldiskextent_prov = LMI_PartitionBasedOnLocalDiskExtent(env)  
+    return {'LMI_PartitionBasedOnLocalDiskExtent': LMI_partitionbasedonlocaldiskextent_prov} 

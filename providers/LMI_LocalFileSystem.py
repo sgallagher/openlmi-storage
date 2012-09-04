@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_LocalFileSystem
+"""Python Provider for LMI_LocalFileSystem
 
-Instruments the CIM class Cura_LocalFileSystem
+Instruments the CIM class LMI_LocalFileSystem
 
 """
 
@@ -26,8 +26,8 @@ import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 import  pyanaconda.storage.formats
 
-class Cura_LocalFileSystem(CIMProvider2):
-    """Instrument the CIM class Cura_LocalFileSystem 
+class LMI_LocalFileSystem(CIMProvider2):
+    """Instrument the CIM class LMI_LocalFileSystem 
 
     POC LocalFileSystem instrumentation - a filesystem.
     
@@ -65,9 +65,9 @@ class Cura_LocalFileSystem(CIMProvider2):
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
 
-        if (model['CSName'] != CURA_SYSTEM_NAME
-                or model['CSCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or model['CreationClassName'] != 'Cura_LocalFileSystem'):
+        if (model['CSName'] != LMI_SYSTEM_NAME
+                or model['CSCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or model['CreationClassName'] != 'LMI_LocalFileSystem'):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong keys')
             
             
@@ -155,10 +155,10 @@ class Cura_LocalFileSystem(CIMProvider2):
         for device in storage.devices:
             if device.format.type != None and isinstance(device.format, pyanaconda.storage.formats.fs.FS):
                 fs = device.format
-                model['CSName'] = CURA_SYSTEM_NAME
-                model['CSCreationClassName'] = CURA_SYSTEM_CLASS_NAME
+                model['CSName'] = LMI_SYSTEM_NAME
+                model['CSCreationClassName'] = LMI_SYSTEM_CLASS_NAME
                 model['Name'] = device.path
-                model['CreationClassName'] = 'Cura_LocalFileSystem'
+                model['CreationClassName'] = 'LMI_LocalFileSystem'
 
                 if keys_only:
                     yield model
@@ -236,7 +236,7 @@ class Cura_LocalFileSystem(CIMProvider2):
     def cim_method_requeststatechange(self, env, object_name,
                                       param_requestedstate=None,
                                       param_timeoutperiod=None):
-        """Implements Cura_LocalFileSystem.RequestStateChange()
+        """Implements LMI_LocalFileSystem.RequestStateChange()
 
         Requests that the state of the element be changed to the value
         specified in the RequestedState parameter. When the requested
@@ -528,12 +528,12 @@ class Cura_LocalFileSystem(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Reserved = 0x8000..
 
-## end of class Cura_LocalFileSystemProvider
+## end of class LMI_LocalFileSystemProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    Cura_LocalFileSystem_prov = Cura_LocalFileSystem(env)  
-    return {'Cura_LocalFileSystem': Cura_LocalFileSystem_prov}
+    LMI_LocalFileSystem_prov = LMI_LocalFileSystem(env)  
+    return {'LMI_LocalFileSystem': LMI_LocalFileSystem_prov}
 

@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_GPTDiskPartition
+"""Python Provider for LMI_DiskPartition
 
-Instruments the CIM class Cura_GPTDiskPartition
+Instruments the CIM class LMI_DiskPartition
 
 """
 
@@ -27,11 +27,11 @@ from pywbem.cim_provider2 import CIMProvider2
 import pyanaconda.storage.devices
 import util.partitioning
 
-class Cura_GPTDiskPartition(CIMProvider2):
-    """Instrument the CIM class Cura_GPTDiskPartition
+class LMI_DiskPartition(CIMProvider2):
+    """Instrument the CIM class LMI_DiskPartition 
 
-    A GPT partition.
-
+    A logical partition.
+    
     """
 
     def __init__ (self, env):
@@ -44,19 +44,19 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        model -- A template of the pywbem.CIMInstance to be returned.  The
-            key properties are set on this instance to correspond to the
+        model -- A template of the pywbem.CIMInstance to be returned.  The 
+            key properties are set on this instance to correspond to the 
             instanceName that was requested.  The properties of the model
-            are already filtered according to the PropertyList from the
+            are already filtered according to the PropertyList from the 
             request.  Only properties present in the model need to be
-            given values.  If you prefer, you can set all of the
-            values, and the instance will be filtered for you.
+            given values.  If you prefer, you can set all of the 
+            values, and the instance will be filtered for you. 
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, unrecognized
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, unrecognized 
             or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the CIM Class does exist, but the requested CIM
+        CIM_ERR_NOT_FOUND (the CIM Class does exist, but the requested CIM 
             Instance does not exist in the specified namespace)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -66,9 +66,9 @@ class Cura_GPTDiskPartition(CIMProvider2):
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
 
-        if (model['SystemName'] != CURA_SYSTEM_NAME
-                or model['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or model['CreationClassName'] != 'Cura_GPTDiskPartition'):
+        if (model['SystemName'] != LMI_SYSTEM_NAME
+                or model['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or model['CreationClassName'] != 'LMI_DiskPartition'):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
 
         # find the partition with given name
@@ -78,8 +78,8 @@ class Cura_GPTDiskPartition(CIMProvider2):
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID not found.")
             if  not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a partition.")
-            if partition.disk.format.labelType != util.partitioning.LABEL_GPT:
-                raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a GPT partition.")
+            if partition.disk.format.labelType != util.partitioning.LABEL_MBR:
+                raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a MBR partition.")
 
         #model['Access'] = self.Values.Access.<VAL> # TODO 
         #model['AdditionalAvailability'] = [self.Values.AdditionalAvailability.<VAL>,] # TODO 
@@ -126,7 +126,13 @@ class Cura_GPTDiskPartition(CIMProvider2):
         model['NameFormat'] = self.Values.NameFormat.OS_Device_Name
         model['NameNamespace'] = self.Values.NameNamespace.OS_Device_Namespace
         #model['NoSinglePointOfFailure'] = bool() # TODO
-        model['NumberOfBlocks'] = pywbem.Uint64(partition.partedPartition.getLength())
+        if partition.isLogical:
+            model['NumberOfBlocks'] = pywbem.Uint64(
+                                    partition.partedPartition.geometry.end
+                                    - util.partitioning.getLogicalPartitionStart(partition)
+                                    + 1)
+        else:
+            model['NumberOfBlocks'] = pywbem.Uint64(partition.partedPartition.getLength())
         #model['OperatingStatus'] = self.Values.OperatingStatus.<VAL> # TODO 
         model['OperationalStatus'] = [self.Values.OperationalStatus.OK]
         #model['OtherEnabledState'] = '' # TODO 
@@ -136,9 +142,17 @@ class Cura_GPTDiskPartition(CIMProvider2):
         #model['OtherUsageDescription'] = '' # TODO 
         #model['PackageRedundancy'] = pywbem.Uint16() # TODO 
         #model['PartitionSubtype'] = self.Values.PartitionSubtype.<VAL> # TODO
+        if partition.isLogical:
+            model['PartitionType'] = self.Values.PartitionType.Logical
+        elif partition.isExtended:
+            model['PartitionType'] = self.Values.PartitionType.Extended
+        elif partition.isPrimary:
+            model['PartitionType'] = self.Values.PartitionType.Primary
+
         #model['PowerManagementCapabilities'] = [self.Values.PowerManagementCapabilities.<VAL>,] # TODO 
         #model['PowerManagementSupported'] = bool() # TODO 
         #model['PowerOnHours'] = pywbem.Uint64() # TODO
+        model['PrimaryPartition'] = bool(partition.isPrimary or partition.isExtended)
         #model['PrimaryStatus'] = self.Values.PrimaryStatus.<VAL> # TODO 
         model['Primordial'] = False # TODO: really 
         #model['Purpose'] = '' # TODO 
@@ -160,17 +174,17 @@ class Cura_GPTDiskPartition(CIMProvider2):
         """Enumerate instances.
 
         The WBEM operations EnumerateInstances and EnumerateInstanceNames
-        are both mapped to this method.
+        are both mapped to this method. 
         This method is a python generator
 
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        model -- A template of the pywbem.CIMInstances to be generated.
-            The properties of the model are already filtered according to
-            the PropertyList from the request.  Only properties present in
-            the model need to be given values.  If you prefer, you can
-            always set all of the values, and the instance will be filtered
-            for you.
+        model -- A template of the pywbem.CIMInstances to be generated.  
+            The properties of the model are already filtered according to 
+            the PropertyList from the request.  Only properties present in 
+            the model need to be given values.  If you prefer, you can 
+            always set all of the values, and the instance will be filtered 
+            for you. 
         keys_only -- A boolean.  True if only the key properties should be
             set on the generated instances.
 
@@ -185,18 +199,18 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         # Prime model.path with knowledge of the keys, so key values on
         # the CIMInstanceName (model.path) will automatically be set when
-        # we set property values on the model.
+        # we set property values on the model. 
         model.path.update({'CreationClassName': None, 'SystemName': None,
             'DeviceID': None, 'SystemCreationClassName': None})
 
         partitions = storage.partitions
         for p in partitions:
-            if p.disk.format.labelType != util.partitioning.LABEL_GPT:
+            if p.disk.format.labelType != util.partitioning.LABEL_MBR:
                 continue
             
-            model['SystemName'] = CURA_SYSTEM_NAME
-            model['SystemCreationClassName'] = CURA_SYSTEM_CLASS_NAME
-            model['CreationClassName'] = 'Cura_GPTDiskPartition'
+            model['SystemName'] = LMI_SYSTEM_NAME
+            model['SystemCreationClassName'] = LMI_SYSTEM_CLASS_NAME
+            model['CreationClassName'] = 'LMI_DiskPartition'
             model['DeviceID'] = p.path
             if keys_only:
                 yield model
@@ -213,22 +227,22 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        instance -- The new pywbem.CIMInstance.  If modifying an existing
-            instance, the properties on this instance have been filtered by
+        instance -- The new pywbem.CIMInstance.  If modifying an existing 
+            instance, the properties on this instance have been filtered by 
             the PropertyList from the request.
         modify_existing -- True if ModifyInstance, False if CreateInstance
 
-        Return the new instance.  The keys must be set on the new instance.
+        Return the new instance.  The keys must be set on the new instance. 
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
         CIM_ERR_NOT_SUPPORTED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, unrecognized
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, unrecognized 
             or otherwise incorrect parameters)
-        CIM_ERR_ALREADY_EXISTS (the CIM Instance already exists -- only
+        CIM_ERR_ALREADY_EXISTS (the CIM Instance already exists -- only 
             valid if modify_existing is False, indicating that the operation
             was CreateInstance)
-        CIM_ERR_NOT_FOUND (the CIM Instance does not exist -- only valid
+        CIM_ERR_NOT_FOUND (the CIM Instance does not exist -- only valid 
             if modify_existing is True, indicating that the operation
             was ModifyInstance)
         CIM_ERR_FAILED (some other unspecified error occurred)
@@ -247,18 +261,18 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        instance_name -- A pywbem.CIMInstanceName specifying the instance
+        instance_name -- A pywbem.CIMInstanceName specifying the instance 
             to delete.
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
         CIM_ERR_NOT_SUPPORTED
         CIM_ERR_INVALID_NAMESPACE
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, unrecognized
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, unrecognized 
             or otherwise incorrect parameters)
-        CIM_ERR_INVALID_CLASS (the CIM Class does not exist in the specified
+        CIM_ERR_INVALID_CLASS (the CIM Class does not exist in the specified 
             namespace)
-        CIM_ERR_NOT_FOUND (the CIM Class does exist, but the requested CIM
+        CIM_ERR_NOT_FOUND (the CIM Class does exist, but the requested CIM 
             Instance does not exist in the specified namespace)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -268,9 +282,9 @@ class Cura_GPTDiskPartition(CIMProvider2):
         logger.log_debug('Entering %s.delete_instance()' \
                 % self.__class__.__name__)
 
-        if (instance_name['SystemName'] != CURA_SYSTEM_NAME
-                or instance_name['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or instance_name['CreationClassName'] != 'Cura_GPTDiskPartition'):
+        if (instance_name['SystemName'] != LMI_SYSTEM_NAME
+                or instance_name['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or instance_name['CreationClassName'] != 'LMI_DiskPartition'):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
 
         # find the partition with given name
@@ -279,13 +293,12 @@ class Cura_GPTDiskPartition(CIMProvider2):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID not found.")
         if  not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a partition.")
-        if partition.disk.format.labelType != util.partitioning.LABEL_GPT:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a GPT partition.")
+        if partition.disk.format.labelType != util.partitioning.LABEL_MBR:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a MBR partition.")
         util.partitioning.deletePartition(partition)
-        
 
     def cim_method_reset(self, env, object_name):
-        """Implements Cura_GPTDiskPartition.Reset()
+        """Implements LMI_DiskPartition.Reset()
 
         Requests a reset of the LogicalDevice. The return value should be 0
         if the request was successfully executed, 1 if the request is not
@@ -294,11 +307,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
         using a ValueMap qualifier on the method. The strings to which the
         ValueMap contents are \'translated\' can also be specified in the
         subclass as a Values array qualifier.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method Reset()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method Reset() 
             should be invoked.
 
         Returns a two-tuple containing the return value (type pywbem.Uint32)
@@ -308,11 +321,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -325,13 +338,13 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32)
         return (rval, out_params)
 
     def cim_method_requeststatechange(self, env, object_name,
-                                      param_requestedstate=None,
-                                      param_timeoutperiod=None):
-        """Implements Cura_GPTDiskPartition.RequestStateChange()
+                                      param_requestedstate = None,
+                                      param_timeoutperiod = None):
+        """Implements LMI_DiskPartition.RequestStateChange()
 
         Requests that the state of the element be changed to the value
         specified in the RequestedState parameter. When the requested
@@ -346,13 +359,13 @@ class Cura_GPTDiskPartition(CIMProvider2):
         initiated, a ConcreteJob has been created, and its reference
         returned in the output parameter Job. Any other return code
         indicates an error condition.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method RequestStateChange()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method RequestStateChange() 
             should be invoked.
-        param_requestedstate --  The input parameter RequestedState (type pywbem.Uint16 self.Values.RequestStateChange.RequestedState)
+        param_requestedstate --  The input parameter RequestedState (type pywbem.Uint16 self.Values.RequestStateChange.RequestedState) 
             The state requested for the element. This information will be
             placed into the RequestedState property of the instance if the
             return code of the RequestStateChange method is 0 (\'Completed
@@ -360,8 +373,8 @@ class Cura_GPTDiskPartition(CIMProvider2):
             the description of the EnabledState and RequestedState
             properties for the detailed explanations of the RequestedState
             values.
-
-        param_timeoutperiod --  The input parameter TimeoutPeriod (type pywbem.CIMDateTime)
+            
+        param_timeoutperiod --  The input parameter TimeoutPeriod (type pywbem.CIMDateTime) 
             A timeout period that specifies the maximum amount of time that
             the client expects the transition to the new state to take.
             The interval format must be used to specify the TimeoutPeriod.
@@ -370,24 +383,24 @@ class Cura_GPTDiskPartition(CIMProvider2):
             does not contain 0 or null and the implementation does not
             support this parameter, a return code of \'Use Of Timeout
             Parameter Not Supported\' shall be returned.
-
+            
 
         Returns a two-tuple containing the return value (type pywbem.Uint32 self.Values.RequestStateChange)
         and a list of CIMParameter objects representing the output parameters
 
         Output parameters:
-        Job -- (type REF (pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...))
+        Job -- (type REF (pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...)) 
             May contain a reference to the ConcreteJob created to track the
             state transition initiated by the method invocation.
-
+            
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -400,33 +413,33 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        #out_params+= [pywbem.CIMParameter('job', type='reference',
+        #out_params+= [pywbem.CIMParameter('job', type='reference', 
         #                   value=pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...))] # TODO
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32 self.Values.RequestStateChange)
         return (rval, out_params)
 
     def cim_method_setpowerstate(self, env, object_name,
-                                 param_powerstate=None,
-                                 param_time=None):
-        """Implements Cura_GPTDiskPartition.SetPowerState()
+                                 param_powerstate = None,
+                                 param_time = None):
+        """Implements LMI_DiskPartition.SetPowerState()
 
         Note: The use of this method has been deprecated. Instead, use the
         SetPowerState method in the associated PowerManagementService
         class. Deprecated description: Sets the power state of the Device.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method SetPowerState()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method SetPowerState() 
             should be invoked.
-        param_powerstate --  The input parameter PowerState (type pywbem.Uint16 self.Values.SetPowerState.PowerState)
+        param_powerstate --  The input parameter PowerState (type pywbem.Uint16 self.Values.SetPowerState.PowerState) 
             The power state to set.
-
-        param_time --  The input parameter Time (type pywbem.CIMDateTime)
+            
+        param_time --  The input parameter Time (type pywbem.CIMDateTime) 
             Time indicates when the power state should be set, either as a
             regular date-time value or as an interval value (where the
             interval begins when the method invocation is received).
-
+            
 
         Returns a two-tuple containing the return value (type pywbem.Uint32)
         and a list of CIMParameter objects representing the output parameters
@@ -435,11 +448,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -452,12 +465,12 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32)
         return (rval, out_params)
 
     def cim_method_quiescedevice(self, env, object_name,
-                                 param_quiesce=None):
-        """Implements Cura_GPTDiskPartition.QuiesceDevice()
+                                 param_quiesce = None):
+        """Implements LMI_DiskPartition.QuiesceDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -482,16 +495,16 @@ class Cura_GPTDiskPartition(CIMProvider2):
         ValueMap qualifier on the method. The strings to which the
         ValueMap contents are \'translated\' can also be specified in the
         subclass as a Values array qualifier.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method QuiesceDevice()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method QuiesceDevice() 
             should be invoked.
-        param_quiesce --  The input parameter Quiesce (type bool)
+        param_quiesce --  The input parameter Quiesce (type bool) 
             If set to TRUE, then cleanly cease all activity. If FALSE,
             resume activity.
-
+            
 
         Returns a two-tuple containing the return value (type pywbem.Uint32)
         and a list of CIMParameter objects representing the output parameters
@@ -500,11 +513,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -517,12 +530,12 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32)
         return (rval, out_params)
 
     def cim_method_enabledevice(self, env, object_name,
-                                param_enabled=None):
-        """Implements Cura_GPTDiskPartition.EnableDevice()
+                                param_enabled = None):
+        """Implements LMI_DiskPartition.EnableDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -541,15 +554,15 @@ class Cura_GPTDiskPartition(CIMProvider2):
         specified by using a ValueMap qualifier on the method. The strings
         to which the ValueMap contents are \'translated\' can also be
         specified in the subclass as a Values array qualifier.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method EnableDevice()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method EnableDevice() 
             should be invoked.
-        param_enabled --  The input parameter Enabled (type bool)
+        param_enabled --  The input parameter Enabled (type bool) 
             If TRUE, enable the device. If FALSE, disable the device.
-
+            
 
         Returns a two-tuple containing the return value (type pywbem.Uint32)
         and a list of CIMParameter objects representing the output parameters
@@ -558,11 +571,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -575,12 +588,12 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32)
         return (rval, out_params)
 
     def cim_method_onlinedevice(self, env, object_name,
-                                param_online=None):
-        """Implements Cura_GPTDiskPartition.OnlineDevice()
+                                param_online = None):
+        """Implements LMI_DiskPartition.OnlineDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -618,16 +631,16 @@ class Cura_GPTDiskPartition(CIMProvider2):
         record (for example, a persisted value) of the last state request.
         Invoking the OnlineDevice method should set the RequestedState
         property appropriately.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method OnlineDevice()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method OnlineDevice() 
             should be invoked.
-        param_online --  The input parameter Online (type bool)
+        param_online --  The input parameter Online (type bool) 
             If TRUE, take the device online. If FALSE, take the device
             offline.
-
+            
 
         Returns a two-tuple containing the return value (type pywbem.Uint32)
         and a list of CIMParameter objects representing the output parameters
@@ -636,11 +649,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -653,11 +666,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32)
         return (rval, out_params)
 
     def cim_method_saveproperties(self, env, object_name):
-        """Implements Cura_GPTDiskPartition.SaveProperties()
+        """Implements LMI_DiskPartition.SaveProperties()
 
         Note: The use of this method is deprecated. Its function is handled
         more generally by the ConfigurationData subclass of SettingData.
@@ -673,11 +686,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
         qualifier on the method. The strings to which the ValueMap
         contents are \'translated\' can also be specified in the subclass
         as a Values array qualifier.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method SaveProperties()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method SaveProperties() 
             should be invoked.
 
         Returns a two-tuple containing the return value (type pywbem.Uint32)
@@ -687,11 +700,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -704,11 +717,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32)
         return (rval, out_params)
 
     def cim_method_restoreproperties(self, env, object_name):
-        """Implements Cura_GPTDiskPartition.RestoreProperties()
+        """Implements LMI_DiskPartition.RestoreProperties()
 
         Note: The use of this method is deprecated. Its function is handled
         more generally by the ConfigurationData subclass of SettingData.
@@ -722,11 +735,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
         specified using a ValueMap qualifier on the method. The strings to
         which the ValueMap contents are \'translated\' can also be
         specified in the subclass as a Values array qualifier.
-
+        
         Keyword arguments:
         env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName
-            specifying the object on which the method RestoreProperties()
+        object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
+            specifying the object on which the method RestoreProperties() 
             should be invoked.
 
         Returns a two-tuple containing the return value (type pywbem.Uint32)
@@ -736,11 +749,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
 
         Possible Errors:
         CIM_ERR_ACCESS_DENIED
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate,
+        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, 
             unrecognized or otherwise incorrect parameters)
-        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not
+        CIM_ERR_NOT_FOUND (the target CIM Class or instance does not 
             exist in the specified namespace)
-        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor
+        CIM_ERR_METHOD_NOT_AVAILABLE (the CIM Server is unable to honor 
             the invocation request)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
@@ -753,7 +766,7 @@ class Cura_GPTDiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None # TODO (type pywbem.Uint32)
+        rval = None# TODO (type pywbem.Uint32)
         return (rval, out_params)
 
     class Values(object):
@@ -831,6 +844,110 @@ class Cura_GPTDiskPartition(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Reserved = 0x8000..
 
+        class PartitionSubtype(object):
+            Empty___Microsoft = pywbem.Uint16(0)
+            DOS_12_bit_FAT = pywbem.Uint16(1)
+            XENIX_root = pywbem.Uint16(2)
+            XENIX_usr = pywbem.Uint16(3)
+            DOS_16_bit_FAT = pywbem.Uint16(4)
+            DOS_Extended = pywbem.Uint16(5)
+            DOS_16_bit_FAT____32MB_ = pywbem.Uint16(6)
+            OS_2_HPFS___Win_NTFS___QNX_Ver_2___Adv_UNIX = pywbem.Uint16(7)
+            AIX_Boot___OS__2___Dell__Array____Commodore_DOS = pywbem.Uint16(8)
+            AIX_Data__Coherent = pywbem.Uint16(9)
+            OS_2_Boot_Manager = pywbem.Uint16(10)
+            x32_bit_FAT = pywbem.Uint16(11)
+            x32_bit_FAT = pywbem.Uint16(12)
+            Microsoft_16_bit_FAT = pywbem.Uint16(14)
+            Microsoft_DOS_Extended = pywbem.Uint16(15)
+            OPUS___OS_2_2_0 = pywbem.Uint16(16)
+            OS_2__MOSS__Inactive_Type_1 = pywbem.Uint16(17)
+            Compaq_Diagnostics_Partition___Microsoft = pywbem.Uint16(18)
+            OS_2__MOSS__Inactive_Type_4 = pywbem.Uint16(20)
+            OS_2__MOSS__Inactive_Type_6 = pywbem.Uint16(22)
+            OS_2__MOSS__Inactive_Type_7 = pywbem.Uint16(23)
+            OS_2__MOSS__Inactive_Type_B = pywbem.Uint16(27)
+            OS_2__MOSS__Inactive_Type_C = pywbem.Uint16(28)
+            Microsoft = pywbem.Uint16(33)
+            Microsoft = pywbem.Uint16(35)
+            Microsoft = pywbem.Uint16(36)
+            Microsoft = pywbem.Uint16(38)
+            Microsoft = pywbem.Uint16(49)
+            Microsoft = pywbem.Uint16(51)
+            Microsoft = pywbem.Uint16(52)
+            OS_2_Logical_Volume_Manager = pywbem.Uint16(53)
+            Microsoft = pywbem.Uint16(54)
+            OS_2_JFS_Log = pywbem.Uint16(55)
+            PowerQuest = pywbem.Uint16(60)
+            VENIX_80286___Series_1_Disk = pywbem.Uint16(64)
+            Personal_RISC_Boot = pywbem.Uint16(65)
+            Veritas = pywbem.Uint16(66)
+            Veritas = pywbem.Uint16(67)
+            OnTrack_Disk_Manager_Read_Only_DOS = pywbem.Uint16(80)
+            OnTrack_Disk_Manager_Read_Write_DOS = pywbem.Uint16(81)
+            CPM___Microport_System_V_386___OnTrack_Disk_Mgr___Microsoft = pywbem.Uint16(82)
+            OnTrack_Disk_Manager = pywbem.Uint16(83)
+            OnTrack_Disk_Manager_Non_DOS = pywbem.Uint16(84)
+            Micro_House_EZ_Drive_Non_DOS = pywbem.Uint16(85)
+            Golden_Bow_Vfeature___Microsoft = pywbem.Uint16(86)
+            Storage_Dimensions_SpeedStor___Microsoft = pywbem.Uint16(97)
+            UNIX___AT_T_System_V_386___SCO_UNIX = pywbem.Uint16(99)
+            Novell_NetWare___Speedstore = pywbem.Uint16(100)
+            Novell_NetWare = pywbem.Uint16(101)
+            Novell_NetWare = pywbem.Uint16(102)
+            Novell = pywbem.Uint16(103)
+            Novell = pywbem.Uint16(104)
+            Novell = pywbem.Uint16(105)
+            Microsoft = pywbem.Uint16(113)
+            Microsoft = pywbem.Uint16(115)
+            Microsoft = pywbem.Uint16(116)
+            PC_IX_IBM = pywbem.Uint16(117)
+            Microsoft = pywbem.Uint16(118)
+            QNX_POSIX = pywbem.Uint16(119)
+            QNX_POSIX__Secondary_ = pywbem.Uint16(120)
+            QNX_POSIX__Secondary_ = pywbem.Uint16(121)
+            Minix____1_4a____Linux___Microsoft = pywbem.Uint16(128)
+            Minix____1_4b____Microsoft = pywbem.Uint16(129)
+            Linux_Swap___Prime = pywbem.Uint16(130)
+            Linux_Native___Apple = pywbem.Uint16(131)
+            System_Hibernation_for_APM = pywbem.Uint16(132)
+            Microsoft = pywbem.Uint16(134)
+            HPFS_FT_mirror = pywbem.Uint16(135)
+            Amoeba___Microsoft = pywbem.Uint16(147)
+            Amoeba_BBT___Microsoft = pywbem.Uint16(148)
+            Microsoft = pywbem.Uint16(161)
+            Microsoft = pywbem.Uint16(163)
+            Microsoft = pywbem.Uint16(164)
+            BSD_386 = pywbem.Uint16(165)
+            Microsoft = pywbem.Uint16(166)
+            Microsoft = pywbem.Uint16(177)
+            Microsoft = pywbem.Uint16(179)
+            Microsoft = pywbem.Uint16(180)
+            Microsoft = pywbem.Uint16(182)
+            BSDI_fs___Microsoft = pywbem.Uint16(183)
+            BSDI_Swap___Microsoft = pywbem.Uint16(184)
+            Microsoft = pywbem.Uint16(193)
+            Microsoft = pywbem.Uint16(196)
+            Microsoft = pywbem.Uint16(198)
+            Syrinx___HPFS_FT_Disabled_Mirror = pywbem.Uint16(199)
+            CP_M_86 = pywbem.Uint16(216)
+            Digital_Research_CPM_86___Concurrent_DOS___OUTRIGGER = pywbem.Uint16(219)
+            SpeedStor_12_bit_FAT_Extended = pywbem.Uint16(225)
+            DOS_Read_Only___Storage_Dimensions = pywbem.Uint16(227)
+            SpeedStor_16_bit_FAT_Extended = pywbem.Uint16(228)
+            Microsoft = pywbem.Uint16(229)
+            Microsoft = pywbem.Uint16(230)
+            Intel = pywbem.Uint16(239)
+            OS_2_Raw_Data = pywbem.Uint16(240)
+            Storage_Dimensions = pywbem.Uint16(241)
+            DOS__Secondary_ = pywbem.Uint16(242)
+            Microsoft = pywbem.Uint16(243)
+            SpeedStor_Large___Storage_Dimensions = pywbem.Uint16(244)
+            Microsoft = pywbem.Uint16(246)
+            Lan_Step___SpeedStor___IBM_PS_2_IML = pywbem.Uint16(254)
+            Bad_Block_Tables = pywbem.Uint16(255)
+            Unknown = pywbem.Uint16(65535)
+
         class TransitioningToState(object):
             Unknown = pywbem.Uint16(0)
             Enabled = pywbem.Uint16(2)
@@ -854,18 +971,7 @@ class Cura_GPTDiskPartition(CIMProvider2):
             Count_Key_Data = pywbem.Uint16(4)
 
         class NameFormat(object):
-            Unknown = pywbem.Uint16(0)
             Other = pywbem.Uint16(1)
-            VPD83NAA6 = pywbem.Uint16(2)
-            VPD83NAA5 = pywbem.Uint16(3)
-            VPD83Type2 = pywbem.Uint16(4)
-            VPD83Type1 = pywbem.Uint16(5)
-            VPD83Type0 = pywbem.Uint16(6)
-            SNVM = pywbem.Uint16(7)
-            NodeWWN = pywbem.Uint16(8)
-            NAA = pywbem.Uint16(9)
-            EUI64 = pywbem.Uint16(10)
-            T10VID = pywbem.Uint16(11)
             OS_Device_Name = pywbem.Uint16(12)
 
         class AvailableRequestedStates(object):
@@ -885,6 +991,12 @@ class Cura_GPTDiskPartition(CIMProvider2):
             On = pywbem.Uint16(2)
             Off = pywbem.Uint16(3)
             Not_Supported = pywbem.Uint16(4)
+
+        class PartitionType(object):
+            Unknown = pywbem.Uint16(0)
+            Primary = pywbem.Uint16(1)
+            Extended = pywbem.Uint16(2)
+            Logical = pywbem.Uint16(3)
 
         class Status(object):
             OK = 'OK'
@@ -930,7 +1042,7 @@ class Cura_GPTDiskPartition(CIMProvider2):
             Other = pywbem.Uint16(1)
             Unknown = pywbem.Uint16(2)
             Running_Full_Power = pywbem.Uint16(3)
-            _Warning = pywbem.Uint16(4)
+            xWarning = pywbem.Uint16(4)
             In_Test = pywbem.Uint16(5)
             Not_Applicable = pywbem.Uint16(6)
             Power_Off = pywbem.Uint16(7)
@@ -984,14 +1096,7 @@ class Cura_GPTDiskPartition(CIMProvider2):
                 Power_Off = pywbem.Uint16(6)
 
         class NameNamespace(object):
-            Unknown = pywbem.Uint16(0)
             Other = pywbem.Uint16(1)
-            VPD83Type3 = pywbem.Uint16(2)
-            VPD83Type2 = pywbem.Uint16(3)
-            VPD83Type1 = pywbem.Uint16(4)
-            VPD80 = pywbem.Uint16(5)
-            NodeWWN = pywbem.Uint16(6)
-            SNVM = pywbem.Uint16(7)
             OS_Device_Namespace = pywbem.Uint16(8)
 
         class OperationalStatus(object):
@@ -1102,7 +1207,7 @@ class Cura_GPTDiskPartition(CIMProvider2):
             Other = pywbem.Uint16(1)
             Unknown = pywbem.Uint16(2)
             Running_Full_Power = pywbem.Uint16(3)
-            _Warning = pywbem.Uint16(4)
+            xWarning = pywbem.Uint16(4)
             In_Test = pywbem.Uint16(5)
             Not_Applicable = pywbem.Uint16(6)
             Power_Off = pywbem.Uint16(7)
@@ -1121,11 +1226,11 @@ class Cura_GPTDiskPartition(CIMProvider2):
             Not_Configured = pywbem.Uint16(20)
             Quiesced = pywbem.Uint16(21)
 
-## end of class Cura_GPTDiskPartitionProvider
+## end of class LMI_LogicalMBRPartitionProvider
 
 ## get_providers() for associating CIM Class Name to python provider class name
 
 def get_providers(env):
     initAnaconda(False)
-    cura_gptdiskpartition_prov = Cura_GPTDiskPartition(env)
-    return {'Cura_GPTDiskPartition': cura_gptdiskpartition_prov}
+    LMI_logicalmbrpartition_prov = LMI_DiskPartition(env)
+    return {'LMI_DiskPartition': LMI_logicalmbrpartition_prov}

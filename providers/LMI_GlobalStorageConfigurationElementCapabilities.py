@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_PartitionElementCapabilities
+"""Python Provider for LMI_GlobalStorageConfigurationElementCapabilities
 
-Instruments the CIM class Cura_PartitionElementCapabilities
+Instruments the CIM class LMI_GlobalStorageConfigurationElementCapabilities
 
 """
 
@@ -25,11 +25,17 @@ from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
-class Cura_PartitionElementCapabilities(CIMProvider2):
-    """Instrument the CIM class Cura_PartitionElementCapabilities 
+class LMI_GlobalStorageConfigurationElementCapabilities(CIMProvider2):
+    """Instrument the CIM class LMI_GlobalStorageConfigurationElementCapabilities 
 
-    Association between DiskPartitionConfigurationCapabilities and
-    DiskPartitionConfigurationService.
+    ElementCapabilities represents the association between ManagedElements
+    and their Capabilities. Note that the cardinality of the
+    ManagedElement reference is Min(1). This cardinality mandates the
+    instantiation of the ElementCapabilities association for the
+    referenced instance of Capabilities. ElementCapabilities describes the
+    existence requirements and context for the referenced instance of
+    ManagedElement. Specifically, the ManagedElement MUST exist and
+    provides the context for the Capabilities.
     
     """
 
@@ -66,7 +72,15 @@ class Cura_PartitionElementCapabilities(CIMProvider2):
                 % self.__class__.__name__)
         
 
-        # TODO: checking
+        cap = model['Capabilities']
+        if cap.classname != 'LMI_GlobalStorageConfigurationCapabilities':
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong Capabilities class.')
+        
+        service = model['ManagedElement']
+        if service.classname != 'LMI_StorageConfigurationService':
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong ManagedElement class.')
+        # TODO: more checks
+        model['Characteristics'] = [self.Values.Characteristics.Default,self.Values.Characteristics.Current]
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -102,16 +116,24 @@ class Cura_PartitionElementCapabilities(CIMProvider2):
         model.path.update({'Capabilities': None, 'ManagedElement': None})
         
         ch = env.get_cimom_handle()
-        # get the only one Cura_DiskPartitionConfigurationService
-        services = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Cura_DiskPartitionConfigurationService')
+        # get the only one LMI_StorageConfigurationService
+        services = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_StorageConfigurationService')
         service = services.next()
-        
-        # find all services on the system starting with 'Cura' and associate them with the system
-        capabilities = ch.EnumerateInstanceNames(ns = CURA_NAMESPACE, cn='Cura_DiskPartitionConfigurationCapabilities')
-        for capability in capabilities:
-            model['Capabilities'] = capability
-            model['ManagedElement'] = service
+        # get the only one LMI_GlobalStorageConfigurationCapabilities
+        caps = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_GlobalStorageConfigurationCapabilities')
+        cap = caps.next()
+
+        model['Capabilities'] = cap    
+        model['ManagedElement'] = service
+        if keys_only:
             yield model
+        else:
+            try:
+                yield self.get_instance(env, model)
+            except pywbem.CIMError, (num, msg):
+                if num not in (pywbem.CIM_ERR_NOT_FOUND, 
+                               pywbem.CIM_ERR_ACCESS_DENIED):
+                    raise
 
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
@@ -258,11 +280,11 @@ class Cura_PartitionElementCapabilities(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Specific = 32768..65535
 
-## end of class Cura_PartitionElementCapabilitiesProvider
+## end of class LMI_GlobalStorageConfigurationElementCapabilitiesProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_partitionelementcapabilities_prov = Cura_PartitionElementCapabilities(env)  
-    return {'Cura_PartitionElementCapabilities': cura_partitionelementcapabilities_prov} 
+    LMI_globalstorageconfigurationelementcapabilities_prov = LMI_GlobalStorageConfigurationElementCapabilities(env)  
+    return {'LMI_GlobalStorageConfigurationElementCapabilities': LMI_globalstorageconfigurationelementcapabilities_prov} 

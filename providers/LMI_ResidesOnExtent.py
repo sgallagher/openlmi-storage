@@ -15,26 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_LogicalDiskBasedOn
+"""Python Provider for CuraResidesOnExtent
 
-Instruments the CIM class Cura_LogicalDiskBasedOn
+Instruments the CIM class CuraResidesOnExtent
 
 """
 
 from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
+import pyanaconda.storage.formats.fs
 
-class Cura_LogicalDiskBasedOn(CIMProvider2):
-    """Instrument the CIM class Cura_LogicalDiskBasedOn 
+class LMI_ResidesOnExtent(CIMProvider2):
+    """Instrument the CIM class LMI_ResidesOnExtent 
 
-    BasedOn is an association describing how StorageExtents can be
-    assembled from lower level Extents. For example, ProtectedSpaceExtents
-    are parts of PhysicalExtents, while VolumeSets are assembled from one
-    or more Physical or ProtectedSpaceExtents. As another example,
-    CacheMemory can be defined independently and realized in a
-    PhysicalElement or can be \'based on\' Volatile or
-    NonVolatileStorageExtents.
+    An association between a LogicalElement and the StorageExtent where it
+    is located. Typically, a FileSystem ResidesOn a LogicalDisk. However,
+    it is possible for a logical file or other internal data store to
+    reside directly on a StorageExtent or appropriate subclass.
     
     """
 
@@ -71,18 +69,10 @@ class Cura_LogicalDiskBasedOn(CIMProvider2):
                 % self.__class__.__name__)
         
 
-        diskName = model['Dependent']
-        if (diskName['SystemName'] != CURA_SYSTEM_NAME
-                or diskName['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or diskName['CreationClassName'] != 'Cura_LogicalDisk'):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'Wrong keys.')
-        base = wrapperManager.getDevice(model['Antecedent'])
-        if diskName['DeviceID'] != base.path:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, 'The antecedent is not associated to the dependent.')
+        # TODO fetch system resource matching the following keys:
+        #   model['Dependent']
+        #   model['Antecedent']
 
-        #model['EndingAddress'] = pywbem.Uint64() # TODO 
-        #model['OrderIndex'] = pywbem.Uint16() # TODO 
-        #model['StartingAddress'] = pywbem.Uint64() # TODO 
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -118,25 +108,21 @@ class Cura_LogicalDiskBasedOn(CIMProvider2):
         model.path.update({'Dependent': None, 'Antecedent': None})
         
         for device in storage.devices:
-            if not logicalDiskManager.isExposed(device):
-                continue
-            wrapper = wrapperManager.getWrapperForDevice(device)
-            if wrapper is None:
-                continue
-            model['Antecedent'] = wrapper.getExtentName(device)
-            diskname = model['Antecedent'].copy()
-            diskname['CreationClassName'] = 'Cura_LogicalDisk'
-            diskname.classname = 'Cura_LogicalDisk'
-            model['Dependent'] = diskname
-            if keys_only:
+            if device.format.type != None and isinstance(device.format, pyanaconda.storage.formats.fs.FS):
+                fs = device.format
+                model['Dependent'] = pywbem.CIMInstanceName(classname='LMI_LocalFileSystem', namespace=LMI_NAMESPACE,
+                        keybindings = { 'CSName' : LMI_SYSTEM_NAME,
+                            'CSCreationClassName' : LMI_SYSTEM_CLASS_NAME,
+                            'Name' : device.path,
+                            'CreationClassName' : 'LMI_LocalFileSystem'
+                        })
+                model['Antecedent'] = pywbem.CIMInstanceName(classname='LMI_LogicalDisk', namespace="root/cimv2",
+                        keybindings = { 'CreationClassName' : 'LMI_LogicalDisk',
+                            'SystemCreationClassName' : LMI_SYSTEM_CLASS_NAME,
+                            'SystemName' : LMI_SYSTEM_NAME,
+                            'DeviceID' : device.path
+                })
                 yield model
-            else:
-                try:
-                    yield self.get_instance(env, model)
-                except pywbem.CIMError, (num, msg):
-                    if num not in (pywbem.CIM_ERR_NOT_FOUND, 
-                                   pywbem.CIM_ERR_ACCESS_DENIED):
-                        raise
 
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
@@ -269,18 +255,19 @@ class Cura_LogicalDiskBasedOn(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_StorageExtent') or \
+                          super='CIM_LogicalElement') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
-                          
-## end of class Cura_LogicalDiskBasedOnProvider
+
+## end of class CuraResidesOnExtentProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_logicaldiskbasedon_prov = Cura_LogicalDiskBasedOn(env)  
-    return {'Cura_LogicalDiskBasedOn': cura_logicaldiskbasedon_prov} 
+    LMI_residesonextent_prov = LMI_ResidesOnExtent(env)  
+    return {'CuraResidesOnExtent': LMI_residesonextent_prov}
+

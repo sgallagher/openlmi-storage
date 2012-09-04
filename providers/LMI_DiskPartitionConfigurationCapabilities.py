@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_PrimaryMBRDiskPartitionConfigurationCapabilities
+"""Python Provider for LMI_PrimaryMBRDiskPartitionConfigurationCapabilities
 
-Instruments the CIM class Cura_PrimaryMBRDiskPartitionConfigurationCapabilities
+Instruments the CIM class LMI_PrimaryMBRDiskPartitionConfigurationCapabilities
 
 """
 
@@ -26,8 +26,8 @@ import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 import util.partitioning
 
-class Cura_DiskPartitionConfigurationCapabilities(CIMProvider2):
-    """Instrument the CIM class Cura_PrimaryMBRDiskPartitionConfigurationCapabilities 
+class LMI_DiskPartitionConfigurationCapabilities(CIMProvider2):
+    """Instrument the CIM class LMI_PrimaryMBRDiskPartitionConfigurationCapabilities 
 
     POC DiskPartitionConfigurationCapabilities of primary MBR partition
     table. Size of this partition table is fixed.
@@ -207,7 +207,7 @@ class Cura_DiskPartitionConfigurationCapabilities(CIMProvider2):
     def cim_method_creategoalsettings(self, env, object_name,
                                       param_supportedgoalsettings=None,
                                       param_templategoalsettings=None):
-        """Implements Cura_PrimaryMBRDiskPartitionConfigurationCapabilities.CreateGoalSettings()
+        """Implements LMI_PrimaryMBRDiskPartitionConfigurationCapabilities.CreateGoalSettings()
 
         Method to create a set of supported SettingData elements, from two
         sets of SettingData elements, provided by the caller. \nCreateGoal
@@ -378,11 +378,11 @@ class Cura_DiskPartitionConfigurationCapabilities(CIMProvider2):
             GPT = pywbem.Uint16(3)
             VTOC = pywbem.Uint16(4)
 
-## end of class Cura_PrimaryMBRDiskPartitionConfigurationCapabilitiesProvider
+## end of class LMI_PrimaryMBRDiskPartitionConfigurationCapabilitiesProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    cura_diskpartitionconfigurationcapabilities_prov = Cura_DiskPartitionConfigurationCapabilities(env)  
-    return {'Cura_DiskPartitionConfigurationCapabilities': cura_diskpartitionconfigurationcapabilities_prov} 
+    LMI_diskpartitionconfigurationcapabilities_prov = LMI_DiskPartitionConfigurationCapabilities(env)  
+    return {'LMI_DiskPartitionConfigurationCapabilities': LMI_diskpartitionconfigurationcapabilities_prov} 

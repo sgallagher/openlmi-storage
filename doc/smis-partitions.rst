@@ -20,11 +20,11 @@ The Disk Partition Subprofile does not reflect real-world MBR partition tables:
 
 As result of this deficiency, some adjustments were necessary:
 
-* The ``Cura_DiskPartition`` representing a logical partition *includes* the
+* The ``LMI_DiskPartition`` representing a logical partition *includes* the
   metadata sector and any alignment sectors.
 
-* The ``Cura_PartitionExtent`` (= ``CIM_LogicalDisk``) allocated from the
-  ``Cura_DiskPartition`` includes only the real partition data.
+* The ``LMI_PartitionExtent`` (= ``CIM_LogicalDisk``) allocated from the
+  ``LMI_DiskPartition`` includes only the real partition data.
 
 .. figure:: pic/partitions.png
 
@@ -40,18 +40,18 @@ All mandatory classes and methods are implemented:
 =============================================== ==========================================
 SMI-S                                           Cura
 =============================================== ==========================================
-CIM_BasedOn                                     Cura_PartitionBasedOnLocalDiskExtent
-CIM_BasedOn                                     Cura_PartitionBasedOnPartition
-CIM_DiskPartitionConfigurationCapabilities      Cura_DiskPartitionConfigurationCapabilities
-CIM_DiskPartitionConfigurationService           Cura_DiskPartitionConfigurationService
-CIM_ElementCapabilities                         Cura_PartitionElementCapabilities
+CIM_BasedOn                                     LMI_PartitionBasedOnLocalDiskExtent
+CIM_BasedOn                                     LMI_PartitionBasedOnPartition
+CIM_DiskPartitionConfigurationCapabilities      LMI_DiskPartitionConfigurationCapabilities
+CIM_DiskPartitionConfigurationService           LMI_DiskPartitionConfigurationService
+CIM_ElementCapabilities                         LMI_PartitionElementCapabilities
 CIM_GenericPartition                            N/A
-CIM_HostedService                               Cura_HostedService
-CIM_InstalledPartitionTable                     Cura_InstalledParititionTable
-CIM_LogicalDisk                                 Cura_PartitionExtent [#1]_
-CIM_LogicalDiskBasedOnPartition                 Cura_PartitionExtentBasedOnPartition
-CIM_StorageExtent                               Cura_StorageExtent
-CIM_SystemDevice                                Cura_SystemDevice
+CIM_HostedService                               LMI_HostedService
+CIM_InstalledPartitionTable                     LMI_InstalledParititionTable
+CIM_LogicalDisk                                 LMI_PartitionExtent [#1]_
+CIM_LogicalDiskBasedOnPartition                 LMI_PartitionExtentBasedOnPartition
+CIM_StorageExtent                               LMI_StorageExtent
+CIM_SystemDevice                                LMI_SystemDevice
 =============================================== ==========================================
 
 .. warning:: Mandatory indications are not implemented.

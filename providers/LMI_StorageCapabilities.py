@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_StorageCapabilities
+"""Python Provider for LMI_StorageCapabilities
 
-Instruments the CIM class Cura_StorageCapabilities
+Instruments the CIM class LMI_StorageCapabilities
 
 """
 
 from wrapper.common import settingManager
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from Cura_StorageSetting import Cura_StorageSetting
+from LMI_StorageSetting import LMI_StorageSetting
 
-class Cura_StorageCapabilities(CIMProvider2):
-    """Instrument the CIM class Cura_StorageCapabilities 
+class LMI_StorageCapabilities(CIMProvider2):
+    """Instrument the CIM class LMI_StorageCapabilities 
 
     This is abstract base class for Cura purposes.
     
@@ -219,7 +219,7 @@ class Cura_StorageCapabilities(CIMProvider2):
         raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED) # Remove to implement
         
     def cim_method_getsupportedstripelengths(self, env, object_name):
-        """Implements Cura_StorageCapabilities.GetSupportedStripeLengths()
+        """Implements LMI_StorageCapabilities.GetSupportedStripeLengths()
 
         For systems that support discrete ExtentStripeLengths for volume or
         pool creation, this method can be used to retrieve a list of
@@ -270,7 +270,7 @@ class Cura_StorageCapabilities(CIMProvider2):
         #return (rval, out_params)
         
     def cim_method_getsupportedparitylayouts(self, env, object_name):
-        """Implements Cura_StorageCapabilities.GetSupportedParityLayouts()
+        """Implements LMI_StorageCapabilities.GetSupportedParityLayouts()
 
         For systems that support Parity-based storage organizations for
         volume or pool creation, this method can be used to the supported
@@ -316,7 +316,7 @@ class Cura_StorageCapabilities(CIMProvider2):
         #return (rval, out_params)
         
     def cim_method_getsupportedstripedepthrange(self, env, object_name):
-        """Implements Cura_StorageCapabilities.GetSupportedStripeDepthRange()
+        """Implements LMI_StorageCapabilities.GetSupportedStripeDepthRange()
 
         For systems that support a range of UserDataStripeDepths for volume
         or pool creation, this method can be used to retrieve the
@@ -377,7 +377,7 @@ class Cura_StorageCapabilities(CIMProvider2):
     def cim_method_creategoalsettings(self, env, object_name,
                                       param_supportedgoalsettings=None,
                                       param_templategoalsettings=None):
-        """Implements Cura_StorageCapabilities.CreateGoalSettings()
+        """Implements LMI_StorageCapabilities.CreateGoalSettings()
 
         Method to create a set of supported SettingData elements, from two
         sets of SettingData elements, provided by the caller. \nCreateGoal
@@ -520,7 +520,7 @@ class Cura_StorageCapabilities(CIMProvider2):
         #return (rval, out_params)
         
     def cim_method_getsupportedstripelengthrange(self, env, object_name):
-        """Implements Cura_StorageCapabilities.GetSupportedStripeLengthRange()
+        """Implements LMI_StorageCapabilities.GetSupportedStripeLengthRange()
 
         For systems that support a range of ExtentStripeLengths for volume
         or pool creation, this method can be used to retrieve the
@@ -581,7 +581,7 @@ class Cura_StorageCapabilities(CIMProvider2):
         #return (rval, out_params)
         
     def cim_method_getsupportedstripedepths(self, env, object_name):
-        """Implements Cura_StorageCapabilities.GetSupportedStripeDepths()
+        """Implements LMI_StorageCapabilities.GetSupportedStripeDepths()
 
         For systems that support discrete UserDataStripeDepths for volume
         or pool creation, this method can be used to retrieve a list of
@@ -631,7 +631,7 @@ class Cura_StorageCapabilities(CIMProvider2):
         
     def cim_method_createsetting(self, env, object_name,
                                  param_settingtype=None):
-        """Implements Cura_StorageCapabilities.CreateSetting()
+        """Implements LMI_StorageCapabilities.CreateSetting()
 
         Method to create and populate a StorageSetting instance from a
         StorageCapability instance. This removes the need to populate
@@ -690,7 +690,7 @@ class Cura_StorageCapabilities(CIMProvider2):
         
         setting = {
                 'InstanceID': str(i),
-                'ChangeableType': Cura_StorageSetting.Values.ChangeableType.Changeable___Transient,
+                'ChangeableType': LMI_StorageSetting.Values.ChangeableType.Changeable___Transient,
                 'ElementName': str(i),
                 'CuraAllocationType' : params['CuraAllocationType'] ,
         }
@@ -837,4 +837,4 @@ class Cura_StorageCapabilities(CIMProvider2):
                 Default = pywbem.Uint16(2)
                 Goal = pywbem.Uint16(3)
 
-## end of class Cura_StorageCapabilitiesProvider
+## end of class LMI_StorageCapabilitiesProvider

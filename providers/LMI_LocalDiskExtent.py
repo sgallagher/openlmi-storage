@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_DiskPartition
+"""Python Provider for LMI_LocalDiskExtent
 
-Instruments the CIM class Cura_DiskPartition
+Instruments the CIM class LMI_LocalDiskExtent
 
 """
 
@@ -25,12 +25,11 @@ from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 import pyanaconda.storage.devices
-import util.partitioning
 
-class Cura_DiskPartition(CIMProvider2):
-    """Instrument the CIM class Cura_DiskPartition 
+class LMI_LocalDiskExtent(CIMProvider2):
+    """Instrument the CIM class LMI_LocalDiskExtent 
 
-    A logical partition.
+    Local disk, which can be either partitioned or directly formatted.
     
     """
 
@@ -39,7 +38,7 @@ class Cura_DiskPartition(CIMProvider2):
         logger.log_debug('Initializing provider %s from %s' \
                 % (self.__class__.__name__, __file__))
 
-    def get_instance(self, env, model, partition = None):
+    def get_instance(self, env, model, disk=None):
         """Return an instance.
 
         Keyword arguments:
@@ -61,113 +60,31 @@ class Cura_DiskPartition(CIMProvider2):
         CIM_ERR_FAILED (some other unspecified error occurred)
 
         """
-
+        
         logger = env.get_logger()
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
-
-        if (model['SystemName'] != CURA_SYSTEM_NAME
-                or model['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or model['CreationClassName'] != 'Cura_DiskPartition'):
+        
+        if (model['SystemName'] != LMI_SYSTEM_NAME
+                or model['SystemCreationClassName'] != LMI_SYSTEM_CLASS_NAME
+                or model['CreationClassName'] != 'LMI_LocalDiskExtent'):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
 
-        # find the partition with given name
-        if partition is None:
-            partition = storage.devicetree.getDeviceByPath(model['DeviceID'])
-            if partition is None:
-                raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID not found.")
-            if  not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
-                raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a partition.")
-            if partition.disk.format.labelType != util.partitioning.LABEL_MBR:
-                raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a MBR partition.")
+        if disk is None:
+            disk = storage.devicetree.getDeviceByPath(model['DeviceID'])
+        if disk is None:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find DeviceID.")
+        if not isinstance(disk, pyanaconda.storage.devices.DiskDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not disk")
 
-        #model['Access'] = self.Values.Access.<VAL> # TODO 
-        #model['AdditionalAvailability'] = [self.Values.AdditionalAvailability.<VAL>,] # TODO 
-        #model['Allocatable'] = bool() # TODO 
-        #model['Availability'] = self.Values.Availability.<VAL> # TODO 
-        #model['AvailableRequestedStates'] = [self.Values.AvailableRequestedStates.<VAL>,] # TODO 
-        model['BlockSize'] = pywbem.Uint64(partition.partedDevice.sectorSize)
-        if partition.bootable:
-            model['Bootable'] = True
-        else:
-            model['Bootable'] = False
-        #model['Caption'] = '' # TODO 
-        #model['ClientSettableUsage'] = [pywbem.Uint16(),] # TODO 
-        #model['CommunicationStatus'] = self.Values.CommunicationStatus.<VAL> # TODO 
-        #model['ConsumableBlocks'] = pywbem.Uint64() # TODO 
-        #model['DataOrganization'] = self.Values.DataOrganization.<VAL> # TODO 
-        #model['DataRedundancy'] = pywbem.Uint16() # TODO 
-        #model['DeltaReservation'] = pywbem.Uint8() # TODO 
-        #model['Description'] = '' # TODO 
-        #model['DetailedStatus'] = self.Values.DetailedStatus.<VAL> # TODO 
-        #model['ElementName'] = '' # TODO 
-        model['EnabledDefault'] = self.Values.EnabledDefault.Enabled
-        model['EnabledState'] = self.Values.EnabledState.Enabled
-        #model['ErrorCleared'] = bool() # TODO 
-        #model['ErrorDescription'] = '' # TODO 
-        #model['ErrorMethodology'] = '' # TODO 
-        #model['Extendable'] = bool() # TODO 
-        #model['ExtentDiscriminator'] = ['',] # TODO 
-        #model['ExtentInterleaveDepth'] = pywbem.Uint64() # TODO 
-        #model['ExtentStatus'] = [self.Values.ExtentStatus.<VAL>,] # TODO 
-        #model['ExtentStripeLength'] = pywbem.Uint64() # TODO 
-        #model['Generation'] = pywbem.Uint64() # TODO 
-        #model['HealthState'] = self.Values.HealthState.<VAL> # TODO 
-        #model['IdentifyingDescriptions'] = ['',] # TODO 
-        #model['InstallDate'] = pywbem.CIMDateTime() # TODO 
-        #model['InstanceID'] = '' # TODO 
-        #model['IsBasedOnUnderlyingRedundancy'] = bool() # TODO 
-        model['IsComposite'] = False
-        #model['IsConcatenated'] = bool() # TODO 
-        #model['LastErrorCode'] = pywbem.Uint32() # TODO 
-        #model['LocationIndicator'] = self.Values.LocationIndicator.<VAL> # TODO 
-        #model['MaxQuiesceTime'] = pywbem.Uint64() # TODO 
-        model['Name'] = partition.path
+        model['BlockSize'] = pywbem.Uint64(disk.partedDevice.sectorSize) 
+        model['IsComposite'] = bool(False) 
+        model['Name'] = disk.path
         model['NameFormat'] = self.Values.NameFormat.OS_Device_Name
         model['NameNamespace'] = self.Values.NameNamespace.OS_Device_Namespace
-        #model['NoSinglePointOfFailure'] = bool() # TODO
-        if partition.isLogical:
-            model['NumberOfBlocks'] = pywbem.Uint64(
-                                    partition.partedPartition.geometry.end
-                                    - util.partitioning.getLogicalPartitionStart(partition)
-                                    + 1)
-        else:
-            model['NumberOfBlocks'] = pywbem.Uint64(partition.partedPartition.getLength())
-        #model['OperatingStatus'] = self.Values.OperatingStatus.<VAL> # TODO 
-        model['OperationalStatus'] = [self.Values.OperationalStatus.OK]
-        #model['OtherEnabledState'] = '' # TODO 
-        #model['OtherIdentifyingInfo'] = ['',] # TODO 
-        #model['OtherNameFormat'] = '' # TODO 
-        #model['OtherNameNamespace'] = '' # TODO 
-        #model['OtherUsageDescription'] = '' # TODO 
-        #model['PackageRedundancy'] = pywbem.Uint16() # TODO 
-        #model['PartitionSubtype'] = self.Values.PartitionSubtype.<VAL> # TODO
-        if partition.isLogical:
-            model['PartitionType'] = self.Values.PartitionType.Logical
-        elif partition.isExtended:
-            model['PartitionType'] = self.Values.PartitionType.Extended
-        elif partition.isPrimary:
-            model['PartitionType'] = self.Values.PartitionType.Primary
-
-        #model['PowerManagementCapabilities'] = [self.Values.PowerManagementCapabilities.<VAL>,] # TODO 
-        #model['PowerManagementSupported'] = bool() # TODO 
-        #model['PowerOnHours'] = pywbem.Uint64() # TODO
-        model['PrimaryPartition'] = bool(partition.isPrimary or partition.isExtended)
-        #model['PrimaryStatus'] = self.Values.PrimaryStatus.<VAL> # TODO 
-        model['Primordial'] = False # TODO: really 
-        #model['Purpose'] = '' # TODO 
-        model['RequestedState'] = self.Values.RequestedState.Not_Applicable
-        #model['SequentialAccess'] = bool() # TODO 
-        #model['Signature'] = '' # TODO 
-        #model['SignatureAlgorithm'] = '' # TODO 
-        #model['SignatureState'] = self.Values.SignatureState.<VAL> # TODO 
-        #model['Status'] = self.Values.Status.<VAL> # TODO 
-        #model['StatusDescriptions'] = ['',] # TODO 
-        #model['StatusInfo'] = self.Values.StatusInfo.<VAL> # TODO 
-        #model['TimeOfLastStateChange'] = pywbem.CIMDateTime() # TODO 
-        #model['TotalPowerOnHours'] = pywbem.Uint64() # TODO 
-        model['TransitioningToState'] = self.Values.TransitioningToState.Not_Applicable
-        #model['Usage'] = self.Values.Usage.<VAL> # TODO 
+        model['NoSinglePointOfFailure'] = False
+        model['NumberOfBlocks'] = pywbem.Uint64(disk.partedDevice.length) 
+        model['OperationalStatus'] = [self.Values.OperationalStatus.OK,]
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -196,29 +113,25 @@ class Cura_DiskPartition(CIMProvider2):
         logger = env.get_logger()
         logger.log_debug('Entering %s.enum_instances()' \
                 % self.__class__.__name__)
-
+                
         # Prime model.path with knowledge of the keys, so key values on
         # the CIMInstanceName (model.path) will automatically be set when
         # we set property values on the model. 
         model.path.update({'CreationClassName': None, 'SystemName': None,
             'DeviceID': None, 'SystemCreationClassName': None})
-
-        partitions = storage.partitions
-        for p in partitions:
-            if p.disk.format.labelType != util.partitioning.LABEL_MBR:
-                continue
-            
-            model['SystemName'] = CURA_SYSTEM_NAME
-            model['SystemCreationClassName'] = CURA_SYSTEM_CLASS_NAME
-            model['CreationClassName'] = 'Cura_DiskPartition'
-            model['DeviceID'] = p.path
+        
+        for disk in storage.disks:
+            model['SystemName'] = LMI_SYSTEM_NAME
+            model['SystemCreationClassName'] = LMI_SYSTEM_CLASS_NAME    
+            model['CreationClassName'] = 'LMI_LocalDiskExtent'    
+            model['DeviceID'] = disk.path
             if keys_only:
                 yield model
             else:
                 try:
-                    yield self.get_instance(env, model, p)
+                    yield self.get_instance(env, model, disk)
                 except pywbem.CIMError, (num, msg):
-                    if num not in (pywbem.CIM_ERR_NOT_FOUND,
+                    if num not in (pywbem.CIM_ERR_NOT_FOUND, 
                                    pywbem.CIM_ERR_ACCESS_DENIED):
                         raise
 
@@ -276,29 +189,17 @@ class Cura_DiskPartition(CIMProvider2):
             Instance does not exist in the specified namespace)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
-        """
+        """ 
 
         logger = env.get_logger()
         logger.log_debug('Entering %s.delete_instance()' \
                 % self.__class__.__name__)
 
-        if (instance_name['SystemName'] != CURA_SYSTEM_NAME
-                or instance_name['SystemCreationClassName'] != CURA_SYSTEM_CLASS_NAME
-                or instance_name['CreationClassName'] != 'Cura_DiskPartition'):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
-
-        # find the partition with given name
-        partition = storage.devicetree.getDeviceByPath(instance_name['DeviceID'])
-        if partition is None:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID not found.")
-        if  not isinstance(partition, pyanaconda.storage.devices.PartitionDevice):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a partition.")
-        if partition.disk.format.labelType != util.partitioning.LABEL_MBR:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "DeviceID is not a MBR partition.")
-        util.partitioning.deletePartition(partition)
-
+        # TODO delete the resource
+        raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED) # Remove to implement
+        
     def cim_method_reset(self, env, object_name):
-        """Implements Cura_DiskPartition.Reset()
+        """Implements LMI_LocalDiskExtent.Reset()
 
         Requests a reset of the LogicalDevice. The return value should be 0
         if the request was successfully executed, 1 if the request is not
@@ -338,13 +239,13 @@ class Cura_DiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None# TODO (type pywbem.Uint32)
+        rval = None # TODO (type pywbem.Uint32)
         return (rval, out_params)
-
+        
     def cim_method_requeststatechange(self, env, object_name,
-                                      param_requestedstate = None,
-                                      param_timeoutperiod = None):
-        """Implements Cura_DiskPartition.RequestStateChange()
+                                      param_requestedstate=None,
+                                      param_timeoutperiod=None):
+        """Implements LMI_LocalDiskExtent.RequestStateChange()
 
         Requests that the state of the element be changed to the value
         specified in the RequestedState parameter. When the requested
@@ -415,13 +316,13 @@ class Cura_DiskPartition(CIMProvider2):
         out_params = []
         #out_params+= [pywbem.CIMParameter('job', type='reference', 
         #                   value=pywbem.CIMInstanceName(classname='CIM_ConcreteJob', ...))] # TODO
-        rval = None# TODO (type pywbem.Uint32 self.Values.RequestStateChange)
+        rval = None # TODO (type pywbem.Uint32 self.Values.RequestStateChange)
         return (rval, out_params)
-
+        
     def cim_method_setpowerstate(self, env, object_name,
-                                 param_powerstate = None,
-                                 param_time = None):
-        """Implements Cura_DiskPartition.SetPowerState()
+                                 param_powerstate=None,
+                                 param_time=None):
+        """Implements LMI_LocalDiskExtent.SetPowerState()
 
         Note: The use of this method has been deprecated. Instead, use the
         SetPowerState method in the associated PowerManagementService
@@ -465,12 +366,12 @@ class Cura_DiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None# TODO (type pywbem.Uint32)
+        rval = None # TODO (type pywbem.Uint32)
         return (rval, out_params)
-
+        
     def cim_method_quiescedevice(self, env, object_name,
-                                 param_quiesce = None):
-        """Implements Cura_DiskPartition.QuiesceDevice()
+                                 param_quiesce=None):
+        """Implements LMI_LocalDiskExtent.QuiesceDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -530,12 +431,12 @@ class Cura_DiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None# TODO (type pywbem.Uint32)
+        rval = None # TODO (type pywbem.Uint32)
         return (rval, out_params)
-
+        
     def cim_method_enabledevice(self, env, object_name,
-                                param_enabled = None):
-        """Implements Cura_DiskPartition.EnableDevice()
+                                param_enabled=None):
+        """Implements LMI_LocalDiskExtent.EnableDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -588,12 +489,12 @@ class Cura_DiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None# TODO (type pywbem.Uint32)
+        rval = None # TODO (type pywbem.Uint32)
         return (rval, out_params)
-
+        
     def cim_method_onlinedevice(self, env, object_name,
-                                param_online = None):
-        """Implements Cura_DiskPartition.OnlineDevice()
+                                param_online=None):
+        """Implements LMI_LocalDiskExtent.OnlineDevice()
 
         Note: The use of this method has been deprecated in lieu of the
         more general RequestStateChange method that directly overlaps with
@@ -666,11 +567,11 @@ class Cura_DiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None# TODO (type pywbem.Uint32)
+        rval = None # TODO (type pywbem.Uint32)
         return (rval, out_params)
-
+        
     def cim_method_saveproperties(self, env, object_name):
-        """Implements Cura_DiskPartition.SaveProperties()
+        """Implements LMI_LocalDiskExtent.SaveProperties()
 
         Note: The use of this method is deprecated. Its function is handled
         more generally by the ConfigurationData subclass of SettingData.
@@ -717,11 +618,11 @@ class Cura_DiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None# TODO (type pywbem.Uint32)
+        rval = None # TODO (type pywbem.Uint32)
         return (rval, out_params)
-
+        
     def cim_method_restoreproperties(self, env, object_name):
-        """Implements Cura_DiskPartition.RestoreProperties()
+        """Implements LMI_LocalDiskExtent.RestoreProperties()
 
         Note: The use of this method is deprecated. Its function is handled
         more generally by the ConfigurationData subclass of SettingData.
@@ -766,9 +667,9 @@ class Cura_DiskPartition(CIMProvider2):
         # TODO do something
         raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE) # Remove to implemented
         out_params = []
-        rval = None# TODO (type pywbem.Uint32)
+        rval = None # TODO (type pywbem.Uint32)
         return (rval, out_params)
-
+        
     class Values(object):
         class RequestedState(object):
             Unknown = pywbem.Uint16(0)
@@ -844,110 +745,6 @@ class Cura_DiskPartition(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Reserved = 0x8000..
 
-        class PartitionSubtype(object):
-            Empty___Microsoft = pywbem.Uint16(0)
-            DOS_12_bit_FAT = pywbem.Uint16(1)
-            XENIX_root = pywbem.Uint16(2)
-            XENIX_usr = pywbem.Uint16(3)
-            DOS_16_bit_FAT = pywbem.Uint16(4)
-            DOS_Extended = pywbem.Uint16(5)
-            DOS_16_bit_FAT____32MB_ = pywbem.Uint16(6)
-            OS_2_HPFS___Win_NTFS___QNX_Ver_2___Adv_UNIX = pywbem.Uint16(7)
-            AIX_Boot___OS__2___Dell__Array____Commodore_DOS = pywbem.Uint16(8)
-            AIX_Data__Coherent = pywbem.Uint16(9)
-            OS_2_Boot_Manager = pywbem.Uint16(10)
-            x32_bit_FAT = pywbem.Uint16(11)
-            x32_bit_FAT = pywbem.Uint16(12)
-            Microsoft_16_bit_FAT = pywbem.Uint16(14)
-            Microsoft_DOS_Extended = pywbem.Uint16(15)
-            OPUS___OS_2_2_0 = pywbem.Uint16(16)
-            OS_2__MOSS__Inactive_Type_1 = pywbem.Uint16(17)
-            Compaq_Diagnostics_Partition___Microsoft = pywbem.Uint16(18)
-            OS_2__MOSS__Inactive_Type_4 = pywbem.Uint16(20)
-            OS_2__MOSS__Inactive_Type_6 = pywbem.Uint16(22)
-            OS_2__MOSS__Inactive_Type_7 = pywbem.Uint16(23)
-            OS_2__MOSS__Inactive_Type_B = pywbem.Uint16(27)
-            OS_2__MOSS__Inactive_Type_C = pywbem.Uint16(28)
-            Microsoft = pywbem.Uint16(33)
-            Microsoft = pywbem.Uint16(35)
-            Microsoft = pywbem.Uint16(36)
-            Microsoft = pywbem.Uint16(38)
-            Microsoft = pywbem.Uint16(49)
-            Microsoft = pywbem.Uint16(51)
-            Microsoft = pywbem.Uint16(52)
-            OS_2_Logical_Volume_Manager = pywbem.Uint16(53)
-            Microsoft = pywbem.Uint16(54)
-            OS_2_JFS_Log = pywbem.Uint16(55)
-            PowerQuest = pywbem.Uint16(60)
-            VENIX_80286___Series_1_Disk = pywbem.Uint16(64)
-            Personal_RISC_Boot = pywbem.Uint16(65)
-            Veritas = pywbem.Uint16(66)
-            Veritas = pywbem.Uint16(67)
-            OnTrack_Disk_Manager_Read_Only_DOS = pywbem.Uint16(80)
-            OnTrack_Disk_Manager_Read_Write_DOS = pywbem.Uint16(81)
-            CPM___Microport_System_V_386___OnTrack_Disk_Mgr___Microsoft = pywbem.Uint16(82)
-            OnTrack_Disk_Manager = pywbem.Uint16(83)
-            OnTrack_Disk_Manager_Non_DOS = pywbem.Uint16(84)
-            Micro_House_EZ_Drive_Non_DOS = pywbem.Uint16(85)
-            Golden_Bow_Vfeature___Microsoft = pywbem.Uint16(86)
-            Storage_Dimensions_SpeedStor___Microsoft = pywbem.Uint16(97)
-            UNIX___AT_T_System_V_386___SCO_UNIX = pywbem.Uint16(99)
-            Novell_NetWare___Speedstore = pywbem.Uint16(100)
-            Novell_NetWare = pywbem.Uint16(101)
-            Novell_NetWare = pywbem.Uint16(102)
-            Novell = pywbem.Uint16(103)
-            Novell = pywbem.Uint16(104)
-            Novell = pywbem.Uint16(105)
-            Microsoft = pywbem.Uint16(113)
-            Microsoft = pywbem.Uint16(115)
-            Microsoft = pywbem.Uint16(116)
-            PC_IX_IBM = pywbem.Uint16(117)
-            Microsoft = pywbem.Uint16(118)
-            QNX_POSIX = pywbem.Uint16(119)
-            QNX_POSIX__Secondary_ = pywbem.Uint16(120)
-            QNX_POSIX__Secondary_ = pywbem.Uint16(121)
-            Minix____1_4a____Linux___Microsoft = pywbem.Uint16(128)
-            Minix____1_4b____Microsoft = pywbem.Uint16(129)
-            Linux_Swap___Prime = pywbem.Uint16(130)
-            Linux_Native___Apple = pywbem.Uint16(131)
-            System_Hibernation_for_APM = pywbem.Uint16(132)
-            Microsoft = pywbem.Uint16(134)
-            HPFS_FT_mirror = pywbem.Uint16(135)
-            Amoeba___Microsoft = pywbem.Uint16(147)
-            Amoeba_BBT___Microsoft = pywbem.Uint16(148)
-            Microsoft = pywbem.Uint16(161)
-            Microsoft = pywbem.Uint16(163)
-            Microsoft = pywbem.Uint16(164)
-            BSD_386 = pywbem.Uint16(165)
-            Microsoft = pywbem.Uint16(166)
-            Microsoft = pywbem.Uint16(177)
-            Microsoft = pywbem.Uint16(179)
-            Microsoft = pywbem.Uint16(180)
-            Microsoft = pywbem.Uint16(182)
-            BSDI_fs___Microsoft = pywbem.Uint16(183)
-            BSDI_Swap___Microsoft = pywbem.Uint16(184)
-            Microsoft = pywbem.Uint16(193)
-            Microsoft = pywbem.Uint16(196)
-            Microsoft = pywbem.Uint16(198)
-            Syrinx___HPFS_FT_Disabled_Mirror = pywbem.Uint16(199)
-            CP_M_86 = pywbem.Uint16(216)
-            Digital_Research_CPM_86___Concurrent_DOS___OUTRIGGER = pywbem.Uint16(219)
-            SpeedStor_12_bit_FAT_Extended = pywbem.Uint16(225)
-            DOS_Read_Only___Storage_Dimensions = pywbem.Uint16(227)
-            SpeedStor_16_bit_FAT_Extended = pywbem.Uint16(228)
-            Microsoft = pywbem.Uint16(229)
-            Microsoft = pywbem.Uint16(230)
-            Intel = pywbem.Uint16(239)
-            OS_2_Raw_Data = pywbem.Uint16(240)
-            Storage_Dimensions = pywbem.Uint16(241)
-            DOS__Secondary_ = pywbem.Uint16(242)
-            Microsoft = pywbem.Uint16(243)
-            SpeedStor_Large___Storage_Dimensions = pywbem.Uint16(244)
-            Microsoft = pywbem.Uint16(246)
-            Lan_Step___SpeedStor___IBM_PS_2_IML = pywbem.Uint16(254)
-            Bad_Block_Tables = pywbem.Uint16(255)
-            Unknown = pywbem.Uint16(65535)
-
         class TransitioningToState(object):
             Unknown = pywbem.Uint16(0)
             Enabled = pywbem.Uint16(2)
@@ -971,7 +768,18 @@ class Cura_DiskPartition(CIMProvider2):
             Count_Key_Data = pywbem.Uint16(4)
 
         class NameFormat(object):
+            Unknown = pywbem.Uint16(0)
             Other = pywbem.Uint16(1)
+            VPD83NAA6 = pywbem.Uint16(2)
+            VPD83NAA5 = pywbem.Uint16(3)
+            VPD83Type2 = pywbem.Uint16(4)
+            VPD83Type1 = pywbem.Uint16(5)
+            VPD83Type0 = pywbem.Uint16(6)
+            SNVM = pywbem.Uint16(7)
+            NodeWWN = pywbem.Uint16(8)
+            NAA = pywbem.Uint16(9)
+            EUI64 = pywbem.Uint16(10)
+            T10VID = pywbem.Uint16(11)
             OS_Device_Name = pywbem.Uint16(12)
 
         class AvailableRequestedStates(object):
@@ -991,12 +799,6 @@ class Cura_DiskPartition(CIMProvider2):
             On = pywbem.Uint16(2)
             Off = pywbem.Uint16(3)
             Not_Supported = pywbem.Uint16(4)
-
-        class PartitionType(object):
-            Unknown = pywbem.Uint16(0)
-            Primary = pywbem.Uint16(1)
-            Extended = pywbem.Uint16(2)
-            Logical = pywbem.Uint16(3)
 
         class Status(object):
             OK = 'OK'
@@ -1042,7 +844,7 @@ class Cura_DiskPartition(CIMProvider2):
             Other = pywbem.Uint16(1)
             Unknown = pywbem.Uint16(2)
             Running_Full_Power = pywbem.Uint16(3)
-            xWarning = pywbem.Uint16(4)
+            Warning = pywbem.Uint16(4)
             In_Test = pywbem.Uint16(5)
             Not_Applicable = pywbem.Uint16(6)
             Power_Off = pywbem.Uint16(7)
@@ -1096,7 +898,14 @@ class Cura_DiskPartition(CIMProvider2):
                 Power_Off = pywbem.Uint16(6)
 
         class NameNamespace(object):
+            Unknown = pywbem.Uint16(0)
             Other = pywbem.Uint16(1)
+            VPD83Type3 = pywbem.Uint16(2)
+            VPD83Type2 = pywbem.Uint16(3)
+            VPD83Type1 = pywbem.Uint16(4)
+            VPD80 = pywbem.Uint16(5)
+            NodeWWN = pywbem.Uint16(6)
+            SNVM = pywbem.Uint16(7)
             OS_Device_Namespace = pywbem.Uint16(8)
 
         class OperationalStatus(object):
@@ -1195,19 +1004,11 @@ class Cura_DiskPartition(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Reserved = 32768..65535
 
-        class SignatureState(object):
-            Unknown = '0'
-            Unimplemented = '1'
-            Uninitialized = '2'
-            Calculated_by_Operating_System = '3'
-            Calculated_by_a_Media_Manager = '4'
-            Assigned_by_Owning_Application = '5'
-
         class Availability(object):
             Other = pywbem.Uint16(1)
             Unknown = pywbem.Uint16(2)
             Running_Full_Power = pywbem.Uint16(3)
-            xWarning = pywbem.Uint16(4)
+            Warning = pywbem.Uint16(4)
             In_Test = pywbem.Uint16(5)
             Not_Applicable = pywbem.Uint16(6)
             Power_Off = pywbem.Uint16(7)
@@ -1226,11 +1027,11 @@ class Cura_DiskPartition(CIMProvider2):
             Not_Configured = pywbem.Uint16(20)
             Quiesced = pywbem.Uint16(21)
 
-## end of class Cura_LogicalMBRPartitionProvider
-
+## end of class LMI_LocalDiskExtentProvider
+    
 ## get_providers() for associating CIM Class Name to python provider class name
-
-def get_providers(env):
+    
+def get_providers(env): 
     initAnaconda(False)
-    cura_logicalmbrpartition_prov = Cura_DiskPartition(env)
-    return {'Cura_DiskPartition': cura_logicalmbrpartition_prov}
+    LMI_localdiskextent_prov = LMI_LocalDiskExtent(env)  
+    return {'LMI_LocalDiskExtent': LMI_localdiskextent_prov} 

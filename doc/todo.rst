@@ -3,7 +3,7 @@ TODO list
 
 Generic
 
-- find better name/place for Cura_Common.StorageFunctions
+- find better name/place for LMI_Common.StorageFunctions
 - write high-level design and documentation
 - implement Server Profile
 

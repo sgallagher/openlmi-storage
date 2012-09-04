@@ -31,14 +31,14 @@ class RAIDWrapper(DeviceWrapper):
         For each Anaconda MDRaidArrayDevice, following CIM instances are
         created:
 
-        - one Cura_RAIDPool
-        - one Cura_RAIDCompositeExtent with Cura_AssociatedRAIDComponentExtent
-          association to its Cura_RaidPool
-        - one Cura_RAIDStorageCapabilities with
-          Cura_RAIDStorageElementCapabilities association to Cura_RaidPool
-        - one or more Cura_RAIDCompositeExtentBasedOn associations to all RAID
+        - one LMI_RAIDPool
+        - one LMI_RAIDCompositeExtent with LMI_AssociatedRAIDComponentExtent
+          association to its LMI_RaidPool
+        - one LMI_RAIDStorageCapabilities with
+          LMI_RAIDStorageElementCapabilities association to LMI_RaidPool
+        - one or more LMI_RAIDCompositeExtentBasedOn associations to all RAID
           members.
-        - one or more Cura_RAIDAllocatedFromStoragePool associations to all RAID
+        - one or more LMI_RAIDAllocatedFromStoragePool associations to all RAID
           members.
     """
 
@@ -50,22 +50,22 @@ class RAIDWrapper(DeviceWrapper):
         """
             CIM class name of device's CIM_StorageExtent class.
 
-            This property is overriden to have Cura_RAIDCompositeExtent as name of
+            This property is overriden to have LMI_RAIDCompositeExtent as name of
             RAID's StorageExtent class. Vanilla DeviceWrapper would provide
-            Cura_RAIDExtent.
+            LMI_RAIDExtent.
         """
-        return 'Cura_' + self.prefix + 'CompositeExtent'
+        return 'LMI_' + self.prefix + 'CompositeExtent'
 
     @property
     def basedOnClassName(self):
         """
             CIM class name of device's CIM_BasedOn class.
 
-            This property is overriden to have Cura_RAIDCompositeExtentBasedOn as
+            This property is overriden to have LMI_RAIDCompositeExtentBasedOn as
             name of RAID's BasedOn class. Vanilla DeviceWrapper would provide
-            Cura_RAIDExtentBasedOn.
+            LMI_RAIDExtentBasedOn.
         """
-        return 'Cura_' + self.prefix + 'CompositeExtentBasedOn'
+        return 'LMI_' + self.prefix + 'CompositeExtentBasedOn'
 
     def enumDevices(self):
         """
@@ -89,7 +89,7 @@ class RAIDWrapper(DeviceWrapper):
 
     def getPoolInstance(self, env, model, device):
         """
-            Fill instance of Cura_RAIDPool for given MDRaidArrayDevice.
+            Fill instance of LMI_RAIDPool for given MDRaidArrayDevice.
         """
         if device.partedDevice:
             size = device.partedDevice.length * device.partedDevice.sectorSize
@@ -143,7 +143,7 @@ class RAIDWrapper(DeviceWrapper):
 
     def getExtentInstance(self, env, model, device):
         """
-            Fill instance of Cura_RAIDCompositeExtent for given
+            Fill instance of LMI_RAIDCompositeExtent for given
             MDRaidArrayDevice.
         """
         params = self.getParameters(device)
@@ -215,7 +215,7 @@ class RAIDWrapper(DeviceWrapper):
 
     def getAllocatedFromInstance(self, env, model, device, base):
         """
-            Fill instance of Cura_RAIDAllocatedFromStoragePool for given
+            Fill instance of LMI_RAIDAllocatedFromStoragePool for given
             MDRaidArrayDevice.
         """
         model['SpaceConsumed'] = pywbem.Uint64(device.partedDevice.sectorSize * device.partedDevice.length)
@@ -223,7 +223,7 @@ class RAIDWrapper(DeviceWrapper):
 
     def getBasedOnInstance(self, env, model, device, base):
         """
-            Fill instance of Cura_RAIDCompositeExtentBasedOn for given
+            Fill instance of LMI_RAIDCompositeExtentBasedOn for given
             MDRaidArrayDevice.
         """
         try:
@@ -338,12 +338,12 @@ class RAIDWrapper(DeviceWrapper):
                         
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
             
             The input parameters are taken from
-            Cura_StorageConfigurationService.CreateOrModifyStoragePool
+            LMI_StorageConfigurationService.CreateOrModifyStoragePool
         """
         if not setting:
             # VolumeGroups are created by default
@@ -368,7 +368,7 @@ class RAIDWrapper(DeviceWrapper):
             
             :param devices: Array of Anaconda storage devices representing
                  input StoragePools and StorageExtents.
-            :param setting: Instance of Cura_StorageSetting.
+            :param setting: Instance of LMI_StorageSetting.
             :param size: Expected size of the resulting device.
             :param name: Expected name of the resulting device.
 

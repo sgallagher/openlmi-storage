@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for Cura_*Pool"""
+"""Python Provider for LMI_*Pool"""
 
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
 class WrappedPool(CIMProvider2):
-    """Instrument the CIM class Cura_*Pool """
+    """Instrument the CIM class LMI_*Pool """
 
     def __init__ (self, env, wrapper):
         logger = env.get_logger()
@@ -275,4 +275,4 @@ class WrappedPool(CIMProvider2):
             # DMTF_Reserved = ..
             # Vendor_Reserved = 0x8000..
 
-## end of class Cura_RAIDPoolProvider
+## end of class LMI_RAIDPoolProvider
