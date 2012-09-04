@@ -5,7 +5,7 @@ setup(
     author='Jan Safranek',
     author_email='jsafrane@redhat.com',
     url='https://fedorahosted.org/cura/',
-    version='0.1',
+    version='0.1.1',
     package_dir={'cura.storage': 'providers'},
     packages=['cura.storage', 'cura.storage.wrapper', 'cura.storage.util'],
     classifiers=[
