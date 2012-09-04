@@ -61,9 +61,10 @@ class LMI_DiskPartitionConfigurationService(CIMProvider2):
             
         print "Partitioning: ", fromSector, toSector
         try:
-            part = storage.newPartition(disks=[disk], #start=fromSector, end=toSector,
+            part = storage.newPartition(#start=fromSector, end=toSector,
                     size=pyanaconda.storage.partitioning.sectorsToSize(toSector-fromSector, disk.partedDevice.sectorSize),
                     partType=partType, grow=False)
+            part.disk = disk
             util.partitioning.createPartition(part)
         except Exception, err:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, err.__class__.__name__ + ': '  + str(err))
