@@ -1,4 +1,4 @@
-include COPYING
+include COPYING CHANGES
 include doc/Makefile doc/curatheme/theme.conf doc/conf.py doc/*.rst doc/pic/*.dia doc/_static/*
 include mof/cura-storage.mof mof/cura-storage.reg
 include client/client-highlevel.py
