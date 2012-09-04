@@ -21,9 +21,9 @@ Instruments the CIM class Cura_FileSystemConfigurationService
 
 """
 
+from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from wrapper.common import *
 import util.fs
 
 class Cura_FileSystemConfigurationService(CIMProvider2):

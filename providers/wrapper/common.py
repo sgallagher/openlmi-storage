@@ -23,8 +23,13 @@ import socket
 import os
 import cPickle
 import pywbem
-import pyanaconda
-  
+
+from pyanaconda import anaconda_log
+anaconda_log.init()
+
+import pyanaconda.storage
+import pyanaconda.platform
+
 CURA_SYSTEM_CLASS_NAME='Linux_ComputerSystem'
 CURA_SYSTEM_NAME=socket.getfqdn()
 CURA_NAMESPACE='root/cimv2'
@@ -48,7 +53,7 @@ def initAnaconda(forceReload = False):
         for module in ('raid0', 'raid1', 'raid5', 'raid10'):
             os.system('modprobe ' + module)
 
-        platform = pyanaconda.platform.getPlatform(None)
+        platform = pyanaconda.platform.getPlatform()
         newStorage = pyanaconda.storage.Storage(platform=platform)
         newStorage.devicetree.populate()
         global storage

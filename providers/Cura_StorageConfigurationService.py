@@ -21,9 +21,9 @@ Instruments the CIM class Cura_StorageConfigurationService
 
 """
 
+from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from wrapper.common import *
 
 class Cura_StorageConfigurationService(CIMProvider2):
     """Instrument the CIM class Cura_StorageConfigurationService 

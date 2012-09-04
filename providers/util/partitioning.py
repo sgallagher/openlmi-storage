@@ -19,10 +19,10 @@
     Support functions for partitioning.
 """
 
+from wrapper.common import storage
 import parted
 import pyanaconda.storage
 import pywbem
-from wrapper.common import storage
 
 TYPE_MBR = 'MBR'
 TYPE_EMBR = 'EMBR'

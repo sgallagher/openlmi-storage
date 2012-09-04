@@ -20,11 +20,11 @@ Instruments the CIM class Cura_DiskPartitionConfigurationService
 
 """
 
+from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 import pyanaconda.storage.devices
 import parted
-from wrapper.common import *
 import util.partitioning
 
 class Cura_DiskPartitionConfigurationService(CIMProvider2):

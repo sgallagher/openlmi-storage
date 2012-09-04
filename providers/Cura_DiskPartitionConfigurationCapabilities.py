@@ -21,9 +21,9 @@ Instruments the CIM class Cura_PrimaryMBRDiskPartitionConfigurationCapabilities
 
 """
 
+from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from wrapper.common import *
 import util.partitioning
 
 class Cura_DiskPartitionConfigurationCapabilities(CIMProvider2):

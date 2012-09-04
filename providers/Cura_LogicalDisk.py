@@ -21,9 +21,9 @@ Instruments the CIM class Cura_LogicalDisk
 
 """
 
+from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from wrapper.common import *
 import pyanaconda.storage.devices
 
 class Cura_LogicalDisk(CIMProvider2):

@@ -21,9 +21,9 @@ Instruments the CIM class Cura_InstalledParititionTable
 
 """
 
+from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from wrapper.common import *
 import util.partitioning
 
 class Cura_InstalledParititionTable(CIMProvider2):

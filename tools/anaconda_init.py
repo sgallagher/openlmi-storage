@@ -18,7 +18,7 @@ def partition_do():
     pyanaconda.storage.partitioning.doPartitioning(storage=storage)
 
 # set up storage class instance
-platform = pyanaconda.platform.getPlatform(None)
+platform = pyanaconda.platform.getPlatform()
 storage = pyanaconda.storage.Storage(platform=platform)
 
 # identify the system's storage devices

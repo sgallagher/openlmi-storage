@@ -21,9 +21,9 @@ Instruments the CIM class CuraResidesOnExtent
 
 """
 
+from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from wrapper.common import *
 import pyanaconda.storage.formats.fs
 
 class Cura_ResidesOnExtent(CIMProvider2):

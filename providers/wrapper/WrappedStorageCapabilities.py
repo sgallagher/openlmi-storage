@@ -21,9 +21,9 @@ Instruments the CIM class Cura_StorageCapabilities
 
 """
 
+from common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
-from common import *
 
 class WrappedStorageCapabilities(CIMProvider2):
     """Instrument the CIM class Cura_*Capabilities""" 

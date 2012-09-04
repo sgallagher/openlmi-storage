@@ -61,9 +61,9 @@ LogicalDisks are allocated by createLogicalDisk(), which can be overriden
 by subclasses if the default behaviour is not suitable for particular
 Anaconda storage device type.
 """
+from common import *
 import pywbem
 import pyanaconda.storage
-from common import *
 from WrappedStorageCapabilities import WrappedStorageCapabilities
 
 class DeviceWrapper(object): 

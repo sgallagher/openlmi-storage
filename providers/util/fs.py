@@ -18,8 +18,8 @@
 """
     Support functions for filesystems.
 """
-import pyanaconda.storage
 from wrapper.common import storage
+import pyanaconda.storage
    
 def createFilesystem(device, label):
     fmt = pyanaconda.storage.formats.getFormat('ext3')

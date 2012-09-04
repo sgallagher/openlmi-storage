@@ -21,10 +21,10 @@ Instruments the CIM class Cura_StorageCapabilities
 
 """
 
+from wrapper.common import settingManager
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 from Cura_StorageSetting import Cura_StorageSetting
-from wrapper.common import settingManager
 
 class Cura_StorageCapabilities(CIMProvider2):
     """Instrument the CIM class Cura_StorageCapabilities 
