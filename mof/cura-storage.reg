@@ -56,8 +56,8 @@
    type: instance association
    namespace: root/cimv2
    unload: never
-[LMI_HostedService]
-   provider: /usr/lib/python2.7/site-packages/cura/storage/LMI_HostedService.py
+[LMI_HostedStorageService]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/LMI_HostedStorageService.py
    location: pyCmpiProvider
    type: instance association
    namespace: root/cimv2
@@ -74,8 +74,8 @@
    type: instance association
    namespace: root/cimv2
    unload: never
-[LMI_SystemDevice]
-   provider: /usr/lib/python2.7/site-packages/cura/storage/LMI_SystemDevice.py
+[LMI_SystemStorageDevice]
+   provider: /usr/lib/python2.7/site-packages/cura/storage/LMI_SystemStorageDevice.py
    location: pyCmpiProvider
    type: instance association
    namespace: root/cimv2

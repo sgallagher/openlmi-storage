@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for LMI_SystemDevice
+"""Python Provider for LMI_HostedStorageService
 
-Instruments the CIM class LMI_SystemDevice
+Instruments the CIM class LMI_HostedStorageService
 
 """
 
@@ -25,11 +25,18 @@ from wrapper.common import *
 import pywbem
 from pywbem.cim_provider2 import CIMProvider2
 
-class LMI_SystemDevice(CIMProvider2):
-    """Instrument the CIM class LMI_SystemDevice 
+class LMI_HostedStorageService(CIMProvider2):
+    """Instrument the CIM class LMI_HostedStorageService 
 
-    LogicalDevices can be aggregated by a System. This relationship is made
-    explicit by the SystemDevice association.
+    CIM_HostedStorageService is an association between a Service and the System on
+    which the functionality is located. The cardinality of this
+    association is one-to-many. A System can host many Services. Services
+    are weak with respect to their hosting System. Heuristic: A Service is
+    hosted on the System where the LogicalDevices or SoftwareFeatures that
+    implement the Service are located. The model does not represent
+    Services hosted across multiple systems. The model is as an
+    ApplicationSystem that acts as an aggregation point for Services that
+    are each located on a single host.
     
     """
 
@@ -66,8 +73,6 @@ class LMI_SystemDevice(CIMProvider2):
                 % self.__class__.__name__)
         
 
-        # TODO: checking
-
         return model
 
     def enum_instances(self, env, model, keys_only):
@@ -100,18 +105,19 @@ class LMI_SystemDevice(CIMProvider2):
         # Prime model.path with knowledge of the keys, so key values on
         # the CIMInstanceName (model.path) will automatically be set when
         # we set property values on the model. 
-        model.path.update({'GroupComponent': None, 'PartComponent': None})
-        
+        model.path.update({'Dependent': None, 'Antecedent': None})
+
         ch = env.get_cimom_handle()
         # get the only one (?) CIM_ComputerSystem
         systems = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='Linux_ComputerSystem')
         system = systems.next()
         
-        for className in ['LMI_LogicalDisk', 'LMI_DiskPartition', 'LMI_GPTDiskPartition', 'LMI_LocalDiskExtent', 'LMI_RAIDCompositeExtent']:
-            devices = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn=className)
-            for device in devices:
-                model['PartComponent'] = device
-                model['GroupComponent'] = system
+        # find all services on the system starting with 'Cura' and associate them with the system
+        services = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='CIM_Service')
+        for service in services:
+            if service['CreationClassName'].startswith('LMI'):
+                model['Dependent'] = service
+                model['Antecedent'] = system
                 yield model
 
     def set_instance(self, env, instance, modify_existing):
@@ -245,18 +251,18 @@ class LMI_SystemDevice(CIMProvider2):
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace, 
                           sub=object_name.classname,
-                          super='CIM_System') or \
+                          super='CIM_Service') or \
                 ch.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_LogicalDevice'):
+                               super='CIM_System'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
 
-## end of class LMI_SystemDeviceProvider
+## end of class LMI_HostedStorageServiceProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
-    LMI_systemdevice_prov = LMI_SystemDevice(env)  
-    return {'LMI_SystemDevice': LMI_systemdevice_prov} 
+    LMI_HostedStorageService_prov = LMI_HostedStorageService(env)  
+    return {'LMI_HostedStorageService': LMI_HostedStorageService_prov} 

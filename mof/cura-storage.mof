@@ -25,12 +25,12 @@ class LMI_LogicalDiskAllocatedFromStoragePool : CIM_AllocatedFromStoragePool
 
 
 [Association]
-class LMI_HostedService : CIM_HostedService
+class LMI_HostedStorageService : CIM_HostedService
 {
 };
 
 [Association]
-class LMI_SystemDevice : CIM_SystemDevice
+class LMI_SystemStorageDevice : CIM_SystemDevice
 {
 };
 
