@@ -1,3 +1,8 @@
+New in version 0.3:
+Rename the MOF file to match LMI prefix.
+providers: Fixed LMI_ResidesOnExtent class name.
+providers: Renamed LMI_HostedService to LMI_HostedStorageService and LMI_SystemDevice to LMI_SystemStorageDevice to avoid clashes with other LMI providers.
+
 New in version 0.2.1:
 Fixed ExtentStripeLengthDefault of RAID5 devices.
 Fixed partition creation with Anaconda 18.6.
