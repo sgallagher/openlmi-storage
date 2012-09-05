@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python Provider for CuraResidesOnExtent
+"""Python Provider for LMI_ResidesOnExtent
 
-Instruments the CIM class CuraResidesOnExtent
+Instruments the CIM class LMI_ResidesOnExtent
 
 """
 
@@ -262,12 +262,12 @@ class LMI_ResidesOnExtent(CIMProvider2):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
 
-## end of class CuraResidesOnExtentProvider
+## end of class LMI_ResidesOnExtentProvider
     
 ## get_providers() for associating CIM Class Name to python provider class name
     
 def get_providers(env): 
     initAnaconda(False)
     LMI_residesonextent_prov = LMI_ResidesOnExtent(env)  
-    return {'CuraResidesOnExtent': LMI_residesonextent_prov}
+    return {'LMI_ResidesOnExtent': LMI_residesonextent_prov}
 
