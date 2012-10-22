@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
- Cura common definitions and constants
+ OpenLMI common definitions and constants
 """
 
 import socket
@@ -34,7 +34,7 @@ LMI_SYSTEM_CLASS_NAME='Linux_ComputerSystem'
 LMI_SYSTEM_NAME=socket.getfqdn()
 LMI_NAMESPACE='root/cimv2'
 
-__all__ = ['initAnaconda', 'WrapperManager', 'wrapperManager', 'storage', 'LMI_SYSTEM_CLASS_NAME', 'LMI_SYSTEM_NAME', 'LMI_NAMESPACE', 'storage', 'curaConfig', 'settingManager', 'logicalDiskManager', 'initAnaconda']
+__all__ = ['initAnaconda', 'WrapperManager', 'wrapperManager', 'storage', 'LMI_SYSTEM_CLASS_NAME', 'LMI_SYSTEM_NAME', 'LMI_NAMESPACE', 'storage', 'lmiConfig', 'settingManager', 'logicalDiskManager', 'initAnaconda']
 
 def initAnaconda(forceReload = False):
     """ (Re-)load Anaconda storage, i.e. re-scan local storage devices.
@@ -161,17 +161,17 @@ class WrapperManager(object):
 
 
 ##############################################################################
-# CuraConfig
+# LMIConfig
 ##############################################################################
 
-class CuraConfig(object):
+class LMIConfig(object):
     """ 
-        Persistent configuration of Cura.
+        Persistent configuration of OpenLMI.
         Data are stored in CONFIG_FILE. Data are automatically written on each
         set() call.
     """
     
-    CONFIG_FILE = '/var/lib/storage-mgmt/cura.cfg'
+    CONFIG_FILE = '/var/lib/openlmi/storage.cfg'
     
     # list of config options
     CONFIG_EXPOSED_DISKS = 'exposed'
@@ -251,9 +251,9 @@ class LogicalDiskManager(object):
         
     def __init__(self, config):
         """
-            Create new list and load it from given CuraConfig instance.
+            Create new list and load it from given LMIConfig instance.
             
-            :param config: CuraConfig to load/save list of instances from/to.
+            :param config: LMIConfig to load/save list of instances from/to.
         """
         self.exposedDisks = []
         self.config = config
@@ -269,17 +269,17 @@ class LogicalDiskManager(object):
         """
             Allocate LogicalDisk from given Anaconda device (if status == True).
             Remove LogicalDisk for given Anaconda device if status == False.
-            This allocation/removal is persistent, i.e. Cura remembers it in
+            This allocation/removal is persistent, i.e. OpenLMI remembers it in
             its configuration file.
         """
-        exposed = self.config.get(CuraConfig.CONFIG_EXPOSED_DISKS, [])
+        exposed = self.config.get(LMIConfig.CONFIG_EXPOSED_DISKS, [])
         if status:
             if not device.path in exposed:
                 exposed.append(device.path)
         else:
             if device.path in exposed:
                 exposed.remove(device.path)
-        self.config.set(CuraConfig.CONFIG_EXPOSED_DISKS, exposed)
+        self.config.set(LMIConfig.CONFIG_EXPOSED_DISKS, exposed)
          
     def isExposed(self, device):
         """
@@ -287,7 +287,7 @@ class LogicalDiskManager(object):
             allocated from it either using SMI-S, i.e. setExpose(), or there
             is a filesystem on it.
         """
-        exposed = self.config.get(CuraConfig.CONFIG_EXPOSED_DISKS, [])
+        exposed = self.config.get(LMIConfig.CONFIG_EXPOSED_DISKS, [])
         if device.path in exposed:
             if self.isUsed(device):
                 # used device cannot be exposed!
@@ -327,7 +327,7 @@ class SettingManager(object):
                     'Description': 'Setting for RAID0 with unlimited number of underlying StorageExtents.',
                     'ElementName': 'STATIC:RAID0',
                     'InstanceID': 'STATIC:RAID0',
-                    'CuraAllocationType': pywbem.Uint16(1)
+                    'LMIAllocationType': pywbem.Uint16(1)
             },
             {
                     'Caption' : 'RAID1 for 2 disks',
@@ -342,7 +342,7 @@ class SettingManager(object):
                     'Description': 'Setting for RAID1 with two disks.',
                     'ElementName': 'STATIC:RAID1',
                     'InstanceID': 'STATIC:RAID1',
-                    'CuraAllocationType': pywbem.Uint16(1)
+                    'LMIAllocationType': pywbem.Uint16(1)
             },
             {
                     'Caption' : 'RAID5 for 3 disks',
@@ -357,7 +357,7 @@ class SettingManager(object):
                     'Description': 'Setting for RAID5 with three disks.',
                     'ElementName': 'STATIC:RAID5',
                     'InstanceID': 'STATIC:RAID5',
-                    'CuraAllocationType': pywbem.Uint16(1)
+                    'LMIAllocationType': pywbem.Uint16(1)
             },
             {
                     'Caption' : 'Volume Group',
@@ -372,11 +372,11 @@ class SettingManager(object):
                     'Description': 'Setting for Volume Group.',
                     'ElementName': 'STATIC:VG',
                     'InstanceID': 'STATIC:VG',
-                    'CuraAllocationType': pywbem.Uint16(0)
+                    'LMIAllocationType': pywbem.Uint16(0)
             }
     ]
     
-    def __init__(self, myCuraConfig):
+    def __init__(self, myLMIConfig):
         self.settings = {}
         
         # prevent writeConfig writing anything, we don't want
@@ -384,7 +384,7 @@ class SettingManager(object):
         self.config = None
         
         # add persistent settings
-        persistentSettings = myCuraConfig.get(CuraConfig.CONFIG_PERSISTENT_SETTINGS, {})
+        persistentSettings = myLMIConfig.get(LMIConfig.CONFIG_PERSISTENT_SETTINGS, {})
         for s in persistentSettings.values():
             self.setSetting(s)
         # add static settings
@@ -392,7 +392,7 @@ class SettingManager(object):
             self.setSetting(s)
 
         # now restore writeConfig functionality            
-        self.config = myCuraConfig
+        self.config = myLMIConfig
             
         self.reserevedId = []
         self.lastId = 1
@@ -442,7 +442,7 @@ class SettingManager(object):
             if s['ChangeableType'] == self.SETTING_CHANGEABLE_PERSISTENT:
                 instanceId = s['InstanceID']
                 persistent[instanceId] = s
-        self.config.set(CuraConfig.CONFIG_PERSISTENT_SETTINGS, persistent)
+        self.config.set(LMIConfig.CONFIG_PERSISTENT_SETTINGS, persistent)
     
     def generateId(self):
         """ Return free InstanceID. This ID is reserved and won't be returned by
@@ -455,10 +455,10 @@ class SettingManager(object):
         return str(i)
 
 # global objects
-curaConfig = CuraConfig()
+lmiConfig = LMIConfig()
 wrapperManager = WrapperManager()
-settingManager = SettingManager(curaConfig)
-logicalDiskManager = LogicalDiskManager(curaConfig)
+settingManager = SettingManager(lmiConfig)
+logicalDiskManager = LogicalDiskManager(lmiConfig)
 
 storage = None
 initAnaconda()

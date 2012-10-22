@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -248,7 +248,7 @@ class VGWrapper(DeviceWrapper):
         devcount = len(device.pvs)
         params = self.calculateCommonBaseParams(device)
         params.update({
-                'CuraAllocationType' : pywbem.Uint16(0),
+                'LMIAllocationType' : pywbem.Uint16(0),
                 'NumberOfBlocks': pywbem.Uint64(device.extents),
                 'ConsumableBlocks': pywbem.Uint64(device.extents - device.freeExtents),
                 'BlockSize': pywbem.Uint64(device.peSize * 1024),
@@ -276,10 +276,10 @@ class VGWrapper(DeviceWrapper):
         if setting['DataRedundancyGoal'] != 1 or setting['PackageRedundancyGoal'] != 0:
             # Redundant storage is expected - it must be RAID
             return 0
-        if not setting.has_key('CuraAllocationType'):
+        if not setting.has_key('LMIAllocationType'):
             # VolumeGroups are created by default
             return 1
-        if setting['CuraAllocationType'] == DeviceWrapper.ALLOCATION_TYPE_MULTIPLE:
+        if setting['LMIAllocationType'] == DeviceWrapper.ALLOCATION_TYPE_MULTIPLE:
             return 2
         return 0
 
@@ -304,9 +304,9 @@ class VGWrapper(DeviceWrapper):
                 
         """
         if setting['DataRedundancyGoal'] != 1:
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Only DataRedundancyGoal = 1 is supported with CuraAllocationType = Multiple')
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Only DataRedundancyGoal = 1 is supported with LMIAllocationType = Multiple')
         if setting['PackageRedundancyGoal'] != 0:
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Only PackageRedundancyGoal = 0 is supported with CuraAllocationType = Multiple')
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Only PackageRedundancyGoal = 0 is supported with LMIAllocationType = Multiple')
         if len(devices) < 1:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'At least one device is required for VG.')
         # check sizes

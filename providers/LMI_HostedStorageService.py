@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -112,7 +112,7 @@ class LMI_HostedStorageService(CIMProvider2):
         systems = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='Linux_ComputerSystem')
         system = systems.next()
         
-        # find all services on the system starting with 'Cura' and associate them with the system
+        # find all services on the system starting with 'LMI' and associate them with the system
         services = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='CIM_Service')
         for service in services:
             if service['CreationClassName'].startswith('LMI'):

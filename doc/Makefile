@@ -44,7 +44,7 @@ clean:
 %.png: %.dia
 	dia -e $@ $<
 
-figures: pic/partitions.png pic/primordial.png pic/exposed-partition-cura.png pic/exposed-partition-smis.png pic/raidlvm.png pic/raid.png pic/device-wrapper.png
+figures: pic/partitions.png pic/primordial.png pic/exposed-partition-openlmi.png pic/exposed-partition-smis.png pic/raidlvm.png pic/raid.png pic/device-wrapper.png
 
 
 html: figures

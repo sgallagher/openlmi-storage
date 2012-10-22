@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #

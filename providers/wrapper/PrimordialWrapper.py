@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -274,10 +274,10 @@ class PrimordialWrapper(DeviceWrapper):
         """
         # won't help here and special one is  needed
         ch = env.get_cimom_handle()
-        # find all partitions on the system starting with 'Cura'
+        # find all partitions on the system starting with 'LMI'
         partitions = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='CIM_GenericDiskPartition')
         for partition in partitions:
-            if not partition['CreationClassName'].startswith('Cura'):
+            if not partition['CreationClassName'].startswith('LMI'):
                 continue
 
             model['Dependent'] = pywbem.CIMInstanceName(classname='LMI_PartitionExtent',

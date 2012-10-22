@@ -1,7 +1,7 @@
 SMI-S profiles
 ==============
 
-Cura implements following profiles:
+OpenLMI-Storage implements following profiles:
 
 .. toctree::
    :maxdepth: 2

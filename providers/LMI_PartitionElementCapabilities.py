@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -106,7 +106,7 @@ class LMI_PartitionElementCapabilities(CIMProvider2):
         services = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_DiskPartitionConfigurationService')
         service = services.next()
         
-        # find all services on the system starting with 'Cura' and associate them with the system
+        # find all services on the system starting with 'LMI' and associate them with the system
         capabilities = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='LMI_DiskPartitionConfigurationCapabilities')
         for capability in capabilities:
             model['Capabilities'] = capability

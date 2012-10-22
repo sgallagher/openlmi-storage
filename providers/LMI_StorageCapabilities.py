@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -29,7 +29,7 @@ from LMI_StorageSetting import LMI_StorageSetting
 class LMI_StorageCapabilities(CIMProvider2):
     """Instrument the CIM class LMI_StorageCapabilities 
 
-    This is abstract base class for Cura purposes.
+    This is abstract base class for OpenLMI purposes.
     
     A subclass of Capabilities that defines the Capabilities of a
     StorageService or StoragePool. For example, an instance of
@@ -692,7 +692,7 @@ class LMI_StorageCapabilities(CIMProvider2):
                 'InstanceID': str(i),
                 'ChangeableType': LMI_StorageSetting.Values.ChangeableType.Changeable___Transient,
                 'ElementName': str(i),
-                'CuraAllocationType' : params['CuraAllocationType'] ,
+                'LMIAllocationType' : params['LMIAllocationType'] ,
         }
         if not param_settingtype:
             param_settingtype = self.Values.CreateSetting.SettingType.Default
@@ -725,10 +725,10 @@ class LMI_StorageCapabilities(CIMProvider2):
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, 'Unsupported settingtype')
  
         #TODO: this is not thread-safe, other user might allocate the instanceID       
-        cura.curaStorage.setSetting(setting)
+        openlmi.storage.setSetting(setting)
         
         newsetting = pywbem.CIMParameter('newsetting', type='reference', 
-                           value = cura.curaStorage.getSettingName(setting))
+                           value = openlmi.storage.getSettingName(setting))
         rval = self.Values.CreateSetting.Success
         return (rval, [newsetting, ])
         

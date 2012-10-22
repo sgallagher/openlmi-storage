@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -80,7 +80,7 @@ class LMI_StorageSetting(CIMProvider2):
             'ExtentStripeLength',
             'NoSinglePointOfFailure',
             'PackageRedundancyGoal', 'PackageRedundancyMax', 'PackageRedundancyMin',
-            'Description', 'ElementName', 'InstanceID', 'CuraAllocationType')
+            'Description', 'ElementName', 'InstanceID', 'LMIAllocationType')
 
     FIXED_PROPERTIES = { 'SpaceLimit' : 0 }
     

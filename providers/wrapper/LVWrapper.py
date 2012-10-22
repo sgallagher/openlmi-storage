@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -340,7 +340,7 @@ class LVWrapper(DeviceWrapper):
         # start with parameters of parent volume group
         parentWrapper = wrapperManager.getWrapperForDevice(device.vg)
         params = parentWrapper.getParameters(device.vg)
-        params['CuraAllocationType'] = pywbem.Uint16(0)
+        params['LMIAllocationType'] = pywbem.Uint16(0)
         
         # add common parameters like name and size
         params.update(super(LVWrapper, self).getParameters(device))

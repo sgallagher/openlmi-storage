@@ -44,7 +44,7 @@ these python modules:
 
 To implement new wrapper, following steps are necessary:
 
-#. Add appripriate CIM classes to cura-storage.mof file.
+#. Add appripriate CIM classes to LMI_Storage.mof file.
 #. Implement a subclass of the DeviceWrapper. Override appropriate methods -
    look at RAIDWrapper as an example.
 #. Add initialization of the wrapper instance to LMI_Wrappers.py. This python

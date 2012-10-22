@@ -38,7 +38,7 @@ Implementation
 All mandatory classes and methods are implemented:
 
 =============================================== ==========================================
-SMI-S                                           Cura
+SMI-S                                           OpenLMI
 =============================================== ==========================================
 CIM_BasedOn                                     LMI_PartitionBasedOnLocalDiskExtent
 CIM_BasedOn                                     LMI_PartitionBasedOnPartition

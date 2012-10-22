@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -110,10 +110,10 @@ class LMI_HostedStoragePool(CIMProvider2):
         systems = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='Linux_ComputerSystem')
         system = systems.next()
         
-        # find all pools on the system starting with 'Cura' and associate them with the system
+        # find all pools on the system starting with 'LMI' and associate them with the system
         pools = ch.EnumerateInstanceNames(ns = LMI_NAMESPACE, cn='CIM_StoragePool')
         for pool in pools:
-            if pool.classname.startswith('Cura'):
+            if pool.classname.startswith('LMI'):
                 model['PartComponent'] = pool
                 model['GroupComponent'] = system
                 yield model

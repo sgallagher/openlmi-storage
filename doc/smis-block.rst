@@ -103,13 +103,13 @@ standard.
 
 LogicalDisks are allocated using
 ``StorageConfigurationService.CreateOrMofifyElementFromStoragePool()``. This
-allocated LogicalDisk is persistent, i.e. it survives Cura restart.
+allocated LogicalDisk is persistent, i.e. it survives OpenLMI restart.
 
 If an admin creates a filesystem on /dev/md0 directly, not using SMI-S,
 appropriate LogicalDisk automatically appears between the RAIDCompositeExtent
 and the LocalFilesystem.
 
-In other words, Cura shows a LogicalDisk for all block devices previously exposed
+In other words, OpenLMI shows a LogicalDisk for all block devices previously exposed
 by ``StorageConfigurationService.CreateOrModifyElementFromStoragePool()`` and
 for all devices with filesystems.
 
@@ -135,9 +135,9 @@ decided to skip this concrete pool and if a disk partition is used by the OS
 (i.e. there is a filesystem on it), it's allocated directly from the primordial
 storage pool.
 
-.. figure:: pic/exposed-partition-cura.png
+.. figure:: pic/exposed-partition-openlmi.png
 
-   Cura instance diagram of LogicalDisk allocated from disk partition.
+   OpenLMI instance diagram of LogicalDisk allocated from disk partition.
 
 .. warning:: This primordial pool usage contradicts SMI-S Block Services Package
    It would not be difficult to add the concrete pool though, it's just few
@@ -151,7 +151,7 @@ methods. Only RAID and LVM is implemented for now.
 Mapping:
 
 =============================================== =================================================
-SMI-S                                           Cura
+SMI-S                                           OpenLMI
 =============================================== =================================================
 CIM_AllocatedFromStoragePool                    LMI_RAIDAllocatedFromStoragePool
                                                 LMI_LVAllocatedFromStoragePool
@@ -232,7 +232,7 @@ Create RAID or volume group:
 
     #. Modify the setting.
 
-    #. Setting with ChangeableType = Persistent will be saved to disk and will survive Cura restart.
+    #. Setting with ChangeableType = Persistent will be saved to disk and will survive OpenLMI restart.
 
   * For RAID0, use:
 
@@ -240,7 +240,7 @@ Create RAID or volume group:
        DataRedundancyGoal = 1
        PackageRedundancyGoal = 0
        NoSinglePointOfFailure = False
-       CuraAllocationType = 1
+       LMIAllocationType = 1
 
   * For volume group, use:
 
@@ -248,9 +248,9 @@ Create RAID or volume group:
       DataRedundancyGoal = 1
       NoSinglePointOfFailure = False
       PackageRedundancyGoal = 0
-      CuraAllocationType = 0
+      LMIAllocationType = 0
 
-    (notice that only CuraAllocationType is different to RAID0 setting)
+    (notice that only LMIAllocationType is different to RAID0 setting)
 
   * For RAID1, use:
 
@@ -258,7 +258,7 @@ Create RAID or volume group:
        DataRedundancyGoal = nr. of devices in the RAID
        NoSinglePointOfFailure = True
        PackageRedundancyGoal = nr. of devices in the RAID - 1
-       CuraAllocationType = 1 (or NULL)
+       LMIAllocationType = 1 (or NULL)
 
   * For RAID5, use:
 
@@ -266,7 +266,7 @@ Create RAID or volume group:
        DataRedundancyGoal = 1
        PackageRedundancyGoal = 1
        PackageRedundancyGoal = 1
-       CuraAllocationType = 1 (or NULL)
+       LMIAllocationType = 1 (or NULL)
 
 #. Call LMI_StorageConfigurationService.CreateOrModifyStoragePool with following
    parameters:

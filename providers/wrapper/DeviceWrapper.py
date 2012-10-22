@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -690,7 +690,7 @@ class DeviceWrapper(object):
         """
         raise NotImplementedError()
 
-    # useful constats for StorageSetting.CuraAllocationType
+    # useful constats for StorageSetting.LMIAllocationType
     ALLOCATION_TYPE_ONE = 1
     ALLOCATION_TYPE_MULTIPLE = 0
         
@@ -832,7 +832,7 @@ class DeviceWrapper(object):
 
             The default implementation just creates new auxiliar
             LMI_LogicalDisk instance. This instance is persistent, i.e.
-            survives Cura restart. Only whole device can be allocated,
+            survives OpenLMI restart. Only whole device can be allocated,
             
             Override this method, if different behavior is expected (e.g.
             when allocating LogicalVolumes).

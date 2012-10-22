@@ -1,7 +1,7 @@
 About
 =====
 
-Cura-Storage is CIM provider for storage management on Linux.
+OpenLMI-Storage is CIM provider for storage management on Linux.
 Currently it has SMI-S like API, Block Devices Package is paritally
 implemented. See Documentation below for details.
 
@@ -17,9 +17,9 @@ Installation
 Prepare software (using sblim here, might be different for Pegasus):
     $ yum install sblim-sfcb cmpi-bindings-pywbem
 
-Install cura-storage somewhere, using /usr/lib/python2.7/site-packages/cura/storage/ here
-    $ mkdir /usr/lib/python2.7/site-packages/cura/storage/
-    $ cp -r providers/* /usr/lib/python2.7/site-packages/cura/storage/
+Install openlmi-storage somewhere, using /usr/lib/python2.7/site-packages/openlmi/storage/ here
+    $ mkdir /usr/lib/python2.7/site-packages/openlmi/storage/
+    $ cp -r providers/* /usr/lib/python2.7/site-packages/openlmi/storage/
 
 Register python providers and MOF file:
     $ vim mof/LMI_Storage.reg     # change the paths in the file
@@ -29,7 +29,7 @@ Register python providers and MOF file:
 Documentation
 =============
 
-CIM API is fully documented in mof/cura-storage.mof and in doc/ subdirectory.
+CIM API is fully documented in mof/LMI_Storage.mof and in doc/ subdirectory.
 To compile the documentation to readable format install Dia and python-sphinx.
 
   $ cd doc
@@ -38,12 +38,13 @@ To compile the documentation to readable format install Dia and python-sphinx.
 
 Contact
 =======
-Homepage: https://fedorahosted.org/cura/
-Code: http://git.fedorahosted.org/cgit/cura-storage.git
 
-Mailing list: cura-devel [at] lists.fedorahosted.org
-  Archive: https://lists.fedorahosted.org/mailman/listinfo/cura-devel
+Homepage: https://fedorahosted.org/openlmi/
+Code: http://git.fedorahosted.org/cgit/openlmi-storage.git
+
+Mailing list: OpenLMI-devel [at] lists.fedorahosted.org
+  Archive: https://lists.fedorahosted.org/mailman/listinfo/openlmi-devel
 
 Bugs: use Fedora bugzilla at https://bugzilla.redhat.com
-  Use Fedora as Product and cura-storage as component
-  New bug: https://bugzilla.redhat.com/enter_bug.cgi?format=guided&product=Fedora&component=cura-storage
+  Use Fedora as Product and OpenLMI-storage as component
+  New bug: https://bugzilla.redhat.com/enter_bug.cgi?format=guided&product=Fedora&component=openlmi-storage

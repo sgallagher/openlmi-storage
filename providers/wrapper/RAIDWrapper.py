@@ -1,4 +1,4 @@
-# Cura Storage Provider
+# OpenLMI Storage Provider
 #
 # Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
 #
@@ -269,7 +269,7 @@ class RAIDWrapper(DeviceWrapper):
         if device.level == 0:
             params.update({
                 'ExtentStripeLengthDefault': pywbem.Uint16(devcount),
-                'CuraAllocationType' : pywbem.Uint16(1),
+                'LMIAllocationType' : pywbem.Uint16(1),
         })
         elif device.level == 1:
             # RAID1
@@ -328,7 +328,7 @@ class RAIDWrapper(DeviceWrapper):
                 'NoSinglePointOfFailure': True,
                 'NoSinglePointOfFailureDefault': True,
                 'IsBasedOnUnderlyingRedundancy': True,
-                'CuraAllocationType' : pywbem.Uint16(1),
+                'LMIAllocationType' : pywbem.Uint16(1),
             })
         return params
 
@@ -351,10 +351,10 @@ class RAIDWrapper(DeviceWrapper):
         if setting['DataRedundancyGoal'] > 1 or setting['PackageRedundancyGoal'] > 0:
             # Redundant storage is expected - it must be RAID
             return 2
-        if not setting.has_key('CuraAllocationType'):
+        if not setting.has_key('LMIAllocationType'):
             # VolumeGroups are created by default
             return 0
-        if setting['CuraAllocationType'] == DeviceWrapper.ALLOCATION_TYPE_ONE:
+        if setting['LMIAllocationType'] == DeviceWrapper.ALLOCATION_TYPE_ONE:
             return 2
         return 0
 
