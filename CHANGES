@@ -1,3 +1,6 @@
+New in version 0.4:
+Rename Cura to OpenLMI.
+
 New in version 0.3:
 Rename the MOF file to match LMI prefix.
 providers: Fixed LMI_ResidesOnExtent class name.
