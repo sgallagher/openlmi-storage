@@ -1,0 +1,48 @@
+
+[ Description("This is generic class describing block devices "
+    "available on the system, i.e. in machine's /dev/ directory.")]
+class LMI_StorageExtent : CIM_StorageExtent
+{
+    [Override, Description (
+          "A user-friendly name for the object. This property "
+          "allows each instance to define a user-friendly name in "
+          "addition to its key properties, identity data, and "
+          "description information. \n"
+          "Usually it is name of the device, i.e. 'sda' in case of /dev/sda "
+          "block device or 'myraid' in case of /dev/md/myraid or name of a "
+          "Logical Volume. "
+          "Subclasses may define it's own ElementName format." )]
+    string ElementName;
+};
+
+class LMI_ResidesOnExtent : CIM_ResidesOnExtent
+{
+};
+
+[ Abstract, Description("Base class for all content formats.")]
+class LMI_ContentFormat : CIM_EnabledLogicalElement
+{
+};
+
+
+// Special comments to generate pictures with following classes.
+//
+//class CIM_StorageConfigurationService : CIM_Service
+//class CIM_DiskPartitionConfigurationService : CIM_Service
+//class SNIA_FileSystemConfigurationService : CIM_Service
+//
+//class CIM_StorageSetting : CIM_SettingData
+//class SNIA_FileSystemSetting : CIM_SettingData
+//
+//class SNIA_ElementCapabilities : CIM_ElementCapabilties
+//
+//class SNIA_FileSystemConfigurationCapabilities : CIM_Capabilities
+//class SNIA_FileSystemCapabilities : CIM_FileSystemCapabilities
+//class CIM_FileSystemCapabilities : CIM_Capabilities
+//class CIM_FileSystemSetting : CIM_SettingData
+//class CIM_GenericDiskPartition : CIM_MediaPartition
+//class CIM_MediaPartition : CIM_StorageExtent
+//class CIM_DiskPartition : CIM_GenericDiskPartition
+//
+//class CIM_StorageCapabilities : CIM_Capabilities
+//class CIM_DiskPartitionConfigurationCapabilities : CIM_Capabilities

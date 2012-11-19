@@ -1,0 +1,591 @@
+class LMI_FileSystemConfigurationService : SNIA_FileSystemConfigurationService
+{
+    [Experimental, Override,
+     Description (
+        "SNIA_CreateFileSystem creates a LocalFileSystem and returns "
+        "a reference to it as the value of the parameter TheElement."
+        "Even if this operation does not complete but creates "
+        "a ConcreteJob, an implementation may return a valid reference in "
+        "TheElement. If the job fails subsequently, it is possible "
+        "for this reference to become invalid. \n"
+        "The desired settings for the LocalFileSystem are specified by "
+        "the Goal parameter (a string-valued EmbeddedInstance element "
+        "of class FileSystemSetting).\n"
+        "A new FileSystemSetting element that represents the settings of "
+        "the LocalFileSystem (either identical to the Goal or equivalent) "
+        "shall be associated via ElementSettingData to the "
+        "LocalFileSystem. \n"
+        "The LocalFileSystem shall be hosted on the same ComputerSystem "
+        "as the FileSystemConfigurationService.  \n"
+        "Filesystem vendors differ in their models for creating a "
+        "filesystem.  Some vendors require that the storage element "
+        "already exist; others create the storage element at the same "
+        "time as the filesystem.  Some vendors require a local access "
+        "point (\"mount-point\") that supports defining a pathname that "
+        "allows a file server to access the filesystem; others do not "
+        "require any such object (though it could be argued that they "
+        "provide a mount-point by default).  \n"
+        "The FileSystemConfigurationService is associated with a "
+        "FileSystemConfigurationCapabilities whose properties, "
+        "BlockStorageCreationSupport and LocalAccessibilitySupport, "
+        "indicate support for variant mechanisms for specifying, "
+        "at create time, if and how the storage element is to be created and "
+        "the path by which a file server can access the filesystem locally. \n"
+        "The BlockStorageCreationSupport property indicates whether "
+        "the storage used for creating the LocalFileSystem must "
+        "consist of LogicalDisks elements and can be "
+        "specified by the InExtents parameter only or by the pair of "
+        "Pools and Settings parameters only, or by either mechanism." 
+        "The details are discussed below.  The LocalFileSystem will "
+        "be associated to one of the LogicalDisk(s) via the "
+        "ResidesOnExtent association."
+        "The distinguished LogicalDisk is extended by the other "
+        "LogicalDisks (if any) using a class derived from BasedOn.\n"
+        "The LocalAccessibilitySupport property "
+        "indicates whether this method provides support for setting up "
+        "local access to the created LocalFileSystem from file server "
+        "ComputerSystems.  The values of the this property indicate how the FileServer, "
+        "LocalAccessPoint, and LocalAccessSetting IN parameters are "
+        "to be used and what is to be returned as the OUT value for these parameters. "
+        "\n\n*** ElementName property is used as filesystem label. ***"),
+     ValueMap { "0", "1", "..", "4096", "4098..32767", "32768..65535" }, 
+     Values { "Job Completed with No Error", "Failed", 
+        "DMTF Reserved", "Method Parameters Checked - Job Started",
+        "Method Reserved", "Vendor Specific" }]
+   uint32 SNIA_CreateFileSystem( 
+	[IN, Description ("A end user relevant name for the FileSystem "
+           "being created.  The value will be stored in the "
+           "TheElement.ElementName property.\n"
+           "If NULL, then the implementation may supply "
+           "a default name. "
+	   "\n\n*** This name is used as filesystem label. ***")]
+	string ElementName,
+	[OUT, IN (false), Description("Reference to the job (may be null "
+           "if job completed).") ]
+	CIM_ConcreteJob REF Job,
+	[IN, EmbeddedInstance ("CIM_FileSystemSetting"), 
+         Description(
+           "The requirements for the FileSystem element to maintain. "
+           "This is an element of class CIM_FileSystemSetting, or "
+           "a derived class, encoded as a string-valued embedded "
+           "instance parameter; this allows the client to specify "
+           "the properties desired for the file system. If NULL "
+           "or the empty string, the default configuration will "
+           "be specified by the Capabilities associated with the"
+           "FileSystemConfigurationService.")]
+	string Goal,
+	[OUT, Description ("The newly created FileSystem.") ]
+	CIM_LogicalElement REF TheElement,
+	[IN, OUT, Description("The LogicalDisk(s) on which the created "
+           "FileSystem will reside.\n"
+           "If BlockStorageCreationSupport is 3 (\"LogicalDisks "
+           "Required\"), it is an Error if this parameter is NULL.\n"
+           "If BlockStorageCreationSupport is 4 (\"StoragePools or "
+           "LogicalDisks, but not Mixed\"), either this parameter is"
+           "not NULL or the Pools parameter is not NULL; it is an Error"
+           "if both are NULL or if both are not NULL.\n"
+           "On output, this parameter will contain the array of "
+           "LogicalDisk(s) on which the created LocalFileSystem resides.") ]
+	CIM_StorageExtent REF InExtents[],
+	[IN, Description(
+           "The concrete Storage Pools from which to create LogicalDisks "
+           "on which the created FileSystem will reside."
+           "If the property BlockStorageCreationSupport of "
+           "FileSystemConfigurationCapabilities is 2 "
+           "(\"StoragePools Required\"), it is an Error if "
+           "this parameter is not NULL.\n"
+           "If BlockStorageCreationSupport is 4 (\"StoragePools or "
+           "LogicalDisks, but not Mixed\"), either this parameter is"
+           "not NULL or the InExtents parameter is not NULL; it is an Error"
+           "if both are NULL or if both are not NULL.\n"
+           "If this parameter is not NULL, it is an Error for any entry "
+           "in it to be NULL.\n"
+           "Each Pool must be associated with a StorageConfigurationService "
+           "that can deliver the required LogicalDisk."
+           "The LogicalDisk(s) to be used are allocated from the "
+           "each StoragePool entry using the corresponding "
+           "entry in the Sizes parameter and the ExtentSettings "
+           "parameter.")]
+	CIM_StoragePool REF Pools[],
+	[IN, OUT, ArrayType ( "Indexed" ), Description( 
+           "As an input parameter, Sizes specifies an array of the"
+           "desired size of a LogicalDisk storage element "
+           "corresponding to an entry in the Pools parameter."
+           "An entry of '0' indicates that the LogicalDisk may "
+           "be of a default size.\n"
+           "The achieved Sizes are returned as the output parameter."),
+          Units ( "bytes" )]
+	uint64 Sizes[],
+	[IN, OUT, EmbeddedInstance("CIM_StorageSetting"), 
+         ArrayType ( "Indexed" ), Description (
+           "An array of embedded StorageSetting elements "
+           "that specify the settings to use for allocating"
+           "LogicalDisks from the corresponding entry in the "
+           "Pools parameter.  A NULL entry indicates that a"
+           "default setting appropriate for the specified "
+           "StoragePool may be used.")]
+	string ExtentSettings[],
+	[IN, Description (
+           "This parameter indicates a ComputerSystem that will "
+           "have local access to this LocalFileSystem and "
+           "will be able to export shares from it.\n"
+           "If LocalAccessibilitySupport specifies \"Local "
+           "Access is Not Required\", it is an Error if the "
+           "FileServer is not NULL.\n"
+           "Otherwise, (i.e., if LocalAccessibilitySupport specifies "
+           "either \"Local Access Required, Defaulted\" or "
+           "\"Local Access Required, Not Defaulted\"), and "
+           "FileServer is NULL, the implementation may "
+           "leave the filesystem operationally inaccessible "
+           "-- however, this can be corrected by calling the "
+           "SNIA_ModifyFileSystem method with the appropriate "
+           "parameters.  This is not an Error.\n"
+           "On the other hand, if FileServer is not NULL "
+           "and LocalAccessPoint and LocalAccessSetting are "
+           "not NULL, the new filesystem will be made locally "
+           "accessible on the specified FileServer at the "
+           "specified LocalAccessPoint with the specified "
+           "LocalAccessSetting.\n"  
+           "If FileServer is NULL, the LocalAccessPoint and "
+           "LocalAccessSetting parameters may be ignored.")]
+	CIM_ComputerSystem REF FileServer,
+	[IN, OUT, Description (
+           "An opaque string to use as a pathname in the name "
+           "space of the ComputerSystem indicated by the "
+           "FileServer parameter.\n"
+           "A vendor or profile could specify a format.  For "
+           "instance, in a Unix-bsed operating environment it "
+           "could be a hierarchical fully-qualified name,"
+           "or in a Windows operating environment it could "
+           "be the drive letter of the underlying LogicalDisk.\n"
+           "If LocalAccessibilitySupport specifies \"Local "
+           "Access Required, Defaulted\", and LocalAccessPoint "
+           "is the empty string (not NULL), the implementation "
+           "can provide a default LocalAccessPoint that will "
+           "returned as the output value of the parameter.")]  
+	string LocalAccessPoint,
+	[IN, OUT, EmbeddedInstance("SNIA_LocallyAccessibleFileSystemSetting"),
+	 Description("An string containing an embedded "
+           "LocallyAccessibleFileSystemSetting element that "
+           "specifies the settings to use for "
+           "making the filesystem locally accessible from "
+           "the ComputerSystem indicated by FileServer. \n"
+           "This element will be used to create a "
+           "LocalAccessAvailable association and will be cloned "
+           "to create a LocallyAccessibleFileSystemSetting element "
+           "that is scoped via HostedDependency to the FileServer and "
+           "associated via ElementSettingData to the TheElement."
+           "The LocalAccessSetting actually used is returned "
+           "as the output value of this parameter.\n"
+           "If the LocalAccessSetting is NULL or the empty string, "
+           "the implementation shall use the default "
+           "LocallyAccessibleFileSystemSetting for the associated "
+           "LocallyAccessibleFileSystemCapabilities element -- "
+           "this will be returned as the output value.")]
+	string LocalAccessSetting,
+	[IN, OUT, Description (
+	   "The IN parameter indicates a ComputerSystem that has "
+	   "access to directory services and the newly created "
+	   "filesystem can use it support security principal "
+	   "information associated with filesystem objects, "
+	   "such as quotas for users and groups.\n"
+	   "If DirectoryServerParameterSupported specifies \"Not "
+	   "Used\", or \"Supported, Defaulted to FileServer\", or "
+	   "\"Supported, Defaulted to FileSystem host\", it is "
+	   "an Error if DirectoryServer is not NULL.\n"
+	   "Otherwise, (i.e., if DirectoryServerParameterSupported "
+	   "specifies \"Supported\"), and if the DirectoryServer is "
+	   "not NULL, the new filesystem will use the directory "
+	   "services made available by the specified DirectoryServer."
+	   "If DirectoryServer is NULL, it will be defaulted to "
+	   "the FileServer parameter.  If the FileServer parameter"
+	   "is also NULL, the DirectoryServer will be defaulted "
+	   "to the host of the newly created filesystem.\n"
+	   "As an OUT parameter, this will be set to the value "
+	   "of the selected DirectoryServer, if one is used.")]
+	CIM_ComputerSystem REF DirectoryServer
+      );
+    
+    [Experimental, Override,
+      Description (
+        "SNIA_ModifyFileSystem modifies a LocalFileSystem specified "
+        "by the input reference parameter TheElement."  
+        "TheElement shall be associated with a FileSystemSetting whose"
+        "ActualFileSystemType property is supported by the "
+        "FileSystemConfigurationService (as specified by the "
+        "SupportedActualFileSystemTypes property of the associated "
+        "FileSystemConfigurationCapabilities).\n"
+        "The desired new settings for TheElement are specified by "
+        "the Goal parameter (a string-valued EmbeddedInstance object "
+        "of class FileSystemSetting).\n"
+        "The existing LogicalDisks used by TheElement cannot be "
+        "released by this method, but this method may add storage "
+        "as specified by the InExtents or the Pools array parameters."
+        "The BlockStorageCreationSupport property of the associated "
+        "FileSystemConfigurationCapablilities element imposes some "
+        "constraints.  Within those limitations, five cases are "
+        "possible:\n"
+        "1. If InExtents is not NULL and Pools is not NULL: This "
+        "   request is attempting to modify one or more of the "
+        "   LogicalDisks underlying TheElement.  It is an Error "
+        "   if InExtents contains any LogicalDisk not already used "
+        "   for the filesystem and allocated from the corresponding "
+        "   Pools entry. The corresponding entries in the "
+        "   ExtentSettings array provides the new requested settings "
+        "   for these LogicalDisks.  The corresponding entry in the "
+        "   Sizes array specifies the new desired size of these "
+        "   LogicalDisks. The entry in Pools may supply the required "
+        "   additional storage to satisfy the request.\n"
+        "2. If Pools is NULL, but InExtents is not NULL: InExtents is an array "
+        "   of LogicalDisks that are to be added to the existing set of "
+        "   LogicalDisks underlying TheElement (assuming that is permitted).\n"
+        "3. If Pools is NULL, but InExtents is not NULL and contains "
+        "   only LogicalDisks already in use by the FileSystem: "
+        "   InExtents is an array of LogicalDisks that are to be "
+        "   modified.  Each LogicalDisk implicitly identifies it's "
+        "   allocating StoragePool. The corresponding entry in "
+        "   ExtentSettings provides the new requested settings for "
+        "   each LogicalDisk.\n"
+        "4. If Pools is not NULL, and InExtents is NULL: This indicates "
+        "   that a new set of LogicalDisks are to be created and added "
+        "   to the filesystem.  The Pools parameter specifies an array of "
+        "   StoragePools, the ExtentSettings parameter specifies an "
+        "   array of corresponding StorageSettings, and the Sizes parameter "
+        "   specifies an array of corresponding sizes for allocating the new"
+        "   set of LogicalDisks from the Pools. These are added to "
+        "   the existing set of LogicalDisks of TheElement.\n"
+        "5. If both InExtents and Pools are NULL, there will be no "
+        "   change to the set of LogicalDisks, but this operation "
+        "   may change other properties of TheElement.\n"
+        "The modified TheElement will consume all the storage "
+        "made available to it by the LogicalDisks, irrespective of "
+        "what might be needed to satisfy the Goal.\n"
+        "If the new Goal is different from the old FileSystemSetting "
+        "element, then the implementation must change the setting "
+        "properties of TheElement. This may be accomplished "
+        "by modifying the old FileSystemSetting element directly, or by "
+        "deleting it and then re-creating a new FileSystemSetting element "
+        "with the same InstanceId."
+        "Within the constraints of the LocalAccessibilitySupport property "
+        "of the associated FileSystemConfigurationCapabilities element, "
+        "this method can add a new local access point or modify or "
+        "delete an existing local access point."
+        "The WaitTime and InUseOptions parameters specify the behavior "
+        "if the file system is in use when this request is made.  "
+        "These parameters are supported if the "
+        "FileSystemCapabilities.SupportedProperties includes the "
+        "\"RequireInUseOptions\" option. "
+        "\n\n*** ElementName property is used as filesystem label. ***"),
+     ValueMap { "0", "1", "..", "4096", "4098..32767", "32768..65535" }, 
+     Values { "Job Completed with No Error", "Failed", 
+        "DMTF Reserved", "Method Parameters Checked - Job Started",
+        "Method Reserved", "Vendor Specific" }]
+   uint32 SNIA_ModifyFileSystem( 
+	[IN, Description (
+           "A new end user relevant name for the FileSystem "
+           "specified by TheElement. If NULL, then the previous name "
+           "is not changed. "
+	   "\n\n*** This name is used as filesystem label. ***")]
+	string ElementName,
+
+	[OUT, IN (false), Description(
+           "Reference to the job (may be null if job completed).") ]
+	CIM_ConcreteJob REF Job,
+
+	[IN, EmbeddedInstance ("CIM_FileSystemSetting"),
+         Description(
+           "The requirements for the FileSystem element to maintain. "
+           "This is an element of class CIM_FileSystemSetting, or "
+           "a derived class, encoded as a string-valued embedded "
+           "instance parameter; this allows the client to specify "
+           "the properties desired for the file system. If NULL "
+           "or the empty string, the current setting of the "
+           "FileSystem specified by TheElement is used unchanged.")]
+	string Goal,
+
+	[OUT, Description ("The newly created FileSystem.") ]
+	CIM_LogicalElement REF TheElement,
+
+	[IN, OUT, Description(
+           "An array of references to LogicalDisks.  If these are "
+           "already in use by TheElement, then this method is being "
+           "called to modify their settings and this array should "
+           "only contain such LogicalDisks.  The corresponding entry "
+           "in ExtentSettings will provide the new requirements for "
+           "these LogicalDisks and the Pools parameter will be "
+           "ignored.\n"
+           "If these LogicalDisks are not currently in use, they are "
+           "being provided to extend the current set.\n"
+           "If both this parameter and the Pools parameter are NULL, "
+           "the set of LogicalDisks underlying TheElement will not be "
+           "modified.\n"
+           "On output, this parameter contains the full set of "
+           "LogicalDisks used by TheElement.") ]
+	CIM_StorageExtent REF InExtents[],
+	[IN, Description(
+           "An array of concrete Storage Pools from which to create "
+           "new LogicalDisks.  Only one of InExtents or Pools may be "
+           "specified on input.  The property BlockStorageCreationSupport "
+           "of FileSystemConfigurationCapabilities must be 2 "
+           "(\"StoragePools Required\") or 4 (\"StoragePools or "
+           "LogicalDisks, but not Mixed\").\n"
+           "The corresponding entry in ExtentSettings specifies the "
+           "requirements for the new LogicalDisks to be created.")]
+	CIM_StoragePool REF Pools[],
+	[IN, OUT, ArrayType ( "Indexed" ), Description( 
+           "As an input parameter, Sizes specifies an array of "
+           "desired sizes corresponding to the entries in the "
+           "ExtentSettings parameter.  The Sizes of the InExtents "
+           "array of LogicalDisks underlying TheElement are "
+           "returned as the output parameter."),
+          Units ( "bytes" )]
+	uint64 Sizes[],
+	[IN, OUT, EmbeddedInstance("CIM_StorageSetting"), 
+         ArrayType ( "Indexed" ), Description (
+           "An array of embedded StorageSetting structures "
+           "that specify the settings to use for creating "
+           "additional LogicalDisks (or modifying existing ones)."
+           "These settings must be supported by the storage pools "
+           "underlying the LogicalDisks being created or modified." )]
+	string ExtentSettings[],
+	[IN, Description (
+           "A ComputerSystem that has or will have local access "
+           "to this LocalFileSystem and will be able to export "
+           "shares from it.\n"
+           "The LocalAccessPoint parameter will specify the path "
+           "to the file system relative to this ComputerSystem."
+           "The LocalAccessSetting parameter specifies the settings "
+           "for local access from the specified FileServer.\n"
+           "If this FileServer already has local access to "
+           "TheElement, this method is called to modify the "
+           "settings for that access.  If the LocalAccessPoint "
+           "and LocalAccessSetting parameters are NULL, it "
+           "indicates that local access at the specified "
+           "FileServer is being stopped.  If this results in "
+           "all local access being terminated, it could leave "
+           "the filesystem operationally inaccessible, but this "
+           "is not an Error as it can be corrected by calling "
+           "SNIA_ModifyFileSystem.\n"
+           "If LocalAccessibilitySupport specifies \"Local "
+           "Access is Not Required\", it is an Error if the "
+           "FileServer is not NULL.\n") ]
+	CIM_ComputerSystem REF FileServer,
+	[IN, OUT, 
+         Description (
+           "An opaque string to use as a pathname in the name "
+           "space of the ComputerSystem indicated by the "
+           "FileServer parameter.\n"
+           "A vendor or profile could specify a format.  For "
+           "instance, in a Unix-bsed operating environment it "
+           "could be a hierarchical fully-qualified name,"
+           "or in a Windows operating environment it could "
+           "be the drive letter of the underlying LogicalDisk.\n"
+           "If LocalAccessibilitySupport specifies \"Local "
+           "Access Required, Defaulted\", and LocalAccessPoint "
+           "is the empty string (not NULL), the implementation "
+           "can provide a default LocalAccessPoint that will "
+           "returned as the output value of the parameter.\n"
+           "If the FileServer already has local access to "
+           "TheElement, this parameter could be used to change "
+           "the previously specified LocalAccessPoint."
+           "If LocalAccessPoint is NULL, it indicates that local "
+           "access is being terminated at the specified FileServer.")]  
+	string LocalAccessPoint,
+
+        [IN, OUT, EmbeddedInstance("SNIA_LocallyAccessibleFileSystemSetting"), 
+         Description("An string containing an embedded "
+           "LocallyAccessibleFileSystemSetting element that "
+           "specifies the settings to use for "
+           "making the filesystem locally accessible from "
+           "the ComputerSystem indicated by FileServer. \n"
+           "This element will be used to create a "
+           "LocalAccessAvailable association and will be cloned "
+           "to create a LocallyAccessibleFileSystemSetting element "
+           "that is scoped via HostedDependency to the FileServer and "
+           "associated via ElementSettingData to the TheElement."
+           "The LocalAccessSetting actually used is returned "
+           "as the output value of this parameter.\n"
+           "If the LocalAccessSetting is NULL or the empty string, "
+           "the implementation shall use the default "
+           "LocallyAccessibleFileSystemSetting for the associated "
+           "LocallyAccessibleFileSystemCapabilities element -- "
+           "this will be returned as the output value.\n"
+           "If the FileServer already has local access to "
+           "TheElement, this parameter could be used to change the "
+           "requirements established by the previously specified "
+           "LocalAccessSetting.")]
+	string LocalAccessSetting,
+      
+        [IN, Description ("An enumerated integer that specifies the "
+           "action to take if the FileSystem is still in use when "
+           "this request is made. This option is only relevant if the "
+           "FileSystem needs to be made unavailable while the request "
+           "is being executed."),
+         ValueMap { "2", "3", "4", "..", "0x1000..0xFFFF" },
+         Values { "Do Not Execute Request", 
+           "Wait for specified time, then Execute Request Immediately", 
+           "Try to Quiesce for specified time, then Execute Request "
+           "Immediately", "DMTF Reserved", "Vendor Defined" }]
+        uint16 InUseOptions,
+      
+        [IN, Description (
+           "An integer that indicates the time (in seconds) that the "
+           "provider must wait before modifying this FileSystem. If "
+           "WaitTime is not zero, the method will create a job, if "
+           "supported by the provider, and return immediately. If "
+           "the provider does not support asynchronous jobs, there "
+           "is a possibility that the client could time-out before "
+           "the job is completed. \n"
+           "The combination of InUseOptions = '4' and WaitTime ='0' "
+           "(the default) is interpreted as 'Wait (forever) until "
+           "Quiescence, then Modify Filesystem' and will be "
+           "performed asynchronously if possible."),
+         Units ( "seconds" )]
+        uint32 WaitTime);
+
+};
+
+class LMI_FileSystemConfigurationCapabilities : SNIA_FileSystemConfigurationCapabilities
+{
+};
+
+class LMI_FileSystemCapabilities : SNIA_FileSystemCapabilities
+{
+      [Override( "GetRequiredStorageSize" ), Experimental, Description (
+          "This method returns the \"expected\" size of StorageExtent "
+          "that would support a file system specified by the input "
+          "FileSystemGoal parameter assuming that the other settings "
+          "for the StorageExtent are specified by the ExtentSetting "
+          "parameter. \n"
+          "If the input FileSystemGoal or the ExtentSetting are NULL, "
+          "this method returns a value computed by using the default "
+          "FileSystemSetting or some vendor-specific canned "
+          "StorageSetting. \n"
+          "A value of 0 is returned if this method is not able to "
+          "determine a reasonable size or does not restrict sizes "
+          "based on setting information."),
+       Units ( "Bytes" )]
+   uint64 GetRequiredStorageSize(
+         [IN, Description (
+             "FileSystemGoal is an element of class "
+             "SNIA_FileSystemSetting, or a derived class, encoded as a "
+             "string-valued embedded object parameter, that is used to "
+             "specify the settings for the FileSystem to be created."),
+          EmbeddedInstance ( "SNIA_FileSystemSetting" )]
+      string FileSystemGoal,
+         [IN, Description (
+             "*** This parameter is not supported. ***\n\n "
+	     "ExtentSetting is an element of class SNIA_StorageSetting, "
+             "or a derived class, encoded as a string-valued embedded "
+             "object parameter, that is used to specify the settings "
+             "of the StorageExtent to be used for this FileSystem."),
+          EmbeddedInstance ( "SNIA_StorageSetting" )]
+      string ExtentSetting,
+         [OUT, Description (
+             "A number that indicates the size of the storage extent "
+             "that this FileSystem is expected to need. A value of 0 "
+             "indicates that there is no expected size."),
+          Units ( "Bytes" )]
+      uint64 ExpectedSize,
+         [OUT, Description (
+             "A number that indicates the size of the smallest storage "
+             "extent that would support the specified FileSystem. A "
+             "value of 0 indicates that there is no minimum size."),
+          Units ( "Bytes" )]
+      uint64 MinimumSizeAcceptable,
+         [OUT, Description (
+             "A number that indicates the size of the largest storage "
+             "extent that would be usable for the specified "
+             "FileSystem. A value of 0 indicates that there is no "
+             "maximum size."),
+          Units ( "Bytes" )]
+      uint64 MaximumSizeUsable);
+};
+
+class LMI_XFSFileSystemCapabilities : LMI_FileSystemCapabilities
+{
+};
+
+class LMI_ExtFileSystemCapabilities : LMI_FileSystemCapabilities
+{
+};
+
+class LMI_FileSystemSetting : SNIA_FileSystemSetting
+{
+};
+
+class LMI_XFSFileSystemSetting : LMI_FileSystemSetting
+{
+
+};
+
+[ Description("This class describes the attribute values set when creating a ext2, ext3 or ext4 filesystem by a FileSystemConfigurationService."
+    "\n TODO: add all mkfs.ext2 options + all tune2fs options.")]
+class LMI_ExtFileSystemSetting : LMI_FileSystemSetting
+{
+    [ Description("Use direct I/O when writing to the disk during creation of the filesystem. This avoids dirtying a lot of buffer cache memory, which may impact other applications running on a busy server. This  option will cause filesystem creation to run much more slowly, however, so there is a tradeoff to using direct I/O.\n"
+        "This option has no effect during filesystem modification.")]
+    boolean DirectIO = False;
+
+    [ Description("Adjust the initial MMP update interval to interval seconds. Specifying an interval of 0 means to use the default interval.  The specified interval must be less  than 300 seconds.  Requires that the mmp feature be enabled.")]
+    uint16 MMPUpdateInterval;
+
+    [ Description("Configure  the  filesystem  for  a RAID array with stride-size filesystem blocks. This is the number of blocks read or written to disk before moving to the next disk, which is sometimes referred to as the chunk size.  This mostly affects placement of filesystem metadata like bitmaps at filesystem creation time to avoid placing them on a  single disk, which can hurt performance.  It may also be used by the block allocator.\n"
+        "TODO: rename this option to be consisten with RAID model.\n"
+        "TODO: add some logic to the API to recognize the best value by itself.")]
+    uint32 StrideSize;
+
+    [ Description("Configure  the  filesystem  for  a RAID array with stripe-width filesystem blocks per stripe. This is typically stride-size * N, where N is the number of data-bearing disks in the RAID (e.g. for RAID 5 there is one parity disk, so N will be the number of disks in the array minus 1).  This allows the block allocator to prevent read-modify-write of the parity in a RAID stripe if possible when the data is written."
+        "TODO: rename this option to be consisten with RAID model.\n"
+        "TODO: add some logic to the API to recognize the best value by itself.")]
+    uint32 StripeWidth;
+
+    [ Description("Reserve enough space during filesystem creation so that the block group descriptor table can grow to support a filesystem that has ResizeReserve blocks.") ]
+    uint64 ResizeReserve;
+
+    [ Description("If enabled and the uninit_bg feature is enabled, the inode table will not be fully initialized during filesystem creation.  This speeds up filesystem initialization noticeably, but it requires the kernel to finish initializing the filesystem in the background when the filesystem is first mounted.  If the option value is omitted, it defaults to True to enable lazy inode table zeroing.")]
+    boolean LazyITableInit = True;
+
+    [ Description("The size of internal journal (i.e.,  stored  inside the filesystem) in filesystem blocks.  The size of the journal must be less than half the total file system  size."
+        "\nThis property must be Null, when journal is created on separate block device.") ]
+    uint64 JournalSize;
+
+    [ Description("The maximum size of internal journal (i.e. stored inside the filesystem) in filesystem blocks.")]
+    uint64 JournalSizeMax;
+
+    [ Description("The minimum size of internal journal (i.e. stored inside the filesystem) in filesystem blocks.")]
+    uint64 JournalSizeMin;
+
+    [ Description("The percentage of the filesystem blocks reserved for the super-user.  This avoids fragmentation, and allows root-owned daemons, such as syslogd(8), to continue  to  function correctly after non-privileged processes are prevented from writing to the filesystem.  The default percentage is 5%.")]
+    uint16 ReservedBlocks = 5;
+
+};
+
+class LMI_LocalFileSystem : CIM_LocalFileSystem
+{
+};
+
+class LMI_FileSystemServiceElementCapabilities : CIM_ElementCapabilities
+{
+};
+
+class LMI_FileSystemElementCapabilities : SNIA_ElementCapabilities
+{
+};
+
+class LMI_FileSystemElementSettingData : CIM_ElementSettingData
+{
+};
+
+class LMI_HostedFileSystem : CIM_HostedFileSystem
+{
+};
+
+class LMI_HostedFileSystemService : CIM_HostedService
+{
+};
+
+class LMI_FileSystemSettingsDefineCapabilities : CIM_SettingsDefineCapabilities
+{
+};
+

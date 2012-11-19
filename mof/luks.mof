@@ -1,0 +1,223 @@
+class LMI_EncryptionResidesOnExtent : LMI_ResidesOnExtent
+{
+};
+
+class LMI_EncryptionElementSettingData : CIM_ElementSettingData
+{
+};
+
+[ Abstract, Description("Base class for all encryption formats.")]
+class LMI_EncryptionFormat : LMI_ContentFormat
+{
+};
+
+[ Abstract, Description("Base class for all encryption settings.")]
+class LMI_EncryptionFormatSetting : CIM_SettingData
+{
+};
+
+[ Abstract, Description("Base class for all encryption capabilities.")]
+class LMI_EncryptionFormatCapabilities : CIM_Capabilities
+{
+};
+
+class LMI_EncryptionElementCapabilities : CIM_ElementCapabilities
+{
+};
+
+[ Description("Service which configures LUKS formats on block devices.")]
+class LMI_ExtentEncryptionConfigurationService : CIM_Service
+{
+    uint32 CreateEncryptedFormat(
+        CIM_StorageExtent REF InExtent,
+        LMI_EncryptionSetting REF Goal,
+        string Passphrase,
+        [ OUT, IN(false)]
+        CIM_ConcreteJob REF Job,
+        [ OUT, IN(false)]
+        LMI_EncryptionFormat REF Format
+    );
+
+    uint32 AddPassphrase(
+        LMI_EncryptionFormat REF Format,
+        string Passphrase,
+        string NewPassphrase
+    );
+
+    uint32 DeletePassphrase(
+        LMI_EncryptionFormat REF Format,
+        string Passphrase
+    );
+
+    uint32 ChangePassphrase(
+        LMI_EncryptionFormat REF Format,
+        string OldPassphrase,
+        string NewPassphrase
+    );
+        
+    uint32 OpenEncryptionFormat(
+        LMI_EncryptionFormat REF Format,
+        string ElementName,
+        string Passphrase,
+        [ OUT, IN(false)]
+        CIM_StorageExtent REF Extent
+    );
+
+    uint32 CloseEncryptionFormat (
+        CIM_StorageExtent REF InExtent
+    );
+
+    uint32 DeleteEcryptionFormat (
+        LMI_EncryptionFormat REF Element,
+        [OUT, IN(false)]
+        CIM_ConcreteJob REF Job
+    );
+};
+
+class LMI_LUKSResidesOnExtent : LMI_EncryptionResidesOnExtent
+{
+};
+
+class LMI_LUKSElementSettingData : LMI_EncryptionElementSettingData
+{
+};
+
+[ Description("Class representing LUKS data.")]
+class LMI_LUKSFormat : LMI_EncryptionFormat
+{
+    [ Description("Version of the LUKS format.")]
+    uint16 Version;
+
+    string UUID;
+
+    [ Description("Represents status of each slot in LUKS header."),
+      ValueMap{ "0", "1" },
+      Values{ "Free", "Used"} ]
+    uint16 SlotStatus[];
+};
+
+[ Description("Parameters used to create LUKS format by LMI_LUKSConfigurationService.") ]
+class LMI_LUKSFormatSetting : LMI_EncryptionFormatSetting
+{
+    [ Description("Encryption block cipher."),
+        ValueMap { "0", "1", "2", "65535"},
+        Values { "Blowfish", "Serpent", "AES", "Other"}]
+    uint16 Cipher;
+
+    [ Description("Name of other encryption block cipher if Cipher property has value of \"Other\".")]
+    string OtherCipher;
+
+    [ Description("Block cipher encryption mode."),
+        ValueMap { "0", "1", "2" },
+        Values { "CBC", "XTS", "Other"}]
+    uint16 ChainMode;
+
+    [ Description("Name of other block cipher encryption mode if ChainMode property has value of \"Other\".")]
+    string OtherChainMode;
+
+    [ Description("Initialization Vector (IV) used for selected block mode (if block mode requires IV)."),
+        ValueMap { "0", "1", "2", "3", "4", "5", "65535" },
+        Values { "Plain", "Plain64", "ESSIV", "BENBI", "Null", "LMK", "Other"}]
+    uint16 IVMode;
+
+    [ Description("Name of other initialization vector if IVMode property has value of \"Other\".")]
+    string OtherIVMode;
+
+    [ Description("Hash algorithm used to derive initial vector. Used only if IVMode has value of \"ESSIV\""),
+        ValueMap { "0", "1", "2", "3", "4" },
+        Values { "SHA256", "SHA1", "MD5", "Other"}]
+    uint16 ESSIVHashAlhorithm;
+
+    [ Description("Name of other hash algorithm to derive initial vector if ESSIVHashAlhorithm has value of \"Other\".")]
+    string OtherESSIVHashAlhorithm;
+
+    [ Description("Master key size in bits. The argument has to be a multiple of 8.")]
+    uint16 KeySize;
+};
+
+[ Description("LMI_LUKSFormatCapabilities specifies combination of property values, which can be used to create a LUKS format using LMI_LUKSConfigurationService.")]
+class LMI_LUKSFormatCapabilities : LMI_EncryptionFormatCapabilities
+{
+    [ Description("Array of supported encryption block ciphers."),
+        ValueMap { "0", "1", "2", "65535"},
+        Values { "Blowfish", "Serpent", "AES", "Other"},
+        ArrayType("Indexed")]
+    uint16 Ciphers[];
+
+    [ Description("Array of names of supported block ciphers for ciphers which have value \"Other\" in Ciphers property."
+        " Not every combination of Cipher and ChainMode is allowed. All possible combinations can be retrieved by GetSupportedChainModes() method."),
+        ArrayType("Indexed")]
+    string OtherCiphers[];
+
+    [ Description("Array of supported encryption modes."),
+        ValueMap{ "0", "1", "2", "3", "4", "5", "65535"},
+        Values{ "CTR", "CBC", "ECB", "XTR", "LRW", "PCBC", "Other"},
+        ArrayType("Indexed")]
+    uint16 ChainModes[];
+
+    [ Description("Array of names of supported encryption modes which have value \"Other\" in ChainModes property."),
+        ArrayType("Indexed")]
+    string OtherChainModes[];
+
+    [ Description("Array of supported initialization vector modes."),
+        ValueMap { "0", "1", "2", "3", "4", "5", "65535" },
+        Values { "Plain", "Plain64", "ESSIV", "BENBI", "Null", "LMK", "Other"},
+        ArrayType("Indexed")]
+    uint16 IVModes[];
+
+    [ Description("Array of names of supported initialization vector modes for modes, which have value \"Other\" in IVModes property."),
+        ArrayType("Indexed")]
+    string OtherCiphers[];
+
+    [ Description("Array of supported hash algorithms used to derive initial vector in \"ESSIV\" mode."),
+        ValueMap { "0", "1", "2", "3", "4" },
+        Values { "SHA256", "SHA1", "MD5", "Other"},
+        ArrayType("Indexed")]
+    uint16 ESSIVHashAlhorithms[];
+
+    [ Description("Array of names of other hash algorithms to derive initial vector in \"ESSIV\" mode, which have value \"Other\" in ESSIVHashAlhorithms property."),
+        ArrayType("Indexed")]
+    string OtherESSIVHashAlhorithms[];
+
+    [ Description("Discover all encryption modes which are supported for given block cipher. Minimum and maximum key sizes are also returned.")]
+    uint32 GetSupportedChainModes(
+        
+        [ Description("Encryption block cipher."),
+            ValueMap { "0", "1", "2", "65535"},
+            Values { "Blowfish", "Serpent", "AES", "Other"}]
+        uint16 Cipher,
+
+        [ Description("Name of other encryption block cipher if Cipher property has value of \"Other\".")]
+        string OtherCipher,
+
+        [ OUT, Description("Array of supported encryption modes for given cipher."),
+            ValueMap{ "0", "1", "2", "3", "4", "5", "65535"},
+            Values{ "CTR", "CBC", "ECB", "XTR", "LRW", "PCBC", "Other"},
+            ArrayType("Indexed")]
+        uint16 ChainModes[],
+
+        [ OUT, Description("Array of names of supported encryption modes which have value \"Other\" in ChainModes parameter."),
+            ArrayType("Indexed")]
+        string OtherChainModes[],
+
+        [ OUT, Description("Array of integers specifying the minimum key size in bytes corresponding to given block cipher and entry in ChainModes parameter."),
+            ArrayType("Indexed")]
+        uint16 KeySizeMin[],
+        [ OUT, Description("Array of integers specifying the maximum key size in bytes corresponding to given block cipher and entry in ChainModes parameter."),
+            ArrayType("Indexed")]
+        uint16 KeySizeMax[]
+    );
+};
+
+
+class LMI_LUKSSettingAssociatedToCapabilities : CIM_SettingAssociatedToCapabilities
+{
+};
+
+class LMI_LUKSElementCapabilities : LMI_EncryptionElementCapabilities
+{
+};
+
+class LMI_HostedExtentEncryptionConfigurationService : CIM_Service
+{
+};
