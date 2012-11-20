@@ -122,3 +122,12 @@ class LMI_MDRAIDStorageExtent(LMI_StorageExtent):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Unsupported raid type: " + str(device.level))
             
         return finalRedundancy
+    
+    def get_instance(self, env, model, device = None):
+        """
+            Add MD RAID-specific properties.
+        """
+        model = super(LMI_MDRAIDStorageExtent, self).get_instance(env, model, device)
+        if not device:
+            device = self._getDevice(model)
+        model['UUID'] = device.uuid
