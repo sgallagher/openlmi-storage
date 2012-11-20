@@ -231,6 +231,8 @@ class LMI_DiskPartitionConfigurationSetting : CIM_SettingData
     "devices with MS-DOS (MBR) style partition tables.")]
 class LMI_DiskPartition : CIM_DiskPartition
 {
+    [ Implemented(true) ] boolean PrimaryPartition;
+    [ Implemented(true) ] uint16 PartitionType;
 };
 
 [Experimental, Description("This class represents partitions on "
