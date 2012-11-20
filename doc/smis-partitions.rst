@@ -23,8 +23,8 @@ As result of this deficiency, some adjustments were necessary:
 * The ``LMI_DiskPartition`` representing a logical partition *includes* the
   metadata sector and any alignment sectors.
 
-* The ``LMI_PartitionExtent`` (= ``CIM_LogicalDisk``) allocated from the
-  ``LMI_DiskPartition`` includes only the real partition data.
+ * ``NumberOfBlocks`` property *includes* the metadata and any alignment sectors.
+ * ``ConsumableBlocks`` includes only the real usable data on partition.
 
 .. figure:: pic/partitions.png
 
@@ -35,31 +35,11 @@ over MBR ones.
 
 Implementation
 --------------
-All mandatory classes and methods are implemented:
+All mandatory classes and methods are implemented.
 
-=============================================== ==========================================
-SMI-S                                           OpenLMI
-=============================================== ==========================================
-CIM_BasedOn                                     LMI_PartitionBasedOnLocalDiskExtent
-CIM_BasedOn                                     LMI_PartitionBasedOnPartition
-CIM_DiskPartitionConfigurationCapabilities      LMI_DiskPartitionConfigurationCapabilities
-CIM_DiskPartitionConfigurationService           LMI_DiskPartitionConfigurationService
-CIM_ElementCapabilities                         LMI_PartitionElementCapabilities
-CIM_GenericPartition                            N/A
-CIM_HostedService                               LMI_HostedService
-CIM_InstalledPartitionTable                     LMI_InstalledParititionTable
-CIM_LogicalDisk                                 LMI_PartitionExtent [#1]_
-CIM_LogicalDiskBasedOnPartition                 LMI_PartitionExtentBasedOnPartition
-CIM_StorageExtent                               LMI_StorageExtent
-CIM_SystemDevice                                LMI_SystemDevice
-=============================================== ==========================================
+TODO
 
 .. warning:: Mandatory indications are not implemented.
 
    Anaconda does not provide such functionality and it would be very CPU-intensive
    to periodically scan for new/deleted partitions.
-
-.. rubric:: Footnotes
-
-.. [#1] This LogicalDisk descendant should not be directly used, see
-   :doc:`smis-block`.

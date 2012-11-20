@@ -1,4 +1,4 @@
-Anaconda Storage Provider's documentation
+OpenLMI Storage Provider's documentation
 =========================================
 
 Contents:
@@ -7,8 +7,6 @@ Contents:
    :maxdepth: 2
 
    smis-profiles
-   wrappers
-   providers
    todo
 
 Indices and tables
