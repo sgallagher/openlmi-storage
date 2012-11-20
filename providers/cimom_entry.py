@@ -32,7 +32,7 @@ anaconda_log.init()
 from StorageConfiguration import StorageConfiguration
 from ProviderManager import ProviderManager
 from LMI_StorageExtent import LMI_StorageExtent
-
+from LMI_MDRAIDStorageExtent import LMI_MDRAIDStorageExtent 
 import pyanaconda.storage
 import pyanaconda.platform
 import os
@@ -68,9 +68,14 @@ def get_providers(env):
     storage = initAnaconda(env)
     
     providers = {}
+    
     p = LMI_StorageExtent(env, storage = storage, config = config, manager = manager)
     manager.addProvider(p)
     providers['LMI_StorageExtent'] = p
+
+    p = LMI_MDRAIDStorageExtent(env, storage = storage, config = config, manager = manager)
+    manager.addProvider(p)
+    providers['LMI_MDRAIDStorageExtent'] = p
     
     print "providers:", providers
     
