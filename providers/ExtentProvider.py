@@ -170,10 +170,11 @@ class ExtentProvider(DeviceProvider):
         if consumableBlocks:
             model['ConsumableBlocks'] = pywbem.Uint64(consumableBlocks)
             
-        (noSinglePointOfFailure, dataRedundancy, packageRedundancy) = self.getRedundancy(device)
-        model['NoSinglePointOfFailure'] = noSinglePointOfFailure
-        model['DataRedundancy'] = pywbem.Uint16(dataRedundancy)
-        model['PackageRedundancy'] = pywbem.Uint16(packageRedundancy)
+        redundancy = self.getRedundancy(device)
+        model['NoSinglePointOfFailure'] = redundancy.noSinglePointOfFailure
+        model['DataRedundancy'] = pywbem.Uint16(redundancy.dataRedundancy)
+        model['PackageRedundancy'] = pywbem.Uint16(redundancy.packageRedundancy)
+        model['ExtentStripeLength'] = pywbem.Uint16(redundancy.stripeLength)
             
         # TODO: add DeltaReservation (mandatory in SMI-S)
         

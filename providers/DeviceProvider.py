@@ -104,18 +104,28 @@ class DeviceProvider(CIMProvider2):
             Any specific DeviceProviderSubclasses (e.g. RAID) must override
             this method.
         """
-        (aFailure, aData, aPackage) = a
-        (bFailure, bData, bPackage) = b
-
         # assume linar device, i.e. a data is either on A or on B
         # hence dataRedundancy is the minimum of both
-        cData = min(aData, bData)
+        dataRedundancy = min(a.dataRedundancy, b.dataRedundancy)
         # assume the worst
-        cPackage = min(aPackage, bPackage)
+        packageRedundancy = min(a.packageRedundancy, b.packageRedundancy)
         # both NoSinglePointOfFailure must be true to be the result true
-        cFailure = aFailure and bFailure
+        noSinglePointOfFailure= a.noSinglePointOfFailure and b.noSinglePointOfFailure
+        #  we don't know if the data are on A or B, so assume the worst
+        stripeLength = min(a.stripeLength, b.stripeLength)
         
-        return(cFailure, cData, cPackage)
+        return self.Redundancy(noSinglePointOfFailure = noSinglePointOfFailure,
+                               dataRedundancy = dataRedundancy,
+                               packageRedundancy = packageRedundancy,
+                               stripeLength = stripeLength)
+
+    def _findRedundancy(self, device):
+        """
+            Discover redundancy of given StorageDevice.
+            It uses ProviderManager to do so.
+        """
+        provider = self.manager.getProviderForDevice(device)
+        return provider.getRedundancy(device)
 
     def getRedundancy(self, device):
         """
@@ -124,16 +134,32 @@ class DeviceProvider(CIMProvider2):
         parents = self.getBaseDevices(device)
         if len(parents) > 0:
             # find all parents and get their redundancy
-            redundancies = map(self.getRedundancy, parents)
+            redundancies = map(self._findRedundancy, parents)
             # iteratively call self._getCommonRedundancy(r1, r2), ...
-            (noSinglePointOfFailure, dataRedundancy, packageRedundancy) = reduce(self._getCommonRedundancy, redundancies)
+            finalRedundancy = reduce(self._getCommonRedundancy, redundancies)
         else:
             # this device has no parents, assume it is simple disk
-            noSinglePointOfFailure = False
-            dataRedundancy = 1
-            packageRedundancy = 0
-        return (noSinglePointOfFailure, dataRedundancy, packageRedundancy)
+            finalRedundancy = self.Redundancy(
+                    noSinglePointOfFailure = False,
+                    dataRedundancy = 1,
+                    packageRedundancy = 0,
+                    stripeLength = 1)
+        return finalRedundancy
     
+    class Redundancy(object):
+        """
+            Class representing redundancy characteristics of a StorageExtent
+            device, i.e. both StorageExtent and StoragePool
+        """
+        def __init__(self, noSinglePointOfFailure = False,
+                     dataRedundancy = 1,
+                     packageRedundancy = 0,
+                     stripeLength = 1):
+            self.noSinglePointOfFailure = noSinglePointOfFailure
+            self.dataRedundancy = dataRedundancy
+            self.packageRedundancy = packageRedundancy
+            self.stripeLength = stripeLength
+            
     class DeviceProviderValues(object):
         class OperationalStatus(object):
             Unknown = pywbem.Uint16(0)
