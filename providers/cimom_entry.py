@@ -35,7 +35,7 @@ from LMI_StorageExtent import LMI_StorageExtent
 from LMI_MDRAIDStorageExtent import LMI_MDRAIDStorageExtent 
 from LMI_DiskPartition import LMI_DiskPartition
 from LMI_GenericDiskPartition import LMI_GenericDiskPartition
-
+from LMI_LVStorageExtent import LMI_LVStorageExtent
 import pyanaconda.storage
 import pyanaconda.platform
 import os
@@ -87,6 +87,10 @@ def get_providers(env):
     p = LMI_GenericDiskPartition(env, storage = storage, config = config, manager = manager)
     manager.addProvider(p)
     providers['LMI_GenericDiskPartition'] = p
+
+    p = LMI_LVStorageExtent(env, storage = storage, config = config, manager = manager)
+    manager.addProvider(p)
+    providers['LMI_LVStorageExtent'] = p
 
     print "providers:", providers
     

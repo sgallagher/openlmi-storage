@@ -1,23 +1,23 @@
 [ Experimental, Description("This class represents MD RAID devices on the managed system.")]
 class LMI_MDRAIDStorageExtent : LMI_StorageExtent
 {
-    [Override, Description (
+    [Implemented(true), Override, Description (
           "Name of the device, i.e. 'myraid' in case of /dev/md/myraid device "
           "or 'md0' in case of /dev/md0 device.")]
     string ElementName;
 
-    [Description("UUID of the RAID.")]
+    [Implemented(true), Description("UUID of the RAID.")]
     string UUID;
 };
 
 [ Experimental, Description("This class represents Logical Volume devices on the managed system.")]
 class LMI_LVStorageExtent : LMI_StorageExtent
 {
-    [Override, Description (
+    [Implemented(true), Override, Description (
           "Name of the Logical Volume.")]
     string ElementName;
 
-    [Description("UUID of the Logical Volume.")]
+    [Implemented(true), Description("UUID of the Logical Volume.")]
     string UUID;
 };
 
