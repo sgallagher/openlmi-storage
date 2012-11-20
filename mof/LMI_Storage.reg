@@ -3,3 +3,21 @@ provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance method
 namespace: root/cimv2
+
+[LMI_MDRAIDStorageExtent]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance method
+namespace: root/cimv2
+
+[LMI_DiskPartition]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance method
+namespace: root/cimv2
+
+[LMI_GenericDiskPartition]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance method
+namespace: root/cimv2
