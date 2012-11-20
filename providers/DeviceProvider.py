@@ -105,7 +105,7 @@ class DeviceProvider(CIMProvider2):
             this method.
         """
         (aFailure, aData, aPackage) = a
-        (bFailure, bData, bPackage) = a
+        (bFailure, bData, bPackage) = b
 
         # assume linar device, i.e. a data is either on A or on B
         # hence dataRedundancy is the minimum of both
