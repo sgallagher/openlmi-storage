@@ -1,4 +1,4 @@
-[ Description("This class represents MD RAID devices on the managed system.")]
+[ Experimental, Description("This class represents MD RAID devices on the managed system.")]
 class LMI_MDRAIDStorageExtent : LMI_StorageExtent
 {
     [Override, Description (
@@ -10,7 +10,7 @@ class LMI_MDRAIDStorageExtent : LMI_StorageExtent
     string UUID;
 };
 
-[ Description("This class represents Logical Volume devices on the managed system.")]
+[ Experimental, Description("This class represents Logical Volume devices on the managed system.")]
 class LMI_LVStorageExtent : LMI_StorageExtent
 {
     [Override, Description (
@@ -21,7 +21,7 @@ class LMI_LVStorageExtent : LMI_StorageExtent
     string UUID;
 };
 
-[ Description("This class represents Volume Groups. Space in Volume Groups "
+[ Experimental, Description("This class represents Volume Groups. Space in Volume Groups "
     "can be allocated in units called 'extents'. Only whole extents can be "
     "allocated, no partial allocation is allowed.")]
 class LMI_VGStoragePool : CIM_StoragePool
@@ -44,7 +44,7 @@ class LMI_VGStoragePool : CIM_StoragePool
    uint64 RemainingExtents;
 };
 
-[ Description ( 
+[ Experimental, Description ( 
        "This service allows the active management of a Storage Server. "
        "It allows jobs to be started for the creation, modification "
        "and deletion of storage objects (StoragePools, StorageVolumes "
@@ -475,7 +475,7 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
 };
 
 
-[ Abstract, Description("Abstract StorageSetting class. "
+[ Experimental, Abstract, Description("Abstract StorageSetting class. "
     "This class just defines persistence types of all LMI StorageSetting classes. "
     "All subclasses of LMI_StorageSetting can be persistently stored by modifying ChangeableType "
     "property."
@@ -515,7 +515,7 @@ class LMI_StorageSetting : CIM_StorageSetting
 
 };
 
-[ Description("This class defines characteristics of LMI_VGStoragePool which is created or modified by "
+[ Experimental, Description("This class defines characteristics of LMI_VGStoragePool which is created or modified by "
     "CreateOrModifyStoragePool method in the LMI_StorageConfigurationService."
     "\nCurrently only ExtentSize property is supported.")]
 class LMI_VGStorageSetting : LMI_StorageSetting
@@ -529,7 +529,7 @@ class LMI_VGStorageSetting : LMI_StorageSetting
     uint64 ExtentSize;
 };
 
-[ Description("This class defines characteristics of LMI_LVStorageExtent which is created or modified by "
+[ Experimental, Description("This class defines characteristics of LMI_LVStorageExtent which is created or modified by "
     "CreateOrModifyElementFromStoragePool method in the LMI_StorageConfigurationService."
     "\n Currently no properties are defined or supported, only simple Logical Volumes can be created. "
     "In future, this may be extended to support redundancy and stripping and thin volumes.")]
@@ -538,7 +538,7 @@ class LMI_LVStorageSetting : LMI_StorageSetting
 
 };
 
-[ Description("This class defines characteristics of LMI_MDRAIDStorageExtent which is created or modified by "
+[ Experimental, Description("This class defines characteristics of LMI_MDRAIDStorageExtent which is created or modified by "
     "CreateOrModifyElementFromElements method in the LMI_StorageConfigurationService."
     "\n Currently no additional properties are necessary in this class, redundancy and stripping is defined "
     "by DataRedundancy, PackageRedundancy and ExtentStripeLength."
@@ -548,7 +548,7 @@ class LMI_MDRAIDStorageSetting : LMI_StorageSetting
 {
 };
 
-[ Description("This class is base for all LMI_ StorageCapabilities. It has additional method to "
+[ Experimental, Description("This class is base for all LMI_ StorageCapabilities. It has additional method to "
     "create LMI_StorageSetting with redundancy and stripping for specified RAID level, which "
     "simplifies applications which do not need to do DataRedundancy, PackageRedundancy and ExtentStripeLength calculations." )]
 class LMI_StorageCapabilities : CIM_StorageCapabilities
@@ -577,7 +577,7 @@ class LMI_StorageCapabilities : CIM_StorageCapabilities
         LMI_StorageSetting REF Setting);
 };
 
-[ Description("This class represents capability of LMI_StorageConfigurationService to create Volume Groups. "
+[ Experimental, Description("This class represents capability of LMI_StorageConfigurationService to create Volume Groups. "
     "It describes, which properties and which values can be used in LMI_VGStorageSetting."
     "\n There are no additional properties for now."
     )]
@@ -603,7 +603,7 @@ class LMI_VGStorageCapabilities : LMI_StorageCapabilities
         LMI_StorageSetting REF Setting);
 };
 
-[ Description("This class represents capability of LMI_StorageConfigurationService to create MD RAID arrays. "
+[ Experimental, Description("This class represents capability of LMI_StorageConfigurationService to create MD RAID arrays. "
     "It describes, which properties and which values can be used in LMI_MDRAIDStorageSetting."
     "\n There are no additional properties for now."
     )]
@@ -636,7 +636,7 @@ class LMI_MDRAIDStorageCapabilities : LMI_StorageCapabilities
 };
 
 
-[ Description("This class represents capabilities of LMI_StorageConfigurationService to create Logical Volumes. "
+[ Experimental, Description("This class represents capabilities of LMI_StorageConfigurationService to create Logical Volumes. "
     "It describes, which properties and which values can be used in LMI_LVStorageSetting."
     "\n Each LMI_VGStoragePool has one instance of this class attached, which describes what kind of Logical Volumes can "
     "be allocated from it. As only basic Logical Volumes are supported, it basically only represents underlying redundancy and stripping"
@@ -655,48 +655,59 @@ class LMI_LVStorageCapabilities : LMI_StorageCapabilities
 };
 
 
+[ Experimental ]
 class LMI_HostedStorageService : CIM_HostedService
 {
 };
 
+[ Experimental ]
 class LMI_VGElementCapabilities : CIM_ElementCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_MDRAIDElementCapabilities : CIM_ElementCapabilities
 {
 };
 
 
+[ Experimental ]
 class LMI_MDRAIDBasedOn : CIM_BasedOn
 {
 };
 
+[ Experimental ]
 class LMI_MDRAIDElementSettingData : CIM_ElementSettingData
 {
 };
 
 
+[ Experimental ]
 class LMI_VGAssociatedComponentExtent : CIM_AssociatedComponentExtent
 {
 };
 
+[ Experimental ]
 class LMI_VGElementSettingData : CIM_ElementSettingData
 {
 };
 
+[ Experimental ]
 class LMI_LVElementCapabilities : CIM_ElementCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_LVAllocatedFromStoragePool : CIM_AllocatedFromStoragePool
 {
 };
 
+[ Experimental ]
 class LMI_LVElementSettingData : CIM_ElementSettingData
 {
 };
 
+[ Experimental ]
 class LMI_LVBasedOn : CIM_BasedOn
 {
 };
@@ -704,7 +715,7 @@ class LMI_LVBasedOn : CIM_BasedOn
 
 
 
-[Description("This class represents MD RAID metadata present on a StorageExtent. "
+[Experimental, Description("This class represents MD RAID metadata present on a StorageExtent. "
     "It can be part of existing MD RAID or it can be stray metadata of stopped MD RAID."
 )]
 class LMI_MDRAIDFormat : LMI_ContentFormat
@@ -716,7 +727,7 @@ class LMI_MDRAIDFormat : LMI_ContentFormat
     string MDUUID;
 };
 
-[Description("This class represents Physical Volume metadata present on a StorageExtent. "
+[Experimental, Description("This class represents Physical Volume metadata present on a StorageExtent. "
     "The StorageExtent can be member of existing Volume Group or its Volume Group has been destroyed."
 )]
 class LMI_PVFormat : LMI_ContentFormat
@@ -731,10 +742,12 @@ class LMI_PVFormat : LMI_ContentFormat
     string VGElementName;
 };
 
+[ Experimental ]
 class LMI_MDRAIDFormatResidesOnExtent : LMI_ResidesOnExtent
 {
 };
 
+[ Experimental ]
 class LMI_PVFormatResidesOnExtent : LMI_ResidesOnExtent
 {
 };

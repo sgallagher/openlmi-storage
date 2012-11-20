@@ -193,6 +193,7 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
     );
 };
 
+[ Experimental ]
 class LMI_DiskPartitionConfigurationSetting : CIM_SettingData
 {
     [Description("Bootable flag of the partition. It should be enabled if "
@@ -226,49 +227,56 @@ class LMI_DiskPartitionConfigurationSetting : CIM_SettingData
     );
 };
 
-[Description("This class represents both primary and extended partitions on "
+[Experimental, Description("This class represents both primary and extended partitions on "
     "devices with MS-DOS (MBR) style partition tables.")]
 class LMI_PrimaryDiskPartition : CIM_DiskPartition
 {
 };
 
-[Description("This class represents logical partitions on "
+[Experimental, Description("This class represents logical partitions on "
     "devices on extended partitions with MS-DOS (EMBR) style partition "
     "tables.")]
 class LMI_LogicalDiskPartition : CIM_DiskPartition
 {
 };
 
-[Description("This class represents partitions on "
+[Experimental, Description("This class represents partitions on "
     "devices with other than MBR partition tables.")]
 class LMI_GenericDiskPartition : CIM_GenericDiskPartition
 {
 };
 
+[ Experimental ]
 class LMI_InstalledPartitionTable : CIM_InstalledPartitionTable
 {
 };
 
+[ Experimental ]
 class LMI_GenericDiskPartitionBasedOn : CIM_BasedOn
 {
 };
 
+[ Experimental ]
 class LMI_PrimaryDiskPartitionBasedOn : CIM_BasedOn
 {
 };
 
+[ Experimental ]
 class LMI_LogicalDiskPartitionBasedOn : CIM_BasedOn
 {
 };
 
+[ Experimental ]
 class LMI_DiskPartitionElementCapabilities : CIM_ElementCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_DiskPartitionElementSettingData : CIM_ElementSettingData
 {
 };
 
+[ Experimental ]
 class LMI_HostedDiskPartitionConfigurationService : CIM_HostedService
 {
 };

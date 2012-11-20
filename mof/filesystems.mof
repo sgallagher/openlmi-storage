@@ -1,3 +1,6 @@
+// Note: This file is subject to change, it must be aligned with Anaconda
+
+[ Experimental ]
 class LMI_FileSystemConfigurationService : SNIA_FileSystemConfigurationService
 {
     [Experimental, Override,
@@ -445,10 +448,12 @@ class LMI_FileSystemConfigurationService : SNIA_FileSystemConfigurationService
 
 };
 
+[ Experimental ]
 class LMI_FileSystemConfigurationCapabilities : SNIA_FileSystemConfigurationCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_FileSystemCapabilities : SNIA_FileSystemCapabilities
 {
       [Override( "GetRequiredStorageSize" ), Experimental, Description (
@@ -502,24 +507,28 @@ class LMI_FileSystemCapabilities : SNIA_FileSystemCapabilities
       uint64 MaximumSizeUsable);
 };
 
+[ Experimental ]
 class LMI_XFSFileSystemCapabilities : LMI_FileSystemCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_ExtFileSystemCapabilities : LMI_FileSystemCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_FileSystemSetting : SNIA_FileSystemSetting
 {
 };
 
+[ Experimental ]
 class LMI_XFSFileSystemSetting : LMI_FileSystemSetting
 {
 
 };
 
-[ Description("This class describes the attribute values set when creating a ext2, ext3 or ext4 filesystem by a FileSystemConfigurationService."
+[ Experimental, Description("This class describes the attribute values set when creating a ext2, ext3 or ext4 filesystem by a FileSystemConfigurationService."
     "\n TODO: add all mkfs.ext2 options + all tune2fs options.")]
 class LMI_ExtFileSystemSetting : LMI_FileSystemSetting
 {
@@ -561,30 +570,37 @@ class LMI_ExtFileSystemSetting : LMI_FileSystemSetting
 
 };
 
+[ Experimental ]
 class LMI_LocalFileSystem : CIM_LocalFileSystem
 {
 };
 
+[ Experimental ]
 class LMI_FileSystemServiceElementCapabilities : CIM_ElementCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_FileSystemElementCapabilities : SNIA_ElementCapabilities
 {
 };
 
+[ Experimental ]
 class LMI_FileSystemElementSettingData : CIM_ElementSettingData
 {
 };
 
+[ Experimental ]
 class LMI_HostedFileSystem : CIM_HostedFileSystem
 {
 };
 
+[ Experimental ]
 class LMI_HostedFileSystemService : CIM_HostedService
 {
 };
 
+[ Experimental ]
 class LMI_FileSystemSettingsDefineCapabilities : CIM_SettingsDefineCapabilities
 {
 };

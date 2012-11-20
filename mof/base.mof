@@ -1,5 +1,5 @@
 
-[ Description("This is generic class describing block devices "
+[ Experimental, Description("This is generic class describing block devices "
     "available on the system, i.e. in machine's /dev/ directory.")]
 class LMI_StorageExtent : CIM_StorageExtent
 {
@@ -15,11 +15,12 @@ class LMI_StorageExtent : CIM_StorageExtent
     string ElementName;
 };
 
+[ Experimental ]
 class LMI_ResidesOnExtent : CIM_ResidesOnExtent
 {
 };
 
-[ Abstract, Description("Base class for all content formats.")]
+[ Experimental, Abstract, Description("Base class for all content formats.")]
 class LMI_ContentFormat : CIM_EnabledLogicalElement
 {
 };
