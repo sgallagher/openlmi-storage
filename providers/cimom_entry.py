@@ -35,11 +35,20 @@ from LMI_StorageExtent import LMI_StorageExtent
 
 import pyanaconda.storage
 import pyanaconda.platform
+import os
 
 def initAnaconda(env):
     logger = env.get_logger()
     
     logger.log_info("Initializing Anaconda")   
+    
+    os.system('udevadm control --env=ANACONDA=1')
+    os.system('udevadm trigger --subsystem-match block')
+    os.system('udevadm settle')
+
+    # hack to insert RAID modules
+    for module in ('raid0', 'raid1', 'raid5', 'raid10'):
+        os.system('modprobe ' + module)
 
     # set up storage class instance
     platform = pyanaconda.platform.getPlatform()
@@ -47,8 +56,6 @@ def initAnaconda(env):
 
     # identify the system's storage devices
     storage.devicetree.populate()
-    for array in storage.mdarrays:
-        array.setup()
         
     return storage
   
