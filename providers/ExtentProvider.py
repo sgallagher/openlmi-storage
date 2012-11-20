@@ -82,7 +82,7 @@ class ExtentProvider(DeviceProvider):
             Return ElementName property value for given StorageDevice.
             Device path (/dev/sda) is the default.
         """
-        return device.path
+        return device.name
     
     def getExtentStatus(self, device):
         """
