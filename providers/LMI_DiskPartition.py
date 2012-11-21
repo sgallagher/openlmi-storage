@@ -36,10 +36,23 @@ class LMI_DiskPartition(ExtentProvider):
             StorageDevice class.
         """
         if  isinstance(device, pyanaconda.storage.devices.PartitionDevice):
-            if device.parents[0].format.labelType == 'msdos':
+            if device.disk.format.labelType == 'msdos':
                 return True
         return False
     
+    def getBaseDevices(self, device):
+        if device.isPrimary or device.isExtended:
+            return super(LMI_DiskPartition, self).getBaseDevices(device)    
+        
+        # logical partitions depend on the extended partition
+        partedExt = device.disk.format.partedDisk.getExtendedPartition()
+        if not partedExt:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find extended partition for device: ' + device.path)
+        
+        ext = self.storage.devicetree.getDeviceByPath(partedExt.path)
+        return [ext,]
+        
+
     def enumerateDevices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
