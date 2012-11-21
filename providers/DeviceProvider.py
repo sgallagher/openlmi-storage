@@ -81,7 +81,8 @@ class DeviceProvider(CIMProvider2):
         parents = self.getBaseDevices(device)
         if len(parents) > 0:
             for parent in parents:
-                parentStatus = self.getStatus(parent)
+                parentProvider = self.manager.getProviderForDevice(parent)
+                parentStatus = parentProvider.getStatus(parent)
                 status.update(parentStatus)
         else:
             status.add(self.DeviceProviderValues.OperationalStatus.OK)
@@ -94,7 +95,9 @@ class DeviceProvider(CIMProvider2):
             depend on, e.g. RAID members of a RAID, physical volumes
             of a Volume Group and Volume Group of Logical Volume.
         """
-        return device.parents
+        if device.parents:
+            return device.parents
+        return []
 
     def _getCommonRedundancy(self, a, b):
         """

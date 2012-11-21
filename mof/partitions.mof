@@ -276,6 +276,9 @@ class LMI_InstalledPartitionTable : CIM_InstalledPartitionTable
 [ Experimental ]
 class LMI_PartitionBasedOn : CIM_BasedOn
 {
+    [ Implemented(true) ] uint64 StartingAddress;
+    [ Implemented(true) ] uint64 EndingAddress;
+    [ Implemented(true) ] uint16 OrderIndex;
 };
 
 [ Experimental ]
