@@ -125,6 +125,8 @@ class DeviceProvider(CIMProvider2):
             It uses ProviderManager to do so.
         """
         provider = self.manager.getProviderForDevice(device)
+        if not provider:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
         return provider.getRedundancy(device)
 
     def getRedundancy(self, device):
