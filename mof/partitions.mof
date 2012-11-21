@@ -231,6 +231,19 @@ class LMI_DiskPartitionConfigurationSetting : CIM_SettingData
     "devices with MS-DOS (MBR) style partition tables.")]
 class LMI_DiskPartition : CIM_DiskPartition
 {
+    [ Implemented(true) ] string ElementName;
+    [ Implemented(true) ] uint16 NameNamespace;
+    [ Implemented(true) ] uint16 NameFormat;
+    [ Implemented(true) ] string Name;
+    [ Implemented(true) ] uint16 ExtentStatus[];
+    [ Implemented(true) ] uint16 OperationalStatus[];
+    [ Implemented(true) ] boolean NoSinglePointOfFailure;
+    [ Implemented(true) ] uint16 DataRedundancy;
+    [ Implemented(true) ] uint16 PackageRedundancy;
+    [ Implemented(true) ] uint64 ExtentStripeLength;
+    [ Implemented(true) ] boolean Primordial;
+    [ Implemented(true) ] string ExtentDiscriminator[];
+
     [ Implemented(true) ] boolean PrimaryPartition;
     [ Implemented(true) ] uint16 PartitionType;
 };
@@ -239,6 +252,20 @@ class LMI_DiskPartition : CIM_DiskPartition
     "devices with other than MBR partition tables.")]
 class LMI_GenericDiskPartition : CIM_GenericDiskPartition
 {
+    [ Implemented(true) ] string ElementName;
+    [ Implemented(true) ] uint16 NameNamespace;
+    [ Implemented(true) ] uint16 NameFormat;
+    [ Implemented(true) ] string Name;
+    [ Implemented(true) ] uint16 ExtentStatus[];
+    [ Implemented(true) ] uint16 OperationalStatus[];
+    [ Implemented(true) ] boolean NoSinglePointOfFailure;
+    [ Implemented(true) ] uint16 DataRedundancy;
+    [ Implemented(true) ] uint16 PackageRedundancy;
+    [ Implemented(true) ] uint64 ExtentStripeLength;
+    [ Implemented(true) ] boolean Primordial;
+    [ Implemented(true) ] string ExtentDiscriminator[];
+
+
 };
 
 [ Experimental ]
