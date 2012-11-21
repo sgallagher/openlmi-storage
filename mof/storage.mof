@@ -26,22 +26,32 @@ class LMI_LVStorageExtent : LMI_StorageExtent
     "allocated, no partial allocation is allowed.")]
 class LMI_VGStoragePool : CIM_StoragePool
 {
-   [Override, Description (
+   [Implemented(true), Override, Description (
+        "Unique ID of the Volume Group. It is unique in scope of CIM namespace."
+        " To ensure uniqueness, the ID has following format: LMI:VG:<VG name>.")]
+    string InstanceID;
+    
+   [Implemented(true), Override, Description (
           "Name of the Volume Group.")]
    string PoolID;
 
-   [Description("UUID of the Volume Group.")]
+   [Implemented(true), Description("UUID of the Volume Group.")]
    string UUID;
 
-   [ Description("Volume group extent size."),
+   [Implemented(true), Description("Volume group extent size."),
      Units("Bytes")]
    uint64 ExtentSize;
 
-   [ Description("Total number of extents in this Volume Group.")]
+   [Implemented(true), Description("Total number of extents in this Volume Group.")]
    uint64 TotalExtents;
 
-   [ Description("Number of available extents in this Volume Group.")]
+   [Implemented(true), Description("Number of available extents in this Volume Group.")]
    uint64 RemainingExtents;
+
+   [Implemented(true)] boolean Primordial;
+   [Implemented(true)] string ElementName;
+   [Implemented(true)] uint64 TotalManagedSpace;
+   [Implemented(true)] uint64 RemainingManagedSpace;
 };
 
 [ Experimental, Description ( 
