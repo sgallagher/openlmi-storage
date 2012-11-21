@@ -39,6 +39,7 @@ from LMI_LVStorageExtent import LMI_LVStorageExtent
 from LMI_VGStoragePool import LMI_VGStoragePool
 from LMI_PartitionBasedOn import LMI_PartitionBasedOn
 from LMI_MDRAIDBasedOn import LMI_MDRAIDBasedOn
+from LMI_LVBasedOn import LMI_LVBasedOn
 
 import pyanaconda.storage
 import pyanaconda.platform
@@ -107,6 +108,9 @@ def get_providers(env):
 
     p = LMI_MDRAIDBasedOn(env, storage = storage, config = config, manager = manager)
     providers['LMI_MDRAIDBasedOn'] = p
+
+    p = LMI_LVBasedOn(env, storage = storage, config = config, manager = manager)
+    providers['LMI_LVBasedOn'] = p
 
     print "providers:", providers
     

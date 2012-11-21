@@ -48,3 +48,9 @@ provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance association
 namespace: root/cimv2
+
+[LMI_LVBasedOn]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance association
+namespace: root/cimv2
