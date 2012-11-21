@@ -42,4 +42,6 @@ storage.devicetree.populate()
 print "\n\n***********************"
 print "disk = storage.devicetree.getDeviceByName('sda')"
 disk = storage.devicetree.getDeviceByName('sda')
+s = storage
+
 
