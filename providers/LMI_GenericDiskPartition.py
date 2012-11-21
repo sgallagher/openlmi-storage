@@ -17,16 +17,16 @@
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
 
-from LMI_StorageExtent import LMI_StorageExtent
+from ExtentProvider import ExtentProvider
 import pyanaconda.storage
 
-class LMI_GenericDiskPartition(LMI_StorageExtent):
+class LMI_GenericDiskPartition(ExtentProvider):
     """
         Provider of LMI_GenericDiskPartition class.
     """
     
     def __init__(self, *args, **kwargs):
-        super(LMI_StorageExtent, self).__init__('LMI_GenericDiskPartition', *args, **kwargs)
+        super(LMI_GenericDiskPartition, self).__init__('LMI_GenericDiskPartition', *args, **kwargs)
 
 
     def providesDevice(self, device):

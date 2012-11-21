@@ -17,17 +17,17 @@
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
 
-from LMI_StorageExtent import LMI_StorageExtent
+from ExtentProvider import ExtentProvider
 import pyanaconda.storage
 import pywbem
 
-class LMI_DiskPartition(LMI_StorageExtent):
+class LMI_DiskPartition(ExtentProvider):
     """
         Provider of LMI_DiskPartition class.
     """
     
     def __init__(self, *args, **kwargs):
-        super(LMI_StorageExtent, self).__init__('LMI_DiskPartition', *args, **kwargs)
+        super(LMI_DiskPartition, self).__init__('LMI_DiskPartition', *args, **kwargs)
 
 
     def providesDevice(self, device):
@@ -63,6 +63,7 @@ class LMI_DiskPartition(LMI_StorageExtent):
             model['PartitionType'] = self.DiskPartitionValues.PartitionType.Extended
         if device.isLogical:
             model['PartitionType'] = self.DiskPartitionValues.PartitionType.Logical
+
         return model
         
     class DiskPartitionValues(object):

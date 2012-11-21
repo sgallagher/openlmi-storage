@@ -17,17 +17,17 @@
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
 
-from LMI_StorageExtent import LMI_StorageExtent
+from ExtentProvider import ExtentProvider
 import pyanaconda.storage
 import pywbem
 
-class LMI_MDRAIDStorageExtent(LMI_StorageExtent):
+class LMI_MDRAIDStorageExtent(ExtentProvider):
     """
         Provider of LMI_MDRAIDStorageExtent class.
     """
     
     def __init__(self, *args, **kwargs):
-        super(LMI_StorageExtent, self).__init__('LMI_MDRAIDStorageExtent', *args, **kwargs)
+        super(LMI_MDRAIDStorageExtent, self).__init__('LMI_MDRAIDStorageExtent', *args, **kwargs)
 
 
     def providesDevice(self, device):
@@ -131,3 +131,4 @@ class LMI_MDRAIDStorageExtent(LMI_StorageExtent):
         if not device:
             device = self._getDevice(model)
         model['UUID'] = device.uuid
+        return model
