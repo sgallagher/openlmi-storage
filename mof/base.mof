@@ -22,8 +22,8 @@ class LMI_StorageExtent : CIM_StorageExtent
     [ Implemented(true) ] uint16 NameNamespace;
     [ Implemented(true) ] uint16 NameFormat;
     [ Implemented(true) ] string Name;
-    [ Implemented(true) ] uint16 ExtentStatus;
-    [ Implemented(true) ] uint16 OperationalStatus;
+    [ Implemented(true) ] uint16 ExtentStatus[];
+    [ Implemented(true) ] uint16 OperationalStatus[];
     [ Implemented(true) ] boolean NoSinglePointOfFailure;
     [ Implemented(true) ] uint16 DataRedundancy;
     [ Implemented(true) ] uint16 PackageRedundancy;
