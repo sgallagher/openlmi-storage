@@ -52,6 +52,66 @@ class LMI_VGStoragePool : CIM_StoragePool
    [Implemented(true)] string ElementName;
    [Implemented(true)] uint64 TotalManagedSpace;
    [Implemented(true)] uint64 RemainingManagedSpace;
+   [Implemented, Override]
+   uint32 GetSupportedSizes(
+         [Experimental, IN, Description(
+             "The type of element for which supported sizes are "
+             "reported. The Thin Provision values are only "
+             "supported when the Thin Provisioning Profile is "
+             "supported; the resulting StorageVolues/LogicalDisk "
+             "shall have ThinlyPprovisioned set to true." ),
+          ValueMap { "2", "3", "4", "5", "6" },
+          Values { "Storage Pool", "Storage Volume",
+             "Logical Disk", "Thin Provisioned Volume",
+             "Thin Provisioned Logical Disk" }]
+      uint16 ElementType,
+         [IN, Description (
+             "The StorageSetting for which supported sizes "
+             "should be reported for." )]
+      CIM_StorageSetting REF Goal,
+         [IN, OUT, Description (
+             "List of supported sizes for a Volume/Pool creation "
+             "or modification." ),
+          Units ( "Bytes" ),
+          PUnit ( "byte" )]
+      uint64 Sizes[]);
+
+   [Implemented, Override]
+   uint32 GetSupportedSizeRange(
+         [Experimental, IN, Description (
+             "The type of element for which supported size "
+             "ranges are reported. The Thin Provision values are "
+             "only supported when the Thin Provisioning Profile "
+             "is supported; the resulting "
+             "StorageVolues/LogicalDisk shall have "
+             "ThinlyPprovisioned set to true." ),
+          ValueMap { "2", "3", "4", "5", "6" },
+          Values { "Storage Pool", "Storage Volume",
+             "Logical Disk", "Thin Provisioned Volume",
+             "Thin Provisioned Logical Disk" }]
+      uint16 ElementType,
+         [IN, Description (
+             "The StorageSetting for which supported size ranges "
+             "should be reported for." )]
+      CIM_StorageSetting REF Goal,
+         [IN, OUT, Description (
+             "The minimum size for a volume/pool in bytes." ),
+          Units ( "Bytes" ),
+          PUnit ( "byte" )]
+      uint64 MinimumVolumeSize,
+         [IN, OUT, Description (
+             "The maximum size for a volume/pool in bytes." ),
+          Units ( "Bytes" ),
+          PUnit ( "byte" )]
+      uint64 MaximumVolumeSize,
+         [IN, OUT, Description (
+             "A volume/pool size must be a multiple of this "
+             "value which is specified in bytes." ),
+          Units ( "Bytes" ),
+          PUnit ( "byte" )]
+      uint64 VolumeSizeDivisor);
+
+
 };
 
 [ Experimental, Description ( 
