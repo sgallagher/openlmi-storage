@@ -44,6 +44,12 @@ class LMI_StorageExtent(ExtentProvider):
         
         if  isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
             return False
+        
+        if  isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+            return False
+
+        if  isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+            return False
 
         # otherwise, if it is StorageDevice, we provide it
         if isinstance(device, pyanaconda.storage.devices.StorageDevice):
