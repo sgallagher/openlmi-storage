@@ -19,7 +19,6 @@
 
 from ExtentProvider import ExtentProvider
 import pyanaconda.storage
-import pywbem
 
 class LMI_LVStorageExtent(ExtentProvider):
     """
