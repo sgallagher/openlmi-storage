@@ -274,12 +274,7 @@ class LMI_InstalledPartitionTable : CIM_InstalledPartitionTable
 };
 
 [ Experimental ]
-class LMI_GenericDiskPartitionBasedOn : CIM_BasedOn
-{
-};
-
-[ Experimental ]
-class LMI_DiskPartitionBasedOn : CIM_BasedOn
+class LMI_PartitionBasedOn : CIM_BasedOn
 {
 };
 
