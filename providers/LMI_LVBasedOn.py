@@ -17,23 +17,19 @@
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
 
-from pywbem.cim_provider2 import CIMProvider2
+from BaseProvider import BaseProvider
 import pywbem
 import pyanaconda.storage
 
-class LMI_LVBasedOn(CIMProvider2):
+class LMI_LVBasedOn(BaseProvider):
     """
         Implementation of LMI_LVBasedOn class.
         This class is not subclass of BasedOnProvider, because we need
         to associate a LV with all PVs of the VG.
         BasedOnProvider would associate LV with its VG.
     """
-    def __init__(self, env, storage, config, manager):
-        self.storage = storage
-        self.config = config
-        self.manager = manager
-        self.logger = env.get_logger()
-        super(LMI_LVBasedOn, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(LMI_LVBasedOn, self).__init__(*args, **kwargs)
     
     def enum_instances(self, env, model, keys_only):
         """

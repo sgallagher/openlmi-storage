@@ -17,10 +17,10 @@
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
 
-from pywbem.cim_provider2 import CIMProvider2
+from BaseProvider import BaseProvider
 import pywbem
 
-class DeviceProvider(CIMProvider2):
+class DeviceProvider(BaseProvider):
     """
         CIM Provider which provides CIM StorageExtent or CIM_StoragePool
         of a Anaconda device.
@@ -29,19 +29,15 @@ class DeviceProvider(CIMProvider2):
         can convert CIM InstanceName to Anaconda's StorageDevice instance
         and a vice versa.
     """
-    def __init__(self, env, storage, config, manager):
+    def __init__(self, *args, **kwargs):
         """
             Initialize the provider.
             Store reference to pyanaconda.storage.Storage.
             Store reference to StorageConfiguration.
             Register at given ProviderManager.
         """
-        super(DeviceProvider, self).__init__()
-        self.storage = storage
-        self.config = config
-        self.manager = manager
-        self.logger = env.get_logger()
-        manager.addProvider(self)
+        super(DeviceProvider, self).__init__(*args, **kwargs)
+        self.manager.addProvider(self)
         
     def providesName(self, objectName):
         """

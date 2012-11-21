@@ -18,21 +18,16 @@
 # -*- coding: utf-8 -*-
 
 import pywbem
-from pywbem.cim_provider2 import CIMProvider2
+from BaseProvider import BaseProvider
 
-class BasedOnProvider(CIMProvider2):
+class BasedOnProvider(BaseProvider):
     """
         Base of all BasedOn providers.
         It should handle everyhting, subclasses just need to override
         enumerateDevices.
     """
-    def __init__(self, env, storage, config, manager):
-        self.storage = storage
-        self.config = config
-        self.manager = manager
-        self.logger = env.get_logger()
-        super(BasedOnProvider, self).__init__()
-
+    def __init__(self, *args, **kwargs):
+        super(BasedOnProvider, self).__init__(*args, **kwargs)
 
     def enumerateDevices(self):
         """
