@@ -744,6 +744,7 @@ class LMI_MDRAIDElementCapabilities : CIM_ElementCapabilities
 [ Experimental ]
 class LMI_MDRAIDBasedOn : CIM_BasedOn
 {
+    [ Implemented(true) ] uint16 OrderIndex;
 };
 
 [ Experimental ]
