@@ -52,7 +52,7 @@ class LMI_VGStoragePool : CIM_StoragePool
    [Implemented(true)] string ElementName;
    [Implemented(true)] uint64 TotalManagedSpace;
    [Implemented(true)] uint64 RemainingManagedSpace;
-   [Implemented, Override]
+   [Implemented(true), Override]
    uint32 GetSupportedSizes(
          [Experimental, IN, Description(
              "The type of element for which supported sizes are "

@@ -1,5 +1,5 @@
 /* 'Implemented' qualifier denotes the properties and method that are implemented
- * by appropriate class.
+ * by appropriate provider.
  */
 Qualifier Implemented : boolean = false, Scope(property, method);
 
