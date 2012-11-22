@@ -21,46 +21,38 @@ import ConfigParser
 import os
 import socket
 
-class StorageConfiguration(ConfigParser.SafeConfigParser):
+class StorageConfiguration(object):
     
-    CONFIG_FILE = '/var/lib/openlmi-storage/storage.ini'
+    CONFIG_PATH = '/etc/openlmi/storage/'
+    CONFIG_FILE = CONFIG_PATH + 'storage.ini'
+
+    PERSISTENT_PATH = '/var/lib/openlmi-storage/'
+    SETTINGS_DIR = 'settings/'
     
     defaults = {
         'namespace' : 'root/cimv2',
         'systemclassname' : 'Linux_ComputerSystem'
     }
-    def __init__(self, *args, **kwargs):
-        ConfigParser.SafeConfigParser.__init__(self, defaults=self.defaults, *args, **kwargs)
+    
+    def __init__(self):
+        self.config = ConfigParser.SafeConfigParser(defaults=self.defaults)
+        self.load()
         
     def load(self):
         """
-            Load configuration from CONFIG_FILE. Create default, if the file
-            does not exist.
+            Load configuration from CONFIG_FILE. The file does not need to
+            exist.
         """
-        if os.path.isfile(self.CONFIG_FILE):
-            with open(self.CONFIG_FILE, 'wb') as configfile:
-                self.write(configfile)
-        if not self.has_section('common'):
-            self.add_section('common')
-        
-    def save(self):
-        """
-            Save configuration to CONFIG_FILE. Create a directory for it if it
-            does not exist.
-        """
-        d = os.path.dirname(self.CONFIG_FILE)
-        if not os.path.isdir(d):
-            os.mkdir(d)
-        
-        with open(self.CONFIG_FILE, 'wb') as configfile:
-            self.write(configfile)
-
+        self.config.read(self.CONFIG_FILE)
+        if not self.config.has_section('common'):
+            self.config.add_section('common')
+                            
     def getNamespace(self):
-        return self.get('common', 'namespace')
+        return self.config.get('common', 'namespace')
     namespace = property(getNamespace)
     
     def getSystemClassName(self):
-        return self.get('common', 'systemclassname')
+        return self.config.get('common', 'systemclassname')
     systemClassName = property(getSystemClassName)
     
     def getSystemName(self):
