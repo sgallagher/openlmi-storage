@@ -574,11 +574,10 @@ class LMI_StorageSetting : CIM_StorageSetting
     [ Description("Create a copy of this instance. The resulting instance "
         "will have the same class and the same properties as the original "
         "instance except ChangeableType, which will be set to "
-        "\"Changeable - Transient\" in the clone, and InstanceID.")]
+        "\"Changeable - Transient\" in the clone, and InstanceID."),
+        ValueMap { "0", "1", "2" },
+        Values { "Success", "Not Supported", "Failed"}]
     uint32 CloneSetting(
-        [ IN, Description("Requested InstanceID of the clone. If null, new non-conflicting name will be generated.")]
-        string CloneInstanceID,
-
         [ IN(False), OUT, Description("Created copy.")]
         LMI_StorageSetting REF Clone
     );
@@ -717,9 +716,10 @@ class LMI_LVStorageCapabilities : LMI_StorageCapabilities
     [Description("This method creates new instance of LMI_LVStorageSetting. "
         "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength. "
         "Because only basic Logical Volumes without any additional stripping or mirroring are supported, "
-        "this method basically clones LMI_VGStorageSetting to LMI_LVStorageSetting.")]
+        "this method basically clones LMI_VGStorageSetting to LMI_LVStorageSetting."),
+        ValueMap { "0", "1", "2" },
+        Values { "Success", "Not Supported", "Failed"}]
     uint32 CreateLVStorageSetting(
-
         [IN(False), OUT, Description("Created LMI_StorageSetting.")]
         LMI_StorageSetting REF Setting);
 };

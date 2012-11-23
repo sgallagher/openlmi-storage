@@ -217,11 +217,10 @@ class LMI_DiskPartitionConfigurationSetting : CIM_SettingData
     [ Description("Create a copy of this instance. The resulting instance "
         "will have the same class and the same properties as the original "
         "instance except ChangeableType, which will be set to "
-        "\"Changeable - Transient\" in the clone, and InstanceID.")]
+        "\"Changeable - Transient\" in the clone, and InstanceID."),
+        ValueMap { "0", "1", "2" },
+        Values { "Success", "Not Supported", "Failed"}]
     uint32 CloneSetting(
-        [ IN, Description("Requested InstanceID of the clone. If null, new non-conflicting name will be generated.")]
-        string CloneInstanceID,
-
         [ IN(False), OUT, Description("Created copy.")]
         CIM_StorageSetting REF Clone
     );
