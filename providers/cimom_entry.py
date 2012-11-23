@@ -44,6 +44,7 @@ from LMI_MDRAIDBasedOn import LMI_MDRAIDBasedOn
 from LMI_LVBasedOn import LMI_LVBasedOn
 from LMI_LVAllocatedFromStoragePool import LMI_LVAllocatedFromStoragePool
 from LMI_VGAssociatedComponentExtent import LMI_VGAssociatedComponentExtent
+from LMI_DiskPartitionConfigurationSetting import LMI_DiskPartitionConfigurationSetting
 
 import pyanaconda.storage
 import pyanaconda.platform
@@ -78,7 +79,6 @@ def get_providers(env):
     manager = ProviderManager()
     settingManager = SettingManager(config)
     settingManager.load()
-    
     storage = initAnaconda(env)
     
     providers = {}
@@ -113,6 +113,10 @@ def get_providers(env):
     p = LMI_VGStoragePool(**opts)
     manager.addProvider(p)
     providers['LMI_VGStoragePool'] = p
+
+    # settings
+    p = LMI_DiskPartitionConfigurationSetting(**opts)
+    providers['LMI_DiskPartitionConfigurationSetting'] = p
 
     # Associations
     p = LMI_PartitionBasedOn(**opts)
