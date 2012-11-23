@@ -31,6 +31,8 @@ anaconda_log.init()
 
 from StorageConfiguration import StorageConfiguration
 from ProviderManager import ProviderManager
+from SettingManager import SettingManager
+
 from LMI_StorageExtent import LMI_StorageExtent
 from LMI_MDRAIDStorageExtent import LMI_MDRAIDStorageExtent 
 from LMI_DiskPartition import LMI_DiskPartition
@@ -74,51 +76,60 @@ def get_providers(env):
     config.load()
     
     manager = ProviderManager()
+    settingManager = SettingManager(config)
+    settingManager.load()
     
     storage = initAnaconda(env)
     
     providers = {}
     
+    # common construction options
+    opts = {'env': env,
+            'storage': storage,
+            'config': config,
+            'manager': manager,
+            'settingManager': settingManager}    
     # StorageDevice providers
-    p = LMI_StorageExtent(env, storage = storage, config = config, manager = manager)
+    p = LMI_StorageExtent(**opts)
     manager.addProvider(p)
     providers['LMI_StorageExtent'] = p
 
-    p = LMI_MDRAIDStorageExtent(env, storage = storage, config = config, manager = manager)
+    p = LMI_MDRAIDStorageExtent(**opts)
     manager.addProvider(p)
     providers['LMI_MDRAIDStorageExtent'] = p
 
-    p = LMI_DiskPartition(env, storage = storage, config = config, manager = manager)
+    p = LMI_DiskPartition(**opts)
     manager.addProvider(p)
     providers['LMI_DiskPartition'] = p
     
-    p = LMI_GenericDiskPartition(env, storage = storage, config = config, manager = manager)
+    p = LMI_GenericDiskPartition(**opts)
     manager.addProvider(p)
     providers['LMI_GenericDiskPartition'] = p
 
-    p = LMI_LVStorageExtent(env, storage = storage, config = config, manager = manager)
+    p = LMI_LVStorageExtent(**opts)
     manager.addProvider(p)
     providers['LMI_LVStorageExtent'] = p
 
-    p = LMI_VGStoragePool(env, storage = storage, config = config, manager = manager)
+    p = LMI_VGStoragePool(**opts)
     manager.addProvider(p)
     providers['LMI_VGStoragePool'] = p
 
     # Associations
-    p = LMI_PartitionBasedOn(env, storage = storage, config = config, manager = manager)
+    p = LMI_PartitionBasedOn(**opts)
     providers['LMI_PartitionBasedOn'] = p
 
-    p = LMI_MDRAIDBasedOn(env, storage = storage, config = config, manager = manager)
+    p = LMI_MDRAIDBasedOn(**opts)
     providers['LMI_MDRAIDBasedOn'] = p
 
-    p = LMI_LVBasedOn(env, storage = storage, config = config, manager = manager)
+    p = LMI_LVBasedOn(**opts)
     providers['LMI_LVBasedOn'] = p
 
-    p = LMI_LVAllocatedFromStoragePool(env, storage = storage, config = config, manager = manager)
+    p = LMI_LVAllocatedFromStoragePool(**opts)
     providers['LMI_LVAllocatedFromStoragePool'] = p
     
-    p = LMI_VGAssociatedComponentExtent(env, storage = storage, config = config, manager = manager)
+    p = LMI_VGAssociatedComponentExtent(**opts)
     providers['LMI_VGAssociatedComponentExtent'] = p
+
 
     print "providers:", providers
     

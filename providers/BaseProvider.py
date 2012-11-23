@@ -28,7 +28,7 @@ class BaseProvider(CIMProvider2):
         can convert CIM InstanceName to Anaconda's StorageDevice instance
         and a vice versa.
     """
-    def __init__(self, env, storage, config, manager):
+    def __init__(self, env, storage, config, manager, settingManager):
         """
             Initialize the provider.
             Store reference to pyanaconda.storage.Storage.
@@ -39,5 +39,6 @@ class BaseProvider(CIMProvider2):
         self.storage = storage
         self.config = config
         self.manager = manager
+        self.settingManager = settingManager
         self.logger = env.get_logger()
         
