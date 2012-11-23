@@ -26,16 +26,19 @@ import unittest
 import pywbem
 import subprocess
 import pyudev
+import time
 
 class StorageTestBase(unittest.TestCase):
-    def setUp(self):
-        self.url = os.environ.get("LMI_STORAGE_URL", "https://localhost:5989")
-        self.username = os.environ.get("LMI_STORAGE_USERNAME", "root")
-        self.password = os.environ.get("LMI_STORAGE_PASSWORD", "")
-        self.disks = os.environ.get("LMI_STORAGE_DISKS", "").split()
+    @classmethod
+    def setUpClass(cls):
+        cls.url = os.environ.get("LMI_STORAGE_URL", "https://localhost:5989")
+        cls.username = os.environ.get("LMI_STORAGE_USERNAME", "root")
+        cls.password = os.environ.get("LMI_STORAGE_PASSWORD", "")
+        cls.disks = os.environ.get("LMI_STORAGE_DISKS", "").split()
 
-        self.wbemconnection = pywbem.WBEMConnection(self.url, (self.username, self.password))
+        cls.wbemconnection = pywbem.WBEMConnection(cls.url, (cls.username, cls.password))
         
+    def setUp(self):
         self.startUdevMonitor()
         
     def startUdevMonitor(self):
@@ -117,7 +120,11 @@ class StorageTestBase(unittest.TestCase):
         """
             Restart CIMOM
         """
-        return self.logRun(["systemctl", "restart", "sblim-sfcb.service"])
+        ret = self.logRun(["systemctl", "restart", "sblim-sfcb.service"])
+        time.sleep(1)
+        if ret == 0:
+            self.wbemconnection = pywbem.WBEMConnection(self.url, (self.username, self.password))
+        return ret
         
         
         
