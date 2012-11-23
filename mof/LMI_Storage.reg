@@ -3,36 +3,55 @@ provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance method
 namespace: root/cimv2
+unload: never
 
 [LMI_MDRAIDStorageExtent]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance method
 namespace: root/cimv2
+unload: never
 
 [LMI_DiskPartition]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance method
 namespace: root/cimv2
+unload: never
 
 [LMI_GenericDiskPartition]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance method
 namespace: root/cimv2
+unload: never
 
 [LMI_LVStorageExtent]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance method
 namespace: root/cimv2
+unload: never
 
 [LMI_VGStoragePool]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance method
 namespace: root/cimv2
+unload: never
+
+
+
+
+[LMI_DiskPartitionConfigurationSetting]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance method
+namespace: root/cimv2
+unload: never
+
+
+
 
 
 
@@ -42,27 +61,33 @@ provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance association
 namespace: root/cimv2
+unload: never
 
 [LMI_MDRAIDBasedOn]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance association
 namespace: root/cimv2
+unload: never
 
 [LMI_LVBasedOn]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance association
 namespace: root/cimv2
+unload: never
 
 [LMI_LVAllocatedFromStoragePool]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance association
 namespace: root/cimv2
+unload: never
 
 [LMI_VGAssociatedComponentExtent]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance association
 namespace: root/cimv2
+unload: never
+
