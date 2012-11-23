@@ -299,7 +299,7 @@ class SettingProvider(BaseProvider):
         self.settingManager.setSetting(self.classname, newSetting)
         
         out_params = []
-        out_params+= [pywbem.CIMParameter('clone', type='reference', 
+        out_params+= [pywbem.CIMParameter('Clone', type='reference', 
                            value=pywbem.CIMInstanceName(
                                    classname=self.classname,
                                    namespace=self.config.namespace,
