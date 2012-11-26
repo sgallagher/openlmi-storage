@@ -81,7 +81,7 @@ class DeviceProvider(BaseProvider):
                 parent_status = parent_provider.get_status(parent)
                 status.update(parent_status)
         else:
-            status.add(self.DeviceProviderValues.OperationalStatus.OK)
+            status.add(self.Values.OperationalStatus.OK)
         return list(status)
 
     def get_base_devices(self, device):
@@ -164,7 +164,7 @@ class DeviceProvider(BaseProvider):
             self.package_redundancy = package_redundancy
             self.stripe_length = stripe_length
 
-    class DeviceProviderValues(object):
+    class Values(object):
         class OperationalStatus(object):
             Unknown = pywbem.Uint16(0)
             Other = pywbem.Uint16(1)

@@ -138,7 +138,7 @@ class ExtentProvider(DeviceProvider):
         d = []
         if device.format and isinstance(device.format,
                     pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
-            d.append(self.ExtentProviderValues.Discriminator.Pool_Component)
+            d.append(self.Values.Discriminator.Pool_Component)
         return d
 
     def get_instance(self, env, model, device=None):
@@ -155,8 +155,8 @@ class ExtentProvider(DeviceProvider):
                     "Cannot find the extent.")
 
         model['ElementName'] = self.get_element_name(device)
-        model['NameNamespace'] = self.ExtentProviderValues.NameNamespace.OS_Device_Namespace
-        model['NameFormat'] = self.ExtentProviderValues.NameFormat.OS_Device_Name
+        model['NameNamespace'] = self.Values.NameNamespace.OS_Device_Namespace
+        model['NameFormat'] = self.Values.NameFormat.OS_Device_Name
         model['Name'] = device.path
 
         extent_status = self.get_extent_status(device)
@@ -246,7 +246,7 @@ class ExtentProvider(DeviceProvider):
             else:
                 yield self.get_instance(env, model, device)
 
-    class ExtentProviderValues(object):
+    class Values(DeviceProvider.Values):
         class NameNamespace(object):
             Unknown = pywbem.Uint16(0)
             Other = pywbem.Uint16(1)

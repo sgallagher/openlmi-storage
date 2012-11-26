@@ -126,13 +126,13 @@ class SettingProvider(BaseProvider):
                     model[name] = self.supported_properties[name](value)
 
         if setting.type == Setting.TYPE_CONFIGURATION:
-            model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Not_Changeable_Transient
+            model['ChangeableType'] = self.Values.ChangeableType.Not_Changeable_Transient
         elif setting.type == Setting.TYPE_PERSISTENT:
-            model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Changeable_Persistent
+            model['ChangeableType'] = self.Values.ChangeableType.Changeable_Persistent
         elif setting.type == Setting.TYPE_PRECONFIGURED:
-            model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Not_Changeable_Persistent
+            model['ChangeableType'] = self.Values.ChangeableType.Not_Changeable_Persistent
         elif setting.type == Setting.TYPE_TRANSIENT:
-            model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Changeable_Transient
+            model['ChangeableType'] = self.Values.ChangeableType.Changeable_Transient
 
         return model
 
@@ -202,15 +202,15 @@ class SettingProvider(BaseProvider):
                 continue
             if name == 'ChangeableType':
                 if setting.type == Setting.TYPE_TRANSIENT:
-                    if instance[name] == self.SettingProviderValues.ChangeableType.Changeable_Persistent:
+                    if instance[name] == self.Values.ChangeableType.Changeable_Persistent:
                         # can change only transient -> persistent
                         setting.type = Setting.TYPE_PERSISTENT
                         continue
-                    if instance[name] == self.SettingProviderValues.ChangeableType.Changeable_Transient:
+                    if instance[name] == self.Values.ChangeableType.Changeable_Transient:
                         # ignore transient -> transient
                         continue
                 elif (setting.type == Setting.TYPE_PERSISTENT
-                            and instance[name] == self.SettingProviderValues.ChangeableType.Changeable_Persistent):
+                            and instance[name] == self.Values.ChangeableType.Changeable_Persistent):
                     # ignore persistent -> persistent
                     continue
 
@@ -319,10 +319,10 @@ class SettingProvider(BaseProvider):
                                    classname=self.classname,
                                    namespace=self.config.namespace,
                                    keybindings={'InstanceID' : instance_id}))]
-        return (self.SettingProviderValues.CloneSetting.Success, out_params)
+        return (self.Values.CloneSetting.Success, out_params)
 
 
-    class SettingProviderValues(object):
+    class Values(object):
         class ChangeableType(object):
             Not_Changeable_Persistent = pywbem.Uint16(0)
             Changeable_Transient = pywbem.Uint16(1)

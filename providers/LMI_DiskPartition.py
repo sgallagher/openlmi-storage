@@ -73,15 +73,15 @@ class LMI_DiskPartition(ExtentProvider):
 
         model['PrimaryPartition'] = device.isPrimary
         if device.isPrimary:
-            model['PartitionType'] = self.DiskPartitionValues.PartitionType.Primary
+            model['PartitionType'] = self.Values.PartitionType.Primary
         if device.isExtended:
-            model['PartitionType'] = self.DiskPartitionValues.PartitionType.Extended
+            model['PartitionType'] = self.Values.PartitionType.Extended
         if device.isLogical:
-            model['PartitionType'] = self.DiskPartitionValues.PartitionType.Logical
+            model['PartitionType'] = self.Values.PartitionType.Logical
 
         return model
 
-    class DiskPartitionValues(object):
+    class Values(ExtentProvider.Values):
         class PartitionType(object):
             Unknown = pywbem.Uint16(0)
             Primary = pywbem.Uint16(1)

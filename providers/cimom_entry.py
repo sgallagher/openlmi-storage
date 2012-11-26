@@ -65,7 +65,11 @@ def init_anaconda(env):
         os.system('modprobe ' + module)
 
     # set up storage class instance
-    platform = pyanaconda.platform.getPlatform(None)
+    # ugly hack to make it working on both F17 and F18
+    try:
+        platform = pyanaconda.platform.getPlatform(None)
+    except TypeError:
+        platform = pyanaconda.platform.getPlatform()
     storage = pyanaconda.storage.Storage(platform=platform)
 
     # identify the system's storage devices

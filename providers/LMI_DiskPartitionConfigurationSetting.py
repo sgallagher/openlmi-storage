@@ -50,13 +50,13 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
         if flag:
             setting['Hidden'] = "True"
         if device.isExtended:
-            setting['PartitionType'] = str(self.DiskPartitionValues.PartitionType.Extended)
+            setting['PartitionType'] = str(self.Values.PartitionType.Extended)
         elif device.isLogical:
-            setting['PartitionType'] = str(self.DiskPartitionValues.PartitionType.Logical)
+            setting['PartitionType'] = str(self.Values.PartitionType.Logical)
         elif device.isPrimary:
-            setting['PartitionType'] = str(self.DiskPartitionValues.PartitionType.Primary)
+            setting['PartitionType'] = str(self.Values.PartitionType.Primary)
         else:
-            setting['PartitionType'] = str(self.DiskPartitionValues.PartitionType.Unknown)
+            setting['PartitionType'] = str(self.Values.PartitionType.Unknown)
         setting['ElementName'] = setting.id
         return setting
 
@@ -69,7 +69,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
             yield self.get_configuration(device)
 
 
-    class DiskPartitionValues(object):
+    class Values(SettingProvider.Values):
         class PartitionType(object):
             Unknown = 0
             Primary = 1

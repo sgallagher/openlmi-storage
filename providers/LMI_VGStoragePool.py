@@ -150,7 +150,7 @@ class LMI_VGStoragePool(DeviceProvider):
         logger = env.get_logger()
         logger.log_debug('Entering %s.cim_method_getsupportedsizes()' \
                 % self.__class__.__name__)
-        rval = self.VGStoragePoolValues.GetSupportedSizes.Use_GetSupportedSizes_instead
+        rval = self.Values.GetSupportedSizes.Use_GetSupportedSizes_instead
         return (rval, [])
 
     def cim_method_getsupportedsizerange(self, env, object_name,
@@ -219,8 +219,8 @@ class LMI_VGStoragePool(DeviceProvider):
 
         # we support only logical disks for now (should be StorageExtent)
         if (param_elementtype
-                and param_elementtype != self.VGStoragePoolValues.GetSupportedSizeRange.ElementType.Logical_Disk):
-            ret = self.VGStoragePoolValues.GetSupportedSizeRange.Invalid_Element_Type
+                and param_elementtype != self.Values.GetSupportedSizeRange.ElementType.Logical_Disk):
+            ret = self.Values.GetSupportedSizeRange.Invalid_Element_Type
             return (ret, [])
 
         # TODO: check Goal setting!
@@ -236,12 +236,12 @@ class LMI_VGStoragePool(DeviceProvider):
         out_params += [pywbem.CIMParameter('volumesizedivisor', type='uint64',
                            value=pywbem.Uint64(extent_size))]
         rval = pywbem.Uint32(
-            self.VGStoragePoolValues.GetSupportedSizeRange.Method_completed_OK)
+            self.Values.GetSupportedSizeRange.Method_completed_OK)
         return (rval, out_params)
 
 
 
-    class VGStoragePoolValues:
+    class Values(DeviceProvider.Values):
         class GetSupportedSizeRange(object):
             Method_completed_OK = pywbem.Uint32(0)
             Method_not_supported = pywbem.Uint32(1)

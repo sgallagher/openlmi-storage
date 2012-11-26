@@ -27,7 +27,10 @@ for module in ('raid0', 'raid1', 'raid5', 'raid10'):
     os.system('modprobe ' + module)
 
 # set up storage class instance
-platform = pyanaconda.platform.getPlatform()
+try:
+    platform = pyanaconda.platform.getPlatform(None)
+except TypeError:
+    platform = pyanaconda.platform.getPlatform()
 storage = pyanaconda.storage.Storage(platform=platform)
 
 # identify the system's storage devices
