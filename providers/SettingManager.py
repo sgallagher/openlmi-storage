@@ -53,7 +53,7 @@ class SettingManager(object):
         self.config = storage_configuration
         # hash classname -> last generated unique ID (integer)
         self.ids = {}
-        
+
     def get_settings(self, classname):
         """
             Return dictionary of all instances of given LMI_*Setting class.
@@ -69,26 +69,27 @@ class SettingManager(object):
         """
         for c in self.classes.values():
             for setting in c.values():
-                if setting.type == Setting.TYPE_PERSISTENT or setting.type == Setting.TYPE_PRECONFIGURED:
+                if (setting.type == Setting.TYPE_PERSISTENT
+                        or setting.type == Setting.TYPE_PRECONFIGURED):
                     del(c[setting.id])
-        
+
     def load(self):
         """
             Load all persistent and preconfigured settings from configuration
             files.
         """
         self.clean()
-        
+
         # open all preconfigured config files
-        self._loadDirectory(self.config.CONFIG_PATH 
+        self._loadDirectory(self.config.CONFIG_PATH
                     + self.config.SETTINGS_DIR, Setting.TYPE_PRECONFIGURED)
-        self._loadDirectory(self.config.PERSISTENT_PATH 
+        self._loadDirectory(self.config.PERSISTENT_PATH
                     + self.config.SETTINGS_DIR, Setting.TYPE_PERSISTENT)
 
     def _loadDirectory(self, directory, setting_type):
         if not os.path.isdir(directory):
             return
-        
+
         for classname in os.listdir(directory):
             ini = ConfigParser.SafeConfigParser()
             ini.optionxform = str # don't convert to lowercase
@@ -97,14 +98,14 @@ class SettingManager(object):
                 setting = Setting(setting_type, sid)
                 setting.load(ini)
                 self._setSetting(classname, setting)
-    
+
     def _setSetting(self, classname, setting):
         if self.classes.has_key(classname):
             s = self.classes[classname]
             s[setting.id] = setting
         else:
             self.classes[classname] = { setting.id : setting}
-    
+
     def set_setting(self, classname, setting):
         """
             Add or set setting. If the setting is (or was) persistent, it will
@@ -116,11 +117,11 @@ class SettingManager(object):
             old_setting = settings.get(setting.id, None)
             if old_setting and old_setting.type == Setting.TYPE_PERSISTENT:
                 was_persistent = True
-            
+
         self._setSetting(classname, setting)
         if setting.type == Setting.TYPE_PERSISTENT or was_persistent:
             self._saveClass(classname)
-    
+
     def delete_setting(self, classname, setting):
         """
             Remove a setting. If the setting was persistent, it will
@@ -133,7 +134,7 @@ class SettingManager(object):
                 del(settings[setting.id])
                 if old_setting.type == Setting.TYPE_PERSISTENT:
                     self._saveClass(classname)
-            
+
     def save(self):
         """
             Save all persistent settings to configuration files.
@@ -141,7 +142,7 @@ class SettingManager(object):
         """
         for classname in self.classes.keys():
             self._saveClass(classname)
-    
+
     def _saveClass(self, classname):
         ini = ConfigParser.SafeConfigParser()
         ini.optionxform = str # don't convert to lowercase
@@ -162,38 +163,38 @@ class SettingManager(object):
         """
         if not self.ids.has_key(classname):
             self.ids[classname] = 1
-        
+
         i = self.ids[classname]
         settings = self.classes[classname]
         while settings.has_key("LMI:" + classname + ":" + str(i)):
-            i = i+1
-        
-        self.ids[classname] = i+1
+            i = i + 1
+
+        self.ids[classname] = i + 1
         return "LMI:" + classname + ":" + str(i)
-            
-        
+
+
 class Setting(object):
     """
         This class represents generic LMI_*Setting properties.
         Every instance has name, type and properties (key-value pairs).
         The value must be string!
     """
-    
+
     # setting with ChangeableType = Persistent
     TYPE_PERSISTENT = 1
     # setting with ChangeableType = Transient
     TYPE_TRANSIENT = 2
-     # setting with ChangeableType = Fixed, preconfigured by system admin
+    # setting with ChangeableType = Fixed, preconfigured by system admin
     TYPE_PRECONFIGURED = 3
     # setting with ChangeableType = Fixed, current configuration of real
     # managed element, usually associated to it
     TYPE_CONFIGURATION = 4
-    
-    def __init__(self, setting_type = None, setting_id = None):
+
+    def __init__(self, setting_type=None, setting_id=None):
         self.type = setting_type
         self.id = setting_id
         self.properties = {}
-    
+
     def load(self, config):
         """
             Load setting with self.id from given ini file
@@ -204,9 +205,9 @@ class Setting(object):
             if value == "":
                 value = None
             self.properties[key] = value
-            
-            
-        
+
+
+
     def save(self, config):
         """
             Save setting with self.id to given ini file
@@ -217,13 +218,13 @@ class Setting(object):
             if value is None:
                 value = ""
             config.set(self.id, key, value)
-    
+
     def __getitem__(self, key):
         return self.properties[key]
-        
+
     def __setitem__(self, key, value):
         self.properties[key] = value
-    
+
     def items(self):
         """
             Return all (key, value) properties.

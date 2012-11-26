@@ -54,9 +54,9 @@ class BasedOnProvider(BaseProvider):
                     yield model
                 else:
                     yield self.get_instance(env, model, device, base)
-                
 
-    def get_instance(self, env, model, device = None, base = None):
+
+    def get_instance(self, env, model, device=None, base=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It just checks if Dependent and Antecedent are related.
@@ -65,16 +65,16 @@ class BasedOnProvider(BaseProvider):
             device = self.manager.get_device_for_name(model['Dependent'])
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Dependent device")
-            
+
         if not base:
             base = self.manager.get_device_for_name(model['Antecedent'])
         if not base:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Antecedent device")
-        
+
         device_provider = self.manager.get_provider_for_name(model['Dependent'])
         if not (base in device_provider.get_base_devices(device)):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Antecedent is not related to Dependent device")
-        
+
         return model
 
     def references(self, env, object_name, model, result_class_name, role,
@@ -143,7 +143,7 @@ class BasedOnProvider(BaseProvider):
 
         # If you want to get references for free, implemented in terms 
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace, 
+        if ch.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_StorageExtent') or \
                 ch.is_subclass(object_name.namespace,
@@ -151,4 +151,4 @@ class BasedOnProvider(BaseProvider):
                                super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
-                          
+

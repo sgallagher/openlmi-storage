@@ -50,9 +50,9 @@ class SettingProvider(BaseProvider):
         supported_properties['Description'] = str
         supported_properties['ChangeableType'] = pywbem.Uint16
         supported_properties['ElementName'] = str
-        
+
         self.supported_properties = supported_properties
-        
+
         super(SettingProvider, self).__init__(*args, **kwargs)
 
     def enumerate_configurations(self):
@@ -97,30 +97,30 @@ class SettingProvider(BaseProvider):
         settings = self.setting_manager.get_settings(self.classname)
         if settings.has_key(instance_id):
             return settings[instance_id]
-            
+
         # find the setting in configurations
         # TODO: this can be probably optimized
         for s in self.enumerate_configurations():
             if s.id == instance_id:
                 return s
         return None
-        
-    def get_instance(self, env, model, setting = None):
+
+    def get_instance(self, env, model, setting=None):
         """
             Provider implementation of GetInstance intrinsic method.
         """
         if not setting:
             setting = self.find_instance(model['InstanceID'])
-            
+
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
-        
+
         # convert setting to model using supported_properties
         for (name, value) in setting.items():
             if value is not None:
                 if self.supported_properties.has_key(name):
                     model[name] = self.supported_properties[name](value)
-        
+
         if setting.type == Setting.TYPE_CONFIGURATION:
             model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Not_Changeable_Transient
         elif setting.type == Setting.TYPE_PERSISTENT:
@@ -129,17 +129,17 @@ class SettingProvider(BaseProvider):
             model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Not_Changeable_Persistent
         elif setting.type == Setting.TYPE_TRANSIENT:
             model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Changeable_Transient
-            
+
         return model
-    
+
     def string_to_bool(self, value):
         if value == 1 or value == "true" or value == "True":
             return True
         elif value == 0 or value == "false" or value == "False":
             return False
         return bool(value)
-    
-    
+
+
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
 
@@ -170,24 +170,27 @@ class SettingProvider(BaseProvider):
         logger = env.get_logger()
         logger.log_debug('Entering %s.set_instance()' \
                 % self.__class__.__name__)
-        
+
         setting = self.find_instance(instance['InstanceID'])
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
-        
+
         if not modify_existing:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED, "CreateInstance is not supported.")
-        
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "CreateInstance is not supported.")
+
         if (setting.type == Setting.TYPE_CONFIGURATION
                 or setting.type == Setting.TYPE_PRECONFIGURED):
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot modify not-changeable setting.")
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot modify not-changeable setting.")
 
         for name in instance.iterkeys():
             if name == 'InstanceID':
                 continue
             if not self.supported_properties.has_key(name):
                 if instance[name]:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Property is not supported: " + name)
+                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                            "Property is not supported: " + name)
                 continue
             if name == 'ChangeableType':
                 if setting.type == Setting.TYPE_TRANSIENT:
@@ -198,17 +201,18 @@ class SettingProvider(BaseProvider):
                     if instance[name] == self.SettingProviderValues.ChangeableType.Changeable_Transient:
                         # ignore transient -> transient
                         continue
-                elif ( setting.type == Setting.TYPE_PERSISTENT
+                elif (setting.type == Setting.TYPE_PERSISTENT
                             and instance[name] == self.SettingProviderValues.ChangeableType.Changeable_Persistent):
                     # ignore persistent -> persistent
                     continue
 
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot modify ChangeableType property to new value.")
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot modify ChangeableType property to new value.")
             if instance[name] is not None:
                 setting[name] = str(instance[name])
             else:
                 setting[name] = None
-                
+
 
         self.setting_manager.set_setting(self.classname, setting)
         return instance
@@ -233,7 +237,7 @@ class SettingProvider(BaseProvider):
             Instance does not exist in the specified namespace)
         CIM_ERR_FAILED (some other unspecified error occurred)
 
-        """ 
+        """
 
         logger = env.get_logger()
         logger.log_debug('Entering %s.delete_instance()' \
@@ -241,14 +245,16 @@ class SettingProvider(BaseProvider):
 
         setting = self.find_instance(instance_name['InstanceID'])
         if not setting:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
-                
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find setting.")
+
         if (setting.type == Setting.TYPE_CONFIGURATION
                 or setting.type == Setting.TYPE_PRECONFIGURED):
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot delete not-changeable setting.")
-        
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot delete not-changeable setting.")
+
         self.setting_manager.delete_setting(self.classname, setting)
-        
+
     def cim_method_clonesetting(self, env, object_name):
         """Implements LMI_DiskPartitionConfigurationSetting.CloneSetting()
 
@@ -289,7 +295,8 @@ class SettingProvider(BaseProvider):
 
         setting = self.find_instance(object_name['InstanceID'])
         if not setting:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find setting.")
 
         instance_id = self.setting_manager.allocate_id(self.classname)
         print "instanceid = ", instance_id
@@ -297,23 +304,23 @@ class SettingProvider(BaseProvider):
         for (key, value) in setting.items():
             new_setting[key] = value
         self.setting_manager.set_setting(self.classname, new_setting)
-        
+
         out_params = []
-        out_params+= [pywbem.CIMParameter('Clone', type='reference', 
+        out_params += [pywbem.CIMParameter('Clone', type='reference',
                            value=pywbem.CIMInstanceName(
                                    classname=self.classname,
                                    namespace=self.config.namespace,
-                                   keybindings= {'InstanceID' : instance_id}))]
+                                   keybindings={'InstanceID' : instance_id}))]
         return (self.SettingProviderValues.CloneSetting.Success, out_params)
 
-    
+
     class SettingProviderValues(object):
         class ChangeableType(object):
             Not_Changeable_Persistent = pywbem.Uint16(0)
             Changeable_Transient = pywbem.Uint16(1)
             Changeable_Persistent = pywbem.Uint16(2)
             Not_Changeable_Transient = pywbem.Uint16(3)
-            
+
         class CloneSetting(object):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)

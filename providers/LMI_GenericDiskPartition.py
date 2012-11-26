@@ -24,9 +24,10 @@ class LMI_GenericDiskPartition(ExtentProvider):
     """
         Provider of LMI_GenericDiskPartition class.
     """
-    
+
     def __init__(self, *args, **kwargs):
-        super(LMI_GenericDiskPartition, self).__init__('LMI_GenericDiskPartition', *args, **kwargs)
+        super(LMI_GenericDiskPartition, self).__init__(
+                'LMI_GenericDiskPartition', *args, **kwargs)
 
 
     def provides_device(self, device):
@@ -39,7 +40,7 @@ class LMI_GenericDiskPartition(ExtentProvider):
                 return False
             return True
         return False
-    
+
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.

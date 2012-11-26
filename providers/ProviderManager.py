@@ -34,16 +34,16 @@ class ProviderManager(object):
         The providers must be registered by add_provider().
         The providers must be subclasses of DeviceProvider class.
     """
-        
+
     def __init__(self):
         self.providers = []
-        
+
     def add_provider(self, provider):
         """
             Add new provider to the manager.
         """
         self.providers.append(provider)
-    
+
     def get_provider_for_name(self, object_name):
         """
             Return provider for given CIM InstanceName.
@@ -63,7 +63,7 @@ class ProviderManager(object):
         if p:
             return p.get_device_for_name(object_name)
         return None
-        
+
     def get_provider_for_device(self, device):
         """
             Return provider for given Anaconda StorageDevice.
@@ -73,7 +73,7 @@ class ProviderManager(object):
             if p.provides_device(device):
                 return p
         return None
-    
+
     def get_name_for_device(self, device):
         """
             Return CIM InstanceName for given Anaconda StorageDevice.

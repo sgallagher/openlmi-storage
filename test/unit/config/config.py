@@ -23,27 +23,27 @@ import unittest
 import socket
 import os
 
-class TestConfig(unittest.TestCase):    
+class TestConfig(unittest.TestCase):
     def setUp(self):
         self.directory = os.path.dirname(__file__)
         if not self.directory:
             self.directory = "."
-        
+
     def test_missing(self):
         """ Test configuration when CONFIG_FILE cannot be found."""
-        
+
         StorageConfiguration.CONFIG_PATH = self.directory
         StorageConfiguration.CONFIG_FILE = self.directory + "/configs/not-existing.conf"
         cfg = StorageConfiguration()
 
         # cfg must exists
         self.assertTrue(cfg)
-        
+
         # cfg must return default values
         self.assertEqual(cfg.namespace, "root/cimv2")
         self.assertEqual(cfg.system_class_name, "Linux_ComputerSystem")
         self.assertEqual(cfg.system_name, socket.getfqdn())
-        
+
     def test_empty(self):
         """ Test configuration when CONFIG_FILE is empty."""
         StorageConfiguration.CONFIG_PATH = self.directory
@@ -52,7 +52,7 @@ class TestConfig(unittest.TestCase):
 
         # cfg must exists
         self.assertTrue(cfg)
-        
+
         # cfg must return default values
         self.assertEqual(cfg.namespace, "root/cimv2")
         self.assertEqual(cfg.system_class_name, "Linux_ComputerSystem")
@@ -66,12 +66,12 @@ class TestConfig(unittest.TestCase):
 
         # cfg must exists
         self.assertTrue(cfg)
-        
+
         # cfg must NOT return default values
         self.assertEqual(cfg.namespace, "root/my/namespace")
         self.assertEqual(cfg.system_class_name, "My_ComputerSystem")
         self.assertEqual(cfg.system_name, socket.getfqdn())
-        
+
     def tearDown(self):
         pass
 

@@ -30,7 +30,7 @@ class LMI_LVBasedOn(BaseProvider):
     """
     def __init__(self, *args, **kwargs):
         super(LMI_LVBasedOn, self).__init__(*args, **kwargs)
-    
+
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -40,7 +40,8 @@ class LMI_LVBasedOn(BaseProvider):
         for device in self.storage.lvs:
             provider = self.manager.get_provider_for_device(device)
             if not provider:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot find provider for device " + device.path)
             vg = device.vg
             for base in vg.parents:
                 model['Dependent'] = provider.get_name_for_device(device)
@@ -50,7 +51,7 @@ class LMI_LVBasedOn(BaseProvider):
                 else:
                     yield self.get_instance(env, model, device, base)
 
-    def get_instance(self, env, model, device = None, base = None):
+    def get_instance(self, env, model, device=None, base=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It just checks if Dependent and Antecedent are related.
@@ -58,18 +59,23 @@ class LMI_LVBasedOn(BaseProvider):
         if not device:
             device = self.manager.get_device_for_name(model['Dependent'])
         if not device:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Dependent device")
-            
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find Dependent device")
+
         if not base:
             base = self.manager.get_device_for_name(model['Antecedent'])
         if not base:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Antecedent device")
-        
-        if not isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Dependend device is not logical volume: " + device.path)
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find Antecedent device")
+
+        if not isinstance(device,
+                    pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Dependend device is not logical volume: " + device.path)
         if not (base in device.vg.parents):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Antecedent is not related to Dependent device")
-        
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Antecedent is not related to Dependent device")
+
         return model
 
 
@@ -139,7 +145,7 @@ class LMI_LVBasedOn(BaseProvider):
 
         # If you want to get references for free, implemented in terms 
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace, 
+        if ch.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_StorageExtent') or \
                 ch.is_subclass(object_name.namespace,
@@ -147,4 +153,3 @@ class LMI_LVBasedOn(BaseProvider):
                                super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
-                          

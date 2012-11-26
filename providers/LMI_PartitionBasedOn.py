@@ -36,7 +36,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
             specialized BasedOn class
         """
         return self.storage.partitions
-    
+
     def get_logical_partition_start(self, device, base):
         """
             Return starting address of logical's partition metadata.
@@ -51,18 +51,20 @@ class LMI_PartitionBasedOn(BasedOnProvider):
             if part.path == device.path:
                 break
             part = part.nextPartition()
-        
+
         if not part:
-            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find the partition on the disk: ' +  device.path)
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Cannot find the partition on the disk: " + device.path)
         if not metadata:
-            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find metadata for the partition: ' + device.path)
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Cannot find metadata for the partition: " + device.path)
         return metadata.geometry.start
 
     def get_mbr_instance(self, model, device, base):
         # primary partitions are simple
         if device.isPrimary or device.isExtended:
             return self.get_gpt_instance(model, device, base)
-        
+
         # now the logical ones
         sector_size = device.partedDevice.sectorSize
         # startaddress is relative to the beginning of the extended partition
@@ -70,7 +72,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         # find the metadata
         start = self.get_logical_partition_start(device, base) * sector_size
         end = device.partedPartition.geometry.end * sector_size
-        
+
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
         model['StartingAddress'] = pywbem.Uint64(start - base_start)
         model['EndingAddress'] = pywbem.Uint64(end - base_start)
@@ -79,18 +81,21 @@ class LMI_PartitionBasedOn(BasedOnProvider):
     def get_gpt_instance(self, model, device, base):
         sector_size = device.partedDevice.sectorSize
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
-        model['StartingAddress'] = pywbem.Uint64(device.partedPartition.geometry.start * sector_size)
-        model['EndingAddress'] = pywbem.Uint64(device.partedPartition.geometry.end * sector_size)
+        model['StartingAddress'] = \
+            pywbem.Uint64(device.partedPartition.geometry.start * sector_size)
+        model['EndingAddress'] = \
+            pywbem.Uint64(device.partedPartition.geometry.end * sector_size)
         return model
-        
+
     def get_instance(self, env, model, device=None, base=None):
-        model = super(LMI_PartitionBasedOn, self).get_instance(env, model, device, base)
-        
+        model = super(LMI_PartitionBasedOn, self).get_instance(
+                env, model, device, base)
+
         if not device:
             device = self.manager.get_device_for_name(model['Dependent'])
         if not base:
             base = self.manager.get_device_for_name(model['Antecedent'])
-        
+
         if device.isLogical:
             model = self.get_mbr_instance(model, device, base)
         elif base.format.labelType == 'msdos':
@@ -98,6 +103,3 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         elif base.format.labelType == 'gpt':
             model = self.get_gpt_instance(model, device, base)
         return model
-            
-        
-        

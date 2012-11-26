@@ -27,9 +27,10 @@ class LMI_StorageExtent(ExtentProvider):
         It provides all StorageExtent instances, which do not have any
         specialized providers in LMI.
     """
-    
+
     def __init__(self, *args, **kwargs):
-        super(LMI_StorageExtent, self).__init__('LMI_StorageExtent', *args, **kwargs)
+        super(LMI_StorageExtent, self).__init__(
+                'LMI_StorageExtent', *args, **kwargs)
 
 
     def provides_device(self, device):
@@ -37,25 +38,26 @@ class LMI_StorageExtent(ExtentProvider):
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
         """
-        
+
         # check if this device has specialized provider
         if  isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
             return False
-        
+
         if  isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
             return False
-        
+
         if  isinstance(device, pyanaconda.storage.devices.PartitionDevice):
             return False
 
-        if  isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+        if  isinstance(device,
+                pyanaconda.storage.devices.LVMLogicalVolumeDevice):
             return False
 
         # otherwise, if it is StorageDevice, we provide it
         if isinstance(device, pyanaconda.storage.devices.StorageDevice):
             return True
         return False
-    
+
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.

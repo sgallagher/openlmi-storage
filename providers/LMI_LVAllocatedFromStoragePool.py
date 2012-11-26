@@ -37,11 +37,13 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
         for device in self.storage.lvs:
             lvprovider = self.manager.get_provider_for_device(device)
             if not lvprovider:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot find provider for device " + device.path)
             vg = device.vg
             vgprovider = self.manager.get_provider_for_device(vg)
             if not vgprovider:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + vg.path)
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot find provider for device " + vg.path)
             
             model['Dependent'] = lvprovider.get_name_for_device(device)
             model['Antecedent'] = vgprovider.get_name_for_device(vg)
@@ -58,19 +60,25 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
         if not device:
             device = self.manager.get_device_for_name(model['Dependent'])
         if not device:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Dependent device")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find Dependent device")
             
         if not vg:
             vg = self.manager.get_device_for_name(model['Antecedent'])
         if not vg:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Antecedent device")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find Antecedent device")
         
-        if not isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Dependend device is not logical volume: " + device.path)
+        if not isinstance(device,
+                    pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Dependend device is not logical volume: " + device.path)
         if not isinstance(vg, pyanaconda.storage.devices.LVMVolumeGroupDevice):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Antecedent device is not volume vroup: " + vg.path)
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Antecedent device is not volume vroup: " + vg.path)
         if vg != device.vg:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Antecedent is not related to Dependent device")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Antecedent is not related to Dependent device")
         
         return model
 
@@ -149,4 +157,3 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
                                super='CIM_StoragePool'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
-                          

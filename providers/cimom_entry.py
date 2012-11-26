@@ -34,7 +34,7 @@ from ProviderManager import ProviderManager
 from SettingManager import SettingManager
 
 from LMI_StorageExtent import LMI_StorageExtent
-from LMI_MDRAIDStorageExtent import LMI_MDRAIDStorageExtent 
+from LMI_MDRAIDStorageExtent import LMI_MDRAIDStorageExtent
 from LMI_DiskPartition import LMI_DiskPartition
 from LMI_GenericDiskPartition import LMI_GenericDiskPartition
 from LMI_LVStorageExtent import LMI_LVStorageExtent
@@ -52,9 +52,9 @@ import os
 
 def init_anaconda(env):
     logger = env.get_logger()
-    
-    logger.log_info("Initializing Anaconda")   
-    
+
+    logger.log_info("Initializing Anaconda")
+
     os.system('udevadm control --env=ANACONDA=1')
     os.system('udevadm trigger --subsystem-match block')
     os.system('udevadm settle')
@@ -69,26 +69,26 @@ def init_anaconda(env):
 
     # identify the system's storage devices
     storage.devicetree.populate()
-        
+
     return storage
-  
+
 def get_providers(env):
     config = StorageConfiguration()
     config.load()
-    
+
     manager = ProviderManager()
     setting_manager = SettingManager(config)
     setting_manager.load()
     storage = init_anaconda(env)
-    
+
     providers = {}
-    
+
     # common construction options
     opts = {'env': env,
             'storage': storage,
             'config': config,
             'manager': manager,
-            'setting_manager': setting_manager}    
+            'setting_manager': setting_manager}
     # StorageDevice providers
     p = LMI_StorageExtent(**opts)
     manager.add_provider(p)
@@ -101,7 +101,7 @@ def get_providers(env):
     p = LMI_DiskPartition(**opts)
     manager.add_provider(p)
     providers['LMI_DiskPartition'] = p
-    
+
     p = LMI_GenericDiskPartition(**opts)
     manager.add_provider(p)
     providers['LMI_GenericDiskPartition'] = p
@@ -130,13 +130,12 @@ def get_providers(env):
 
     p = LMI_LVAllocatedFromStoragePool(**opts)
     providers['LMI_LVAllocatedFromStoragePool'] = p
-    
+
     p = LMI_VGAssociatedComponentExtent(**opts)
     providers['LMI_VGAssociatedComponentExtent'] = p
 
 
     print "providers:", providers
-    
+
     return providers
 
-    

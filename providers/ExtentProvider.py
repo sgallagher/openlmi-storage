@@ -114,7 +114,8 @@ class ExtentProvider(DeviceProvider):
             block_size = pywbem.Uint64(device.partedDevice.sectorSize)
             total_blocks = device.partedDevice.length
             consumable_blocks = device.partedDevice.length
-            if device.format and isinstance(device.format, pyanaconda.storage.formats.disklabel.DiskLabel):
+            if (device.format and isinstance(device.format,
+                    self.storage.formats.disklabel.DiskLabel)):
                 # reduce by partition table size
                 consumable_blocks -= self.get_partition_table_size(device.format)
         else:
@@ -135,7 +136,8 @@ class ExtentProvider(DeviceProvider):
             It must return array of strings.
         """
         d = []
-        if device.format and isinstance(device.format, pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
+        if device.format and isinstance(device.format,
+                    pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
             d.append(self.ExtentProviderValues.Discriminator.Pool_Component)
         return d
 
@@ -149,7 +151,8 @@ class ExtentProvider(DeviceProvider):
         if not device:
             device = self._getDevice(model)
         if not device:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find the extent.")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find the extent.")
 
         model['ElementName'] = self.get_element_name(device)
         model['NameNamespace'] = self.ExtentProviderValues.NameNamespace.OS_Device_Namespace
@@ -157,10 +160,20 @@ class ExtentProvider(DeviceProvider):
         model['Name'] = device.path
 
         extent_status = self.get_extent_status(device)
-        model['ExtentStatus'] = pywbem.CIMProperty(name='ExtentStatus', value=extent_status, type='uint16', array_size=len(extent_status), is_array=True)
+        model['ExtentStatus'] = pywbem.CIMProperty(
+                name='ExtentStatus',
+                value=extent_status,
+                type='uint16',
+                array_size=len(extent_status),
+                is_array=True)
 
         operational_status = self.get_status(device)
-        model['OperationalStatus'] = pywbem.CIMProperty(name='OperationalStatus', value=operational_status, type='uint16', array_size=len(operational_status), is_array=True)
+        model['OperationalStatus'] = pywbem.CIMProperty(
+                name='OperationalStatus',
+                value=operational_status,
+                type='uint16',
+                array_size=len(operational_status),
+                is_array=True)
 
         (block_size, total_blocks, consumable_blocks) = self.get_size(device)
         if block_size:
@@ -181,7 +194,12 @@ class ExtentProvider(DeviceProvider):
         model['Primordial'] = self.get_primordial(device)
 
         discriminator = self.get_discriminator(device)
-        model['ExtentDiscriminator'] = pywbem.CIMProperty(name='ExtentDiscriminator', value=discriminator, type='string', array_size=len(discriminator), is_array=True)
+        model['ExtentDiscriminator'] = pywbem.CIMProperty(
+                name='ExtentDiscriminator',
+                value=discriminator,
+                type='string',
+                array_size=len(discriminator),
+                is_array=True)
 
         return model
 
@@ -303,4 +321,3 @@ class ExtentProvider(DeviceProvider):
             Composite = 'SNIA:Composite'
             Imported = 'SNIA:Imported'
             Allocated = 'SNIA:Allocated'
-

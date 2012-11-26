@@ -18,26 +18,25 @@
 # -*- coding: utf-8 -*-
 
 import ConfigParser
-import os
 import socket
 
 class StorageConfiguration(object):
-    
+
     CONFIG_PATH = '/etc/openlmi/storage/'
     CONFIG_FILE = CONFIG_PATH + 'storage.ini'
 
     PERSISTENT_PATH = '/var/lib/openlmi-storage/'
     SETTINGS_DIR = 'settings/'
-    
+
     defaults = {
         'namespace' : 'root/cimv2',
         'systemclassname' : 'Linux_ComputerSystem'
     }
-    
+
     def __init__(self):
         self.config = ConfigParser.SafeConfigParser(defaults=self.defaults)
         self.load()
-        
+
     def load(self):
         """
             Load configuration from CONFIG_FILE. The file does not need to
@@ -46,15 +45,15 @@ class StorageConfiguration(object):
         self.config.read(self.CONFIG_FILE)
         if not self.config.has_section('common'):
             self.config.add_section('common')
-                            
+
     def get_namespace(self):
         return self.config.get('common', 'namespace')
     namespace = property(get_namespace)
-    
+
     def get_system_class_name(self):
         return self.config.get('common', 'systemclassname')
     system_class_name = property(get_system_class_name)
-    
+
     def get_system_name(self):
         return socket.getfqdn()
     system_name = property(get_system_name)

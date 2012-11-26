@@ -27,7 +27,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
     """
         Implementation of LMI_DiskPartitionConfigurationSetting
     """
-    
+
     def __init__(self, *args, **kwargs):
         supported_properties = {
             'Bootable': self.string_to_bool,
@@ -35,15 +35,16 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
             'PartitionType': pywbem.Uint16,
         }
         super(LMI_DiskPartitionConfigurationSetting, self).__init__(
-                classname = "LMI_DiskPartitionConfigurationSetting",
-                supported_properties = supported_properties,
+                classname="LMI_DiskPartitionConfigurationSetting",
+                supported_properties=supported_properties,
                 *args, **kwargs)
 
     def get_configuration_id(self, device):
         return "LMI:" + self.classname + ":" + device.path
-    
+
     def get_configuration(self, device):
-        setting = Setting(Setting.TYPE_CONFIGURATION, self.get_configuration_id(device))
+        setting = Setting(Setting.TYPE_CONFIGURATION,
+                self.get_configuration_id(device))
         setting['Bootable'] = str(device.bootable)
         flag = device.getFlag(parted.PARTITION_HIDDEN)
         if flag:
@@ -58,8 +59,8 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
             setting['PartitionType'] = str(self.DiskPartitionValues.PartitionType.Unknown)
         setting['ElementName'] = setting.id
         return setting
-            
-        
+
+
     def enumerate_configurations(self):
         """
             Enumerate all instances attached to partitions.

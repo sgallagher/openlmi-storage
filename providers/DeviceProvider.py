@@ -38,7 +38,7 @@ class DeviceProvider(BaseProvider):
         """
         super(DeviceProvider, self).__init__(*args, **kwargs)
         self.manager.add_provider(self)
-        
+
     def provides_name(self, object_name):
         """
             Returns True, if this class is provider for given CIM InstanceName.
@@ -51,21 +51,21 @@ class DeviceProvider(BaseProvider):
             StorageDevice class.
         """
         return False
-    
+
     def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
             None if no device is found.
         """
         return None
-        
+
     def get_name_for_device(self, device):
         """
             Returns CIM InstanceName for given Anaconda StorageDevice.
             None if no device is found.
         """
         return None
-        
+
     def get_status(self, device):
         """
             Returns OperationalStatus for given Anaconda StorageDevice.
@@ -109,14 +109,16 @@ class DeviceProvider(BaseProvider):
         # assume the worst
         package_redundancy = min(a.package_redundancy, b.package_redundancy)
         # both NoSinglePointOfFailure must be true to be the result true
-        no_single_point_of_failure= a.no_single_point_of_failure and b.no_single_point_of_failure
+        no_single_point_of_failure = (
+                a.no_single_point_of_failure and b.no_single_point_of_failure)
         #  we don't know if the data are on A or B, so assume the worst
         stripe_length = min(a.stripe_length, b.stripe_length)
-        
-        return self.Redundancy(no_single_point_of_failure = no_single_point_of_failure,
-                               data_redundancy = data_redundancy,
-                               package_redundancy = package_redundancy,
-                               stripe_length = stripe_length)
+
+        return self.Redundancy(
+                no_single_point_of_failure=no_single_point_of_failure,
+                data_redundancy=data_redundancy,
+                package_redundancy=package_redundancy,
+                stripe_length=stripe_length)
 
     def _findRedundancy(self, device):
         """
@@ -125,7 +127,8 @@ class DeviceProvider(BaseProvider):
         """
         provider = self.manager.get_provider_for_device(device)
         if not provider:
-            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Cannot find provider for device " + device.path)
         return provider.get_redundancy(device)
 
     def get_redundancy(self, device):
@@ -141,12 +144,12 @@ class DeviceProvider(BaseProvider):
         else:
             # this device has no parents, assume it is simple disk
             final_redundancy = self.Redundancy(
-                    no_single_point_of_failure = False,
+                    no_single_point_of_failure=False,
                     data_redundancy=1,
                     package_redundancy=0,
                     stripe_length=1)
         return final_redundancy
-    
+
     class Redundancy(object):
         """
             Class representing redundancy characteristics of a StorageExtent
@@ -160,7 +163,7 @@ class DeviceProvider(BaseProvider):
             self.data_dedundancy = data_redundancy
             self.package_redundancy = package_redundancy
             self.stripe_length = stripe_length
-            
+
     class DeviceProviderValues(object):
         class OperationalStatus(object):
             Unknown = pywbem.Uint16(0)
@@ -184,4 +187,4 @@ class DeviceProvider(BaseProvider):
             Power_Mode = pywbem.Uint16(18)
             Relocating = pywbem.Uint16(19)
             # DMTF_Reserved = ..
-            # Vendor_Reserved = 0x8000..        
+            # Vendor_Reserved = 0x8000..

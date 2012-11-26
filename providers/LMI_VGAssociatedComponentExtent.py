@@ -27,7 +27,7 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
     """
     def __init__(self, *args, **kwargs):
         super(LMI_VGAssociatedComponentExtent, self).__init__(*args, **kwargs)
-    
+
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -37,12 +37,14 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
         for vg in self.storage.vgs:
             vgprovider = self.manager.get_provider_for_device(vg)
             if not vgprovider:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + vg.path)
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot find provider for device " + vg.path)
             for pv in vg.pvs:
                 pvprovider = self.manager.get_provider_for_device(pv)
                 if not pvprovider:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + pv.path)
-            
+                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                            "Cannot find provider for device " + pv.path)
+
                 model['GroupComponent'] = vgprovider.get_name_for_device(vg)
                 model['PartComponent'] = pvprovider.get_name_for_device(pv)
                 if keys_only:
@@ -50,7 +52,7 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
                 else:
                     yield self.get_instance(env, model, vg, pv)
 
-    def get_instance(self, env, model, vg = None, pv = None):
+    def get_instance(self, env, model, vg=None, pv=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It just checks if GroupComponent and PartComponent are related.
@@ -58,18 +60,22 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
         if not vg:
             vg = self.manager.get_device_for_name(model['GroupComponent'])
         if not vg:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find GroupComponent device")
-            
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find GroupComponent device")
+
         if not pv:
             pv = self.manager.get_device_for_name(model['PartComponent'])
         if not pv:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find PartComponent device")
-        
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find PartComponent device")
+
         if not isinstance(vg, pyanaconda.storage.devices.LVMVolumeGroupDevice):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "GroupComponent device is not volume group: " + vg.path)
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "GroupComponent device is not volume group: " + vg.path)
         if not (pv in vg.pvs):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "GroupComponent is not related to PartComponent device")
-        
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "GroupComponent is not related to PartComponent device")
+
         return model
 
 
@@ -139,7 +145,7 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
 
         # If you want to get references for free, implemented in terms 
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace, 
+        if ch.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_StorageExtent') or \
                 ch.is_subclass(object_name.namespace,
@@ -147,4 +153,3 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
                                super='CIM_StoragePool'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)
-                          

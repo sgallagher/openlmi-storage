@@ -41,4 +41,4 @@ class BaseProvider(CIMProvider2):
         self.manager = manager
         self.setting_manager = setting_manager
         self.logger = env.get_logger()
-        
+

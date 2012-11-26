@@ -21,7 +21,7 @@ from DeviceProvider import DeviceProvider
 import pywbem
 import pyanaconda.storage
 
-MEGABYTE = 1024*1024
+MEGABYTE = 1024 * 1024
 
 class LMI_VGStoragePool(DeviceProvider):
     """
@@ -34,7 +34,7 @@ class LMI_VGStoragePool(DeviceProvider):
         """
             Returns True, if this class is provider for given CIM InstanceName.
         """
-        
+
         instance_id = object_name['InstanceID']
         parts = instance_id.split(":")
         if len(parts) != 3:
@@ -53,7 +53,7 @@ class LMI_VGStoragePool(DeviceProvider):
         if  isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
             return True
         return False
-        
+
     def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
@@ -75,13 +75,13 @@ class LMI_VGStoragePool(DeviceProvider):
         """
         vgname = device.name
         name = pywbem.CIMInstanceName('LMI_VGStoragePool',
-                namespace = self.config.namespace,
-                keybindings = {
+                namespace=self.config.namespace,
+                keybindings={
                     'InstanceID' : "LMI:VG:" + vgname
                 })
         return name
-                
-    def get_instance(self, env, model, device = None):
+
+    def get_instance(self, env, model, device=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It fills all VGStoragePool properties.
@@ -92,21 +92,23 @@ class LMI_VGStoragePool(DeviceProvider):
             device = self.get_device_for_name(model)
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find the VG.")
-        
+
         model['Primordial'] = False
         model['ElementName'] = device.name
         model['PoolID'] = device.name
 
-        model['TotalManagedSpace'] = pywbem.Uint64(device.extents * device.peSize * MEGABYTE)
-        model['RemainingManagedSpace'] = pywbem.Uint64(device.freeExtents * device.peSize * MEGABYTE)
-        
+        model['TotalManagedSpace'] = pywbem.Uint64(
+                device.extents * device.peSize * MEGABYTE)
+        model['RemainingManagedSpace'] = pywbem.Uint64(
+                device.freeExtents * device.peSize * MEGABYTE)
+
         model['ExtentSize'] = pywbem.Uint64(device.peSize * MEGABYTE)
         model['TotalExtents'] = pywbem.Uint64(device.extents)
         model['RemainingExtents'] = pywbem.Uint64(device.freeExtents)
         model['UUID'] = device.uuid
-        
+
         return model
-        
+
 
     def enum_instances(self, env, model, keys_only):
         """Enumerate instances.
@@ -131,7 +133,7 @@ class LMI_VGStoragePool(DeviceProvider):
 
         """
         model.path.update({'InstanceID': None})
-        
+
         for device in self.storage.vgs:
             name = self.get_name_for_device(device)
             model['InstanceID'] = name['InstanceID']
@@ -214,26 +216,27 @@ class LMI_VGStoragePool(DeviceProvider):
         device = self.get_device_for_name(object_name)
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find the VG.")
-        
+
         # we support only logical disks for now (should be StorageExtent)
         if (param_elementtype
                 and param_elementtype != self.VGStoragePoolValues.GetSupportedSizeRange.ElementType.Logical_Disk):
             ret = self.VGStoragePoolValues.GetSupportedSizeRange.Invalid_Element_Type
             return (ret, [])
-        
+
         # TODO: check Goal setting!
 
         extent_size = long(device.peSize * MEGABYTE)
         available_size = long(device.peSize * device.freeExtents * MEGABYTE)
 
         out_params = []
-        out_params+= [pywbem.CIMParameter('minimumvolumesize', type='uint64',
+        out_params += [pywbem.CIMParameter('minimumvolumesize', type='uint64',
                            value=pywbem.Uint64(extent_size))]
-        out_params+= [pywbem.CIMParameter('maximumvolumesize', type='uint64',
+        out_params += [pywbem.CIMParameter('maximumvolumesize', type='uint64',
                            value=pywbem.Uint64(available_size))]
-        out_params+= [pywbem.CIMParameter('volumesizedivisor', type='uint64',
+        out_params += [pywbem.CIMParameter('volumesizedivisor', type='uint64',
                            value=pywbem.Uint64(extent_size))]
-        rval = pywbem.Uint32(self.VGStoragePoolValues.GetSupportedSizeRange.Method_completed_OK)
+        rval = pywbem.Uint32(
+            self.VGStoragePoolValues.GetSupportedSizeRange.Method_completed_OK)
         return (rval, out_params)
 
 
@@ -250,7 +253,7 @@ class LMI_VGStoragePool(DeviceProvider):
                 Logical_Disk = pywbem.Uint16(4)
                 Thin_Provisioned_Volume = pywbem.Uint16(5)
                 Thin_Provisioned_Logical_Disk = pywbem.Uint16(6)
-        
+
         class GetSupportedSizes(object):
             Method_completed_OK = pywbem.Uint32(0)
             Method_not_supported = pywbem.Uint32(1)

@@ -35,18 +35,19 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
             specialized BasedOn class
         """
         return self.storage.mdarrays
-    
+
     def get_instance(self, env, model, device=None, base=None):
-        model = super(LMI_MDRAIDBasedOn, self).get_instance(env, model, device, base)
-        
+        model = super(LMI_MDRAIDBasedOn, self).get_instance(
+                env, model, device, base)
+
         if not device:
             device = self.manager.get_device_for_name(model['Dependent'])
         if not base:
             base = self.manager.get_device_for_name(model['Antecedent'])
-        
+
         model['OrderIndex'] = pywbem.Uint16(device.parents.index(base) + 1)
-        
+
         return model
-            
-        
-        
+
+
+

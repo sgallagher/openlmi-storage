@@ -25,9 +25,10 @@ class LMI_DiskPartition(ExtentProvider):
     """
         Provider of LMI_DiskPartition class.
     """
-    
+
     def __init__(self, *args, **kwargs):
-        super(LMI_DiskPartition, self).__init__('LMI_DiskPartition', *args, **kwargs)
+        super(LMI_DiskPartition, self).__init__(
+                'LMI_DiskPartition', *args, **kwargs)
 
 
     def provides_device(self, device):
@@ -39,19 +40,20 @@ class LMI_DiskPartition(ExtentProvider):
             if device.disk.format.labelType == 'msdos':
                 return True
         return False
-    
+
     def get_base_devices(self, device):
         if device.isPrimary or device.isExtended:
-            return super(LMI_DiskPartition, self).get_base_devices(device)    
-        
+            return super(LMI_DiskPartition, self).get_base_devices(device)
+
         # logical partitions depend on the extended partition
         parted_ext = device.disk.format.partedDisk.getExtendedPartition()
         if not parted_ext:
-            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find extended partition for device: ' + device.path)
-        
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    'Cannot find extended partition for device: ' + device.path)
+
         ext = self.storage.devicetree.getDeviceByPath(parted_ext.path)
-        return [ext,]
-        
+        return [ext, ]
+
 
     def enumerate_devices(self):
         """
@@ -61,14 +63,14 @@ class LMI_DiskPartition(ExtentProvider):
             if self.provides_device(device):
                 yield device
 
-    def get_instance(self, env, model, device = None):
+    def get_instance(self, env, model, device=None):
         """
             Add partition-specific properties.
         """
         model = super(LMI_DiskPartition, self).get_instance(env, model, device)
         if not device:
             device = self._getDevice(model)
-        
+
         model['PrimaryPartition'] = device.isPrimary
         if device.isPrimary:
             model['PartitionType'] = self.DiskPartitionValues.PartitionType.Primary
@@ -78,12 +80,10 @@ class LMI_DiskPartition(ExtentProvider):
             model['PartitionType'] = self.DiskPartitionValues.PartitionType.Logical
 
         return model
-        
+
     class DiskPartitionValues(object):
         class PartitionType(object):
             Unknown = pywbem.Uint16(0)
             Primary = pywbem.Uint16(1)
             Extended = pywbem.Uint16(2)
             Logical = pywbem.Uint16(3)
-
-            

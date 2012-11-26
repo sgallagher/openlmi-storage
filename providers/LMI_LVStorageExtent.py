@@ -24,9 +24,10 @@ class LMI_LVStorageExtent(ExtentProvider):
     """
         Provider of LMI_LVStorageExtent class.
     """
-    
+
     def __init__(self, *args, **kwargs):
-        super(LMI_LVStorageExtent, self).__init__('LMI_LVStorageExtent', *args, **kwargs)
+        super(LMI_LVStorageExtent, self).__init__(
+                'LMI_LVStorageExtent', *args, **kwargs)
 
 
     def provides_device(self, device):
@@ -34,10 +35,11 @@ class LMI_LVStorageExtent(ExtentProvider):
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
         """
-        if  isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+        if  isinstance(device,
+                    pyanaconda.storage.devices.LVMLogicalVolumeDevice):
             return True
         return False
-    
+
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
@@ -48,14 +50,15 @@ class LMI_LVStorageExtent(ExtentProvider):
     def get_element_name(self, device):
         return device.lvname
 
-    def get_instance(self, env, model, device = None):
+    def get_instance(self, env, model, device=None):
         """
             Add LV-specific properties.
         """
-        model = super(LMI_LVStorageExtent, self).get_instance(env, model, device)
+        model = super(LMI_LVStorageExtent, self).get_instance(
+                env, model, device)
         if not device:
             device = self._getDevice(model)
-        
+
         model['UUID'] = device.uuid
 
         return model
