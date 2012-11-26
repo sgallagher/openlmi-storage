@@ -35,12 +35,12 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
             'PartitionType': pywbem.Uint16,
         }
         super(LMI_DiskPartitionConfigurationSetting, self).__init__(
-                classname="LMI_DiskPartitionConfigurationSetting",
+                setting_classname="LMI_DiskPartitionConfigurationSetting",
                 supported_properties=supported_properties,
                 *args, **kwargs)
 
     def get_configuration_id(self, device):
-        return "LMI:" + self.classname + ":" + device.path
+        return "LMI:" + self.setting_classname + ":" + device.path
 
     def get_configuration(self, device):
         setting = Setting(Setting.TYPE_CONFIGURATION,

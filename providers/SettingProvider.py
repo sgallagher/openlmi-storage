@@ -33,18 +33,18 @@ class SettingProvider(BaseProvider):
         
         The setting itself is represented by dictionary of key -> value.
         
-        Preconfigured instances are stored in /etc/openlmi/storage/settings/<classname>.ini
-        Persistent instances are stored in /var/lib/openlmi-storage/settings/<classname>.ini
+        Preconfigured instances are stored in /etc/openlmi/storage/settings/<setting_classname>.ini
+        Persistent instances are stored in /var/lib/openlmi-storage/settings/<setting_classname>.ini
     """
-    def __init__(self, classname, supported_properties, *args, **kwargs):
+    def __init__(self, setting_classname, supported_properties, *args, **kwargs):
         """
-            classname = name of CIM class, which we provide
+            setting_classname = name of CIM class, which we provide
             supported_properties = hash property_name -> constructor
                 constructor is a function which takes string argument
                 and returns CIM value. (i.e. pywbem.Uint16
                 or bool or string etc).
         """
-        self.classname = classname
+        self.setting_classname = setting_classname
         supported_properties['Caption'] = str
         supported_properties['ConfigurationName'] = str
         supported_properties['Description'] = str
@@ -76,7 +76,7 @@ class SettingProvider(BaseProvider):
         model.path.update({'InstanceID': None})
 
         # handle transient, persistent and preconfigured settings
-        settings = self.setting_manager.get_settings(self.classname)
+        settings = self.setting_manager.get_settings(self.setting_classname)
         for setting in settings.values():
             model['InstanceID'] = setting.id
             if keys_only:
@@ -98,7 +98,7 @@ class SettingProvider(BaseProvider):
             Return None if there is no such instance.
         """
         # find the setting in setting_manager
-        settings = self.setting_manager.get_settings(self.classname)
+        settings = self.setting_manager.get_settings(self.setting_classname)
         if settings.has_key(instance_id):
             return settings[instance_id]
 
@@ -222,7 +222,7 @@ class SettingProvider(BaseProvider):
                 setting[name] = None
 
 
-        self.setting_manager.set_setting(self.classname, setting)
+        self.setting_manager.set_setting(self.setting_classname, setting)
         return instance
 
     def delete_instance(self, env, instance_name):
@@ -261,7 +261,7 @@ class SettingProvider(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot delete not-changeable setting.")
 
-        self.setting_manager.delete_setting(self.classname, setting)
+        self.setting_manager.delete_setting(self.setting_classname, setting)
 
     def cim_method_clonesetting(self, env, object_name):
         """Implements LMI_DiskPartitionConfigurationSetting.CloneSetting()
@@ -281,7 +281,7 @@ class SettingProvider(BaseProvider):
         and a list of CIMParameter objects representing the output parameters
 
         Output parameters:
-        Clone -- (type REF (pywbem.CIMInstanceName(classname='CIM_StorageSetting', ...)) 
+        Clone -- (type REF (pywbem.CIMInstanceName(setting_classname='CIM_StorageSetting', ...)) 
             Created copy.
             
 
@@ -306,17 +306,17 @@ class SettingProvider(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find setting.")
 
-        instance_id = self.setting_manager.allocate_id(self.classname)
+        instance_id = self.setting_manager.allocate_id(self.setting_classname)
         print "instanceid = ", instance_id
         new_setting = Setting(Setting.TYPE_TRANSIENT, instance_id)
         for (key, value) in setting.items():
             new_setting[key] = value
-        self.setting_manager.set_setting(self.classname, new_setting)
+        self.setting_manager.set_setting(self.setting_classname, new_setting)
 
         out_params = []
         out_params += [pywbem.CIMParameter('Clone', type='reference',
                            value=pywbem.CIMInstanceName(
-                                   classname=self.classname,
+                                   classname=self.setting_classname,
                                    namespace=self.config.namespace,
                                    keybindings={'InstanceID' : instance_id}))]
         return (self.Values.CloneSetting.Success, out_params)
