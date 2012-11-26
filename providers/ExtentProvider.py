@@ -115,7 +115,7 @@ class ExtentProvider(DeviceProvider):
             total_blocks = device.partedDevice.length
             consumable_blocks = device.partedDevice.length
             if (device.format and isinstance(device.format,
-                    self.storage.formats.disklabel.DiskLabel)):
+                    pyanaconda.storage.formats.disklabel.DiskLabel)):
                 # reduce by partition table size
                 consumable_blocks -= self.get_partition_table_size(device.format)
         else:

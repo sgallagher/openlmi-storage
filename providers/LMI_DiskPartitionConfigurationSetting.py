@@ -78,6 +78,20 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
             return None
         return self.get_configuration(device)
 
+    def get_associated_element_name(self, instance_id):
+        """
+            Return CIMInstanceName for ElementSettingData association.
+            Return None if no such element exist. 
+        """
+        path = self.parse_setting_id(instance_id)
+        if not path:
+            return None
+
+        device = self.storage.devicetree.getDeviceByPath(path)
+        if not device:
+            return None
+
+        return self.manager.get_name_for_device(device)
 
 
     class Values(SettingProvider.Values):

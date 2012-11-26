@@ -99,6 +99,14 @@ class SettingProvider(BaseProvider):
         """
         return None
 
+    def get_associated_element_name(self, instance_id):
+        """
+            Return CIMInstanceName for ElementSettingData association.
+            Return None if no such element exist. 
+            Subclasses should override this method.
+        """
+        return None
+
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -361,4 +369,109 @@ class SettingProvider(BaseProvider):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
             Failed = pywbem.Uint32(2)
+
+
+class ElementSettingDataProvider(BaseProvider):
+    """
+        Implementation of CIM_ElementSettingData.
+        It uses functionality provided by SettingProvider.
+    """
+    def __init__(self, setting_provider,
+            managed_element_classname,
+            setting_data_classname,
+            *args, **kwargs):
+        self.setting_provider = setting_provider
+        self.managed_element_classname = managed_element_classname
+        self.setting_data_classname = setting_data_classname
+        super(ElementSettingDataProvider, self).__init__(*args, **kwargs)
+
+
+    def get_instance(self, env, model):
+        """
+            Provider implementation of GetInstance intrinsic method.
+        """
+        instance_id = model['InstanceID']
+        element_name = self.setting_provider.get_associated_element_name(
+                 instance_id)
+
+        if not element_name:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find the ManagedElement")
+
+        if element_name != model['ElementName']:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "The ManagedElement is not associated to given SettingData")
+
+        model['IsCurrent'] = pywbem.Uint16(1) # current
+
+    def enum_instances(self, env, model, keys_only):
+        """
+            Provider implementation of EnumerateInstances intrinsic method.
+        """
+        model.path.update({'ManagedElement': None, 'SettingData': None})
+        for setting in self.setting_provider.enumerate_configurations():
+            instance_id = setting.id
+            print "instance id:", instance_id
+            model['ManagedElement'] = self.setting_provider.get_associated_element_name(instance_id)
+            model['SettingData'] = pywbem.CIMInstanceName(
+                    classname=self.setting_data_classname,
+                    namespace=self.config.namespace,
+                    keybindings={'InstanceID' : instance_id})
+            if keys_only:
+                yield model
+            else:
+                yield self.get_instance(env, model)
+
+    def references(self, env, object_name, model, result_class_name, role,
+                               result_role, keys_only):
+        logger = env.get_logger()
+        logger.log_debug('Entering %s.references()' \
+                % self.__class__.__name__)
+        ch = env.get_cimom_handle()
+
+        # If you want to get references for free, implemented in terms 
+        # of enum_instances, just leave the code below unaltered.
+        if ch.is_subclass(object_name.namespace,
+                    sub=object_name.classname,
+                    super=self.managed_element_classname) or \
+                    ch.is_subclass(object_name.namespace,
+                               sub=object_name.classname,
+                               super=self.setting_data_classname):
+            return self.simple_refs(env, object_name, model,
+                          result_class_name, role, result_role, keys_only)
+
+
+class SettingHelperProvider(SettingProvider):
+    """
+        Provider of LMI_*Setting class for managed element classes which
+        implement SettingHelper.
+    """
+
+    def __init__(self, setting_helper, *args, **kwargs):
+        self.setting_helper = setting_helper
+        super(SettingHelperProvider, self).__init__(*args, **kwargs)
+
+    def enumerate_configurations(self):
+        """
+            Enumerate all instances of LMI_*Setting, which are attached 
+            to managed elements, i.e. are not transient, persistent nor
+            preconfigured.
+            It returns setting_helper.enumerate_settings.
+        """
+        return self.setting_helper.enumerate_settings(self)
+
+    def get_configuration_for_id(self, instance_id):
+        """
+            Return Setting instance for given instance_id.
+            Return None if no such Setting is found.
+        """
+        return self.setting_helper.get_setting_for_id(self, instance_id)
+
+    def get_associated_element_name(self, instance_id):
+        """
+            Return CIMInstanceName for ElementSettingData association.
+            Return None if no such element exist.
+        """
+        return self.setting_helper.get_associated_element_name(
+                self, instance_id)
 

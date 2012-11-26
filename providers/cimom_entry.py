@@ -45,6 +45,7 @@ from LMI_LVBasedOn import LMI_LVBasedOn
 from LMI_LVAllocatedFromStoragePool import LMI_LVAllocatedFromStoragePool
 from LMI_VGAssociatedComponentExtent import LMI_VGAssociatedComponentExtent
 from LMI_DiskPartitionConfigurationSetting import LMI_DiskPartitionConfigurationSetting
+from SettingProvider import ElementSettingDataProvider
 
 import pyanaconda.storage
 import pyanaconda.platform
@@ -124,8 +125,14 @@ def get_providers(env):
     providers['LMI_VGStoragePool'] = provider
 
     # settings
-    provider = LMI_DiskPartitionConfigurationSetting(**opts)    #IGNORE:W0142
-    providers['LMI_DiskPartitionConfigurationSetting'] = provider
+    setting_provider = LMI_DiskPartitionConfigurationSetting(**opts)    #IGNORE:W0142
+    providers['LMI_DiskPartitionConfigurationSetting'] = setting_provider
+    assoc_provider = ElementSettingDataProvider(#IGNORE:W0142
+            setting_provider=setting_provider,
+            managed_element_classname="CIM_DiskPartition",
+            setting_data_classname="LMI_DiskPartitionConfigurationSetting",
+            **opts)
+    providers['LMI_DiskPartitionElementSettingData'] = assoc_provider
 
     # Associations
     provider = LMI_PartitionBasedOn(**opts)    #IGNORE:W0142
