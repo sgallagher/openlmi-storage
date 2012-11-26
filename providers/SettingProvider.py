@@ -67,6 +67,38 @@ class SettingProvider(BaseProvider):
         """
         return []
 
+    def parse_setting_id(self, instance_id):
+        """
+            InstanceID should have format LMI:<classname>:<myid>.
+            This method checks, that the format is OK and returns the myid.
+            It returns None if the format is not OK.
+            This method can be used in get_configuration_for_id.
+        """
+        parts = instance_id.split(":")
+        if len(parts) != 3:
+            return None
+        if parts[0] != "LMI":
+            return None
+        if parts[1] != self.setting_classname:
+            return None
+        return parts[2]
+
+    def create_setting_id(self, myid):
+        """
+            InstanceID should have format LMI:<classname>:<ID>.
+            This method returns string LMI:<classname>:<myid>
+        """
+        return "LMI:" + self.setting_classname + ":" + myid
+
+    def get_configuration_for_id(self, instance_id):
+        """
+            Return Setting instance for given instance_id.
+            Return None if no such Setting is found. 
+            
+            Subclasses should override this method.
+        """
+        return None
+
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -103,11 +135,7 @@ class SettingProvider(BaseProvider):
             return settings[instance_id]
 
         # find the setting in configurations
-        # TODO: this can be probably optimized
-        for s in self.enumerate_configurations():
-            if s.id == instance_id:
-                return s
-        return None
+        return self.get_configuration_for_id(instance_id)
 
     def get_instance(self, env, model, setting=None):
         """
@@ -333,3 +361,4 @@ class SettingProvider(BaseProvider):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
             Failed = pywbem.Uint32(2)
+

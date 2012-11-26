@@ -39,12 +39,9 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
                 supported_properties=supported_properties,
                 *args, **kwargs)
 
-    def get_configuration_id(self, device):
-        return "LMI:" + self.setting_classname + ":" + device.path
-
     def get_configuration(self, device):
         setting = Setting(Setting.TYPE_CONFIGURATION,
-                self.get_configuration_id(device))
+                self.create_setting_id(device.path))
         setting['Bootable'] = str(device.bootable)
         flag = device.getFlag(parted.PARTITION_HIDDEN)
         if flag:
@@ -60,13 +57,27 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
         setting['ElementName'] = setting.id
         return setting
 
-
     def enumerate_configurations(self):
         """
             Enumerate all instances attached to partitions.
         """
         for device in self.storage.partitions:
             yield self.get_configuration(device)
+
+    def get_configuration_for_id(self, instance_id):
+        """
+            Return Setting instance for given instance_id.
+            Return None if no such Setting is found.
+        """
+        path = self.parse_setting_id(instance_id)
+        if not path:
+            return None
+
+        device = self.storage.devicetree.getDeviceByPath(path)
+        if not device:
+            return None
+        return self.get_configuration(device)
+
 
 
     class Values(SettingProvider.Values):
