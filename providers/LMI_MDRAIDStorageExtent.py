@@ -105,7 +105,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
         """
         parents = self.get_base_devices(device)
         # find all parents and get their redundancy
-        redundancies = map(self._findRedundancy, parents)
+        redundancies = map(self._find_redundancy, parents)
         if (device.level == 0):
             # iteratively call self._getRedundancy0(r1, r2), ...
             final_redundancy = reduce(self._getRedundancy0, redundancies)
@@ -137,6 +137,6 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
         model = super(LMI_MDRAIDStorageExtent, self).get_instance(
                 env, model, device)
         if not device:
-            device = self._getDevice(model)
+            device = self._get_device(model)
         model['UUID'] = device.uuid
         return model

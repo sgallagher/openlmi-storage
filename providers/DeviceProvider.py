@@ -103,7 +103,7 @@ class DeviceProvider(BaseProvider):
             Any specific DeviceProviderSubclasses (e.g. RAID) must override
             this method.
         """
-        # assume linar device, i.e. a data is either on A or on B
+        # assume linear device, i.e. a data is either on A or on B
         # hence data_redundancy is the minimum of both
         data_redundancy = min(a.data_dedundancy, b.data_dedundancy)
         # assume the worst
@@ -120,7 +120,7 @@ class DeviceProvider(BaseProvider):
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 
-    def _findRedundancy(self, device):
+    def _find_redundancy(self, device):
         """
             Discover redundancy of given StorageDevice.
             It uses ProviderManager to do so.
@@ -133,12 +133,12 @@ class DeviceProvider(BaseProvider):
 
     def get_redundancy(self, device):
         """
-            Returns redundancy characterictics for given Anaconda StorageDevice.
+            Returns redundancy characteristics for given Anaconda StorageDevice.
         """
         parents = self.get_base_devices(device)
         if len(parents) > 0:
             # find all parents and get their redundancy
-            redundancies = map(self._findRedundancy, parents)
+            redundancies = map(self._find_redundancy, parents)
             # iteratively call self._getCommonRedundancy(r1, r2), ...
             final_redundancy = reduce(self._getCommonRedundancy, redundancies)
         else:

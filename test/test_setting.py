@@ -38,10 +38,11 @@ class TestSettings(StorageTestBase):
         # find an instance we will clone
         settings = cls.wbemconnection.EnumerateInstanceNames('LMI_DiskPartitionConfigurationSetting')        
         if len(settings) < 1:
-            cls.skipTest("There is no LMI_DiskPartitionConfigurationSetting on system. Add a partition!")
+            raise unittest.SkipTest("There is no LMI_DiskPartitionConfigurationSetting on system. Add a partition!")
         cls.master = settings[0]
 
-    def create_clone(self):        
+    def create_clone(self):
+        """ Create and return a clone of master. """
         (ret, outvars) = self.wbemconnection.InvokeMethod(
                 'CloneSetting',
                 self.master)

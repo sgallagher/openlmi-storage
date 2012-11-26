@@ -93,6 +93,10 @@ class SettingProvider(BaseProvider):
                 yield self.get_instance(env, model, setting)
 
     def find_instance(self, instance_id):
+        """
+            Find an Setting instance with given InstanceID and return it.
+            Return None if there is no such instance.
+        """
         # find the setting in setting_manager
         settings = self.setting_manager.get_settings(self.classname)
         if settings.has_key(instance_id):
@@ -133,6 +137,10 @@ class SettingProvider(BaseProvider):
         return model
 
     def string_to_bool(self, value):
+        """
+            Convert a string to boolean value.
+            '1', 'true' and 'True' are True, the rest is False.
+        """
         if value == 1 or value == "true" or value == "True":
             return True
         elif value == 0 or value == "false" or value == "False":
@@ -181,7 +189,7 @@ class SettingProvider(BaseProvider):
 
         if (setting.type == Setting.TYPE_CONFIGURATION
                 or setting.type == Setting.TYPE_PRECONFIGURED):
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot modify not-changeable setting.")
 
         for name in instance.iterkeys():
@@ -250,7 +258,7 @@ class SettingProvider(BaseProvider):
 
         if (setting.type == Setting.TYPE_CONFIGURATION
                 or setting.type == Setting.TYPE_PRECONFIGURED):
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot delete not-changeable setting.")
 
         self.setting_manager.delete_setting(self.classname, setting)

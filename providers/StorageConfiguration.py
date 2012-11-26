@@ -21,6 +21,12 @@ import ConfigParser
 import socket
 
 class StorageConfiguration(object):
+    """
+        OpenLMI configuration file. By default, it resides in
+        /etc/opelmi/storage/storage.ini.
+        
+        There should be only one instance of this class.
+    """
 
     CONFIG_PATH = '/etc/openlmi/storage/'
     CONFIG_FILE = CONFIG_PATH + 'storage.ini'
@@ -34,6 +40,7 @@ class StorageConfiguration(object):
     }
 
     def __init__(self):
+        """ Initialize and load a configuration file."""
         self.config = ConfigParser.SafeConfigParser(defaults=self.defaults)
         self.load()
 
@@ -47,13 +54,16 @@ class StorageConfiguration(object):
             self.config.add_section('common')
 
     def get_namespace(self):
+        """ Return namespace of OpenLMI storage provider."""
         return self.config.get('common', 'namespace')
     namespace = property(get_namespace)
 
     def get_system_class_name(self):
+        """ Return SystemClassName of OpenLMI storage provider."""
         return self.config.get('common', 'systemclassname')
     system_class_name = property(get_system_class_name)
 
     def get_system_name(self):
+        """ Return SystemName of OpenLMI storage provider."""
         return socket.getfqdn()
     system_name = property(get_system_name)

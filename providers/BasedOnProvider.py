@@ -23,7 +23,7 @@ from BaseProvider import BaseProvider
 class BasedOnProvider(BaseProvider):
     """
         Base of all BasedOn providers.
-        It should handle everyhting, subclasses just need to override
+        It should handle everything, subclasses just need to override
         enumerate_devices.
     """
     def __init__(self, *args, **kwargs):
@@ -46,7 +46,8 @@ class BasedOnProvider(BaseProvider):
         for device in self.enumerate_devices():
             provider = self.manager.get_provider_for_device(device)
             if not provider:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Cannot find provider for device " + device.path)
             for base in provider.get_base_devices(device):
                 model['Dependent'] = provider.get_name_for_device(device)
                 model['Antecedent'] = self.manager.get_name_for_device(base)
@@ -64,16 +65,19 @@ class BasedOnProvider(BaseProvider):
         if not device:
             device = self.manager.get_device_for_name(model['Dependent'])
         if not device:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Dependent device")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find Dependent device")
 
         if not base:
             base = self.manager.get_device_for_name(model['Antecedent'])
         if not base:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Antecedent device")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find Antecedent device")
 
         device_provider = self.manager.get_provider_for_name(model['Dependent'])
         if not (base in device_provider.get_base_devices(device)):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Antecedent is not related to Dependent device")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Antecedent is not related to Dependent device")
 
         return model
 

@@ -30,7 +30,7 @@ class ExtentProvider(DeviceProvider):
         self.classname = classname
         super(ExtentProvider, self).__init__(*args, **kwargs)
 
-    def _getDevice(self, object_name):
+    def _get_device(self, object_name):
         """
             Get Anaconda StorageDevice for given name, without any checks.
         """
@@ -59,7 +59,7 @@ class ExtentProvider(DeviceProvider):
             None if no device is found.
         """
         if self.provides_name(object_name):
-            return self._getDevice(object_name)
+            return self._get_device(object_name)
 
     def get_name_for_device(self, device):
         """
@@ -149,7 +149,7 @@ class ExtentProvider(DeviceProvider):
         if not self.provides_name(model):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
         if not device:
-            device = self._getDevice(model)
+            device = self._get_device(model)
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find the extent.")

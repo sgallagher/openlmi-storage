@@ -57,7 +57,7 @@ class LMI_LVStorageExtent(ExtentProvider):
         model = super(LMI_LVStorageExtent, self).get_instance(
                 env, model, device)
         if not device:
-            device = self._getDevice(model)
+            device = self._get_device(model)
 
         model['UUID'] = device.uuid
 

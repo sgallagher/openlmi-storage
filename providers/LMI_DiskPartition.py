@@ -69,7 +69,7 @@ class LMI_DiskPartition(ExtentProvider):
         """
         model = super(LMI_DiskPartition, self).get_instance(env, model, device)
         if not device:
-            device = self._getDevice(model)
+            device = self._get_device(model)
 
         model['PrimaryPartition'] = device.isPrimary
         if device.isPrimary:

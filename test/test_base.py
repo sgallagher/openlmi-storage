@@ -29,6 +29,11 @@ import pyudev
 import time
 
 class StorageTestBase(unittest.TestCase):
+    """
+        This is base class of OpenLMI storage tests.
+        It monitors all devices created between setUp and tearDown
+        and tries to remove them in tearDown.
+    """
     @classmethod
     def setUpClass(cls):
         cls.url = os.environ.get("LMI_STORAGE_URL", "https://localhost:5989")
@@ -73,7 +78,8 @@ class StorageTestBase(unittest.TestCase):
         # remove them in reverse order        
         while self.devices:
             device = self.devices.pop()
-            udev_device = pyudev.Device.from_device_file(self.udev_context, device)
+            udev_device = pyudev.Device.from_device_file(
+                    self.udev_context, device)
             print "Destroying %s:%s" % (device, udev_device.device_type)
 
             if udev_device.device_type == 'partition':
