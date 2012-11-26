@@ -32,7 +32,7 @@ class LMI_StorageExtent(ExtentProvider):
         super(LMI_StorageExtent, self).__init__('LMI_StorageExtent', *args, **kwargs)
 
 
-    def providesDevice(self, device):
+    def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
@@ -56,10 +56,10 @@ class LMI_StorageExtent(ExtentProvider):
             return True
         return False
     
-    def enumerateDevices(self):
+    def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
         """
         for device in self.storage.devices:
-            if self.providesDevice(device):
+            if self.provides_device(device):
                 yield device

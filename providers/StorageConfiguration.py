@@ -47,14 +47,14 @@ class StorageConfiguration(object):
         if not self.config.has_section('common'):
             self.config.add_section('common')
                             
-    def getNamespace(self):
+    def get_namespace(self):
         return self.config.get('common', 'namespace')
-    namespace = property(getNamespace)
+    namespace = property(get_namespace)
     
-    def getSystemClassName(self):
+    def get_system_class_name(self):
         return self.config.get('common', 'systemclassname')
-    systemClassName = property(getSystemClassName)
+    system_class_name = property(get_system_class_name)
     
-    def getSystemName(self):
+    def get_system_name(self):
         return socket.getfqdn()
-    systemName = property(getSystemName)
+    system_name = property(get_system_name)

@@ -37,25 +37,25 @@ class StorageTestBase(unittest.TestCase):
         cls.disks = os.environ.get("LMI_STORAGE_DISKS", "").split()
 
         cls.wbemconnection = pywbem.WBEMConnection(cls.url, (cls.username, cls.password))
-        
+
     def setUp(self):
-        self.startUdevMonitor()
-        
-    def startUdevMonitor(self):
-        self.udevContext = pyudev.Context()
-        self.udevMonitor = pyudev.Monitor.from_netlink(self.udevContext)
-        self.udevMonitor.filter_by('block')
-        self.udevObserver = pyudev.MonitorObserver(self.udevMonitor, self.udevEvent)
+        self.start_udev_monitor()
+
+    def start_udev_monitor(self):
+        self.udev_context = pyudev.Context()
+        self.udev_monitor = pyudev.Monitor.from_netlink(self.udev_context)
+        self.udev_monitor.filter_by('block')
+        self.udev_observer = pyudev.MonitorObserver(self.udev_monitor, self.udev_event)
         self.devices = []
-        self.udevObserver.start()
+        self.udev_observer.start()
 
-    def stopUdevMonitor(self):
-        self.udevObserver.stop()
+    def stop_udev_monitor(self):
+        self.udev_observer.stop()
 
-    def udevEvent(self, action, device):
+    def udev_event(self, action, device):
         if action == 'change':
             return
-        
+
         print "UDEV event:", action, device.device_node
         if action == 'add':
             self.devices.append(device.device_node)
@@ -63,7 +63,7 @@ class StorageTestBase(unittest.TestCase):
             if device.device_node in self.devices:
                 self.devices.remove(device.device_node)
 
-    def destroyCreated(self):
+    def destroy_created(self):
         """
             Destroy all devices created during the tests as recorded by the
             udev. It returns nr. of removed items.
@@ -73,62 +73,62 @@ class StorageTestBase(unittest.TestCase):
         # remove them in reverse order        
         while self.devices:
             device = self.devices.pop()
-            uDevice = pyudev.Device.from_device_file(self.udevContext, device)
-            print "Destroying %s:%s" % (device, uDevice.device_type)
-            
-            if uDevice.device_type == 'partition':
+            udev_device = pyudev.Device.from_device_file(self.udev_context, device)
+            print "Destroying %s:%s" % (device, udev_device.device_type)
+
+            if udev_device.device_type == 'partition':
                 count += 1
-                self.destroyMBR(uDevice.parent.device_node)
-            if uDevice.device_type == 'disk':
+                self.destroy_mbr(udev_device.parent.device_node)
+            if udev_device.device_type == 'disk':
                 # is it RAID?
                 try:
-                    if uDevice['MD_LEVEL']:
+                    if udev_device['MD_LEVEL']:
                         count += 1
-                        self.destroyMD(device)
+                        self.destroy_md(device)
                 except KeyError:
                     pass # it's not RATD
-                    
+
             #TODO: add LVM
         return count
-                            
-        
-    def destroyVG(self, vgname):
+
+
+    def destroy_vg(self, vgname):
         """
             Destroy given volume group, not using CIM.
             This method should be called when a test fails and wants to clean
             up its mess.
         """
-        return self.logRun(["vgremove", "-f", "/dev/mapper/" + vgname])
+        return self.log_run(["vgremove", "-f", "/dev/mapper/" + vgname])
 
-    def destroyMD(self, mdDeviceId):
+    def destroy_md(self, md_device_id):
         """
             Destroy given RAID, not using CIM.
             This method should be called when a test fails and wants to clean
             up its mess.
         """
-        return self.logRun(["test/tools/mdremove", mdDeviceId])
-    
-    def destroyMBR(self, diskDeviceId):
+        return self.log_run(["test/tools/mdremove", md_device_id])
+
+    def destroy_mbr(self, disk_device_id):
         """
             Destroy any partition table on given device.
             This method should be called when a test fails and wants to clean
             up its mess.
         """
-        return self.logRun(["test/tools/mbrremove", diskDeviceId])
-        
-    def restartCIM(self):
+        return self.log_run(["test/tools/mbrremove", disk_device_id])
+
+    def restart_cim(self):
         """
             Restart CIMOM
         """
-        ret = self.logRun(["systemctl", "restart", "sblim-sfcb.service"])
+        ret = self.log_run(["systemctl", "restart", "sblim-sfcb.service"])
         time.sleep(1)
         if ret == 0:
             self.wbemconnection = pywbem.WBEMConnection(self.url, (self.username, self.password))
         return ret
-        
-        
-        
-    def logRun(self, args):
+
+
+
+    def log_run(self, args):
         """
             Print arguments and run them.
             args must be prepared for subprocess.call()
@@ -145,5 +145,5 @@ class StorageTestBase(unittest.TestCase):
             Each test should clean after itself!
         """
         # try to destroy everything and restart CIMOM
-        if self.destroyCreated():
-            self.restartCIM()
+        if self.destroy_created():
+            self.restart_cim()

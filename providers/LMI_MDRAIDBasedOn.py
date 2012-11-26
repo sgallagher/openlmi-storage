@@ -28,7 +28,7 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
         super(LMI_MDRAIDBasedOn, self).__init__(*args, **kwargs)
 
 
-    def enumerateDevices(self):
+    def enumerate_devices(self):
         """
             Enumerate all devices, which are in this association as
             Dependent ones, i.e. all devices, which do not have any
@@ -40,9 +40,9 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
         model = super(LMI_MDRAIDBasedOn, self).get_instance(env, model, device, base)
         
         if not device:
-            device = self.manager.getDeviceForName(model['Dependent'])
+            device = self.manager.get_device_for_name(model['Dependent'])
         if not base:
-            base = self.manager.getDeviceForName(model['Antecedent'])
+            base = self.manager.get_device_for_name(model['Antecedent'])
         
         model['OrderIndex'] = pywbem.Uint16(device.parents.index(base) + 1)
         

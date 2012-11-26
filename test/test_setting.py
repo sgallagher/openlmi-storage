@@ -41,20 +41,20 @@ class TestSettings(StorageTestBase):
             cls.skipTest("There is no LMI_DiskPartitionConfigurationSetting on system. Add a partition!")
         cls.master = settings[0]
 
-    def createClone(self):        
+    def create_clone(self):        
         (ret, outvars) = self.wbemconnection.InvokeMethod(
                 'CloneSetting',
                 self.master)
         # check return parameters
         self.assertTrue(ret == 0)
-        clonePath = outvars['Clone']
-        self.assertTrue(clonePath)
-        clone = self.wbemconnection.GetInstance(clonePath)
+        clone_path = outvars['Clone']
+        self.assertTrue(clone_path)
+        clone = self.wbemconnection.GetInstance(clone_path)
         return clone
         
     def test_clone(self):
         """ Test that master.clone works as expected """
-        clone = self.createClone()
+        clone = self.create_clone()
         self.assertTrue(clone)
         
         # check the clone is the same as the master
@@ -73,9 +73,9 @@ class TestSettings(StorageTestBase):
         
     def test_modify_transient(self):
         """ Test changing of transient instance. """
-        clone = self.createClone()
+        clone = self.create_clone()
         self.assertTrue(clone)
-        clonePath = clone.path
+        clone_path = clone.path
         # change Bootable, ElementName and PartitionType to initial values
         # (we don't know what clone values are)
         clone['Bootable'] = False
@@ -83,7 +83,7 @@ class TestSettings(StorageTestBase):
         clone['ElementName'] = 'myElementName'
         self.wbemconnection.ModifyInstance(clone)
 
-        clone = self.wbemconnection.GetInstance(clonePath)
+        clone = self.wbemconnection.GetInstance(clone_path)
         self.assertTrue(clone)
         self.assertEqual(clone['Bootable'], False)
         self.assertEqual(clone['ElementName'], 'myElementName')
@@ -94,7 +94,7 @@ class TestSettings(StorageTestBase):
         clone['PartitionType'] = pywbem.Uint16(1)
         clone['ElementName'] = 'myElementName2'
         self.wbemconnection.ModifyInstance(clone)
-        clone = self.wbemconnection.GetInstance(clonePath)
+        clone = self.wbemconnection.GetInstance(clone_path)
         self.assertTrue(clone)
         self.assertEqual(clone['Bootable'], True)
         self.assertEqual(clone['ElementName'], 'myElementName2')
@@ -115,48 +115,48 @@ class TestSettings(StorageTestBase):
 
     def test_restart_transient(self):
         """ Test that CIMOM restart removes all transient. """
-        clone = self.createClone()
+        clone = self.create_clone()
         self.assertTrue(clone)
-        clonePath = clone.path
+        clone_path = clone.path
         
-        self.restartCIM()
+        self.restart_cim()
         
         self.assertRaises(pywbem.CIMError,
                           self.wbemconnection.GetInstance,
-                          clonePath)
+                          clone_path)
 
     def test_delete_transient(self):
         """ Test that transient config can be removed. """
-        clone = self.createClone()
+        clone = self.create_clone()
         self.assertTrue(clone)
-        clonePath = clone.path
+        clone_path = clone.path
         
-        self.wbemconnection.DeleteInstance(clonePath)
+        self.wbemconnection.DeleteInstance(clone_path)
         
         self.assertRaises(pywbem.CIMError,
                           self.wbemconnection.GetInstance,
-                          clonePath)
+                          clone_path)
 
     def test_delete_persistent(self):
         """ Test that persistent config can be removed. """
-        clone = self.createClone()
+        clone = self.create_clone()
         self.assertTrue(clone)
-        clonePath = clone.path
+        clone_path = clone.path
 
         # changeable - persistent -> clone is stored
         clone['ChangeableType'] = pywbem.Uint16(2)
         self.wbemconnection.ModifyInstance(clone)
         
-        self.wbemconnection.DeleteInstance(clonePath)        
+        self.wbemconnection.DeleteInstance(clone_path)        
         self.assertRaises(pywbem.CIMError,
                           self.wbemconnection.GetInstance,
-                          clonePath)
+                          clone_path)
                           
         # check the instance is gone also after restart
-        self.restartCIM()
+        self.restart_cim()
         self.assertRaises(pywbem.CIMError,
                           self.wbemconnection.GetInstance,
-                          clonePath)
+                          clone_path)
         
         
         
@@ -165,9 +165,9 @@ class TestSettings(StorageTestBase):
             Test that persistent setting can be modified and the changes
             survive CIMOM restart.
         """
-        clone = self.createClone()
+        clone = self.create_clone()
         self.assertTrue(clone)
-        clonePath = clone.path
+        clone_path = clone.path
         # change Bootable, ElementName and PartitionType to initial values
         # (we don't know what clone values are)
         clone['Bootable'] = False
@@ -180,8 +180,8 @@ class TestSettings(StorageTestBase):
         self.wbemconnection.ModifyInstance(clone)
         
         # restart the service and check the clone survived
-        self.restartCIM()
-        clone = self.wbemconnection.GetInstance(clonePath)
+        self.restart_cim()
+        clone = self.wbemconnection.GetInstance(clone_path)
         self.assertTrue(clone)
         self.assertEqual(clone['Bootable'], False)
         self.assertEqual(clone['ElementName'], 'myElementName')
@@ -194,7 +194,7 @@ class TestSettings(StorageTestBase):
         clone['ElementName'] = 'myElementName1'
         self.wbemconnection.ModifyInstance(clone)
 
-        clone = self.wbemconnection.GetInstance(clonePath)
+        clone = self.wbemconnection.GetInstance(clone_path)
         self.assertTrue(clone)
         self.assertEqual(clone['Bootable'], True)
         self.assertEqual(clone['ElementName'], 'myElementName1')
@@ -219,8 +219,8 @@ class TestSettings(StorageTestBase):
         self.wbemconnection.ModifyInstance(clone)
         
         # restart the service and check the clone survived
-        self.restartCIM()
-        clone = self.wbemconnection.GetInstance(clonePath)
+        self.restart_cim()
+        clone = self.wbemconnection.GetInstance(clone_path)
         self.assertTrue(clone)
         self.assertEqual(clone['Bootable'], True)
         self.assertEqual(clone['ElementName'], 'myElementName1')

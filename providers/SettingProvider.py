@@ -36,26 +36,26 @@ class SettingProvider(BaseProvider):
         Preconfigured instances are stored in /etc/openlmi/storage/settings/<classname>.ini
         Persistent instances are stored in /var/lib/openlmi-storage/settings/<classname>.ini
     """
-    def __init__(self, classname, supportedProperties, *args, **kwargs):
+    def __init__(self, classname, supported_properties, *args, **kwargs):
         """
             classname = name of CIM class, which we provide
-            supportedProperties = hash propertyName -> constructor
+            supported_properties = hash property_name -> constructor
                 constructor is a function which takes string argument
                 and returns CIM value. (i.e. pywbem.Uint16
                 or bool or string etc).
         """
         self.classname = classname
-        supportedProperties['Caption'] = str
-        supportedProperties['ConfigurationName'] = str
-        supportedProperties['Description'] = str
-        supportedProperties['ChangeableType'] = pywbem.Uint16
-        supportedProperties['ElementName'] = str
+        supported_properties['Caption'] = str
+        supported_properties['ConfigurationName'] = str
+        supported_properties['Description'] = str
+        supported_properties['ChangeableType'] = pywbem.Uint16
+        supported_properties['ElementName'] = str
         
-        self.supportedProperties = supportedProperties
+        self.supported_properties = supported_properties
         
         super(SettingProvider, self).__init__(*args, **kwargs)
 
-    def enumerateConfigurations(self):
+    def enumerate_configurations(self):
         """
             Enumerate all instances of LMI_*Setting, which are attached 
             to managed elements, i.e. are not transient, persistent nor
@@ -71,12 +71,12 @@ class SettingProvider(BaseProvider):
         """
             Provider implementation of EnumerateInstances intrinsic method.
             Subclasses should not override this method, they should override
-            enumerateConfigurations only.
+            enumerate_configurations only.
         """
         model.path.update({'InstanceID': None})
 
         # handle transient, persistent and preconfigured settings
-        settings = self.settingManager.getSettings(self.classname)
+        settings = self.setting_manager.get_settings(self.classname)
         for setting in settings.values():
             model['InstanceID'] = setting.id
             if keys_only:
@@ -85,23 +85,23 @@ class SettingProvider(BaseProvider):
                 yield self.get_instance(env, model, setting)
 
         # handle configurations
-        for setting in self.enumerateConfigurations():
+        for setting in self.enumerate_configurations():
             model['InstanceID'] = setting.id
             if keys_only:
                 yield model
             else:
                 yield self.get_instance(env, model, setting)
 
-    def findInstance(self, instanceId):
-        # find the setting in settingManager
-        settings = self.settingManager.getSettings(self.classname)
-        if settings.has_key(instanceId):
-            return settings[instanceId]
+    def find_instance(self, instance_id):
+        # find the setting in setting_manager
+        settings = self.setting_manager.get_settings(self.classname)
+        if settings.has_key(instance_id):
+            return settings[instance_id]
             
         # find the setting in configurations
         # TODO: this can be probably optimized
-        for s in self.enumerateConfigurations():
-            if s.id == instanceId:
+        for s in self.enumerate_configurations():
+            if s.id == instance_id:
                 return s
         return None
         
@@ -110,16 +110,16 @@ class SettingProvider(BaseProvider):
             Provider implementation of GetInstance intrinsic method.
         """
         if not setting:
-            setting = self.findInstance(model['InstanceID'])
+            setting = self.find_instance(model['InstanceID'])
             
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
         
-        # convert setting to model using supportedProperties
+        # convert setting to model using supported_properties
         for (name, value) in setting.items():
             if value is not None:
-                if self.supportedProperties.has_key(name):
-                    model[name] = self.supportedProperties[name](value)
+                if self.supported_properties.has_key(name):
+                    model[name] = self.supported_properties[name](value)
         
         if setting.type == Setting.TYPE_CONFIGURATION:
             model['ChangeableType'] = self.SettingProviderValues.ChangeableType.Not_Changeable_Transient
@@ -132,7 +132,7 @@ class SettingProvider(BaseProvider):
             
         return model
     
-    def stringToBool(self, value):
+    def string_to_bool(self, value):
         if value == 1 or value == "true" or value == "True":
             return True
         elif value == 0 or value == "false" or value == "False":
@@ -171,7 +171,7 @@ class SettingProvider(BaseProvider):
         logger.log_debug('Entering %s.set_instance()' \
                 % self.__class__.__name__)
         
-        setting = self.findInstance(instance['InstanceID'])
+        setting = self.find_instance(instance['InstanceID'])
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
         
@@ -185,7 +185,7 @@ class SettingProvider(BaseProvider):
         for name in instance.iterkeys():
             if name == 'InstanceID':
                 continue
-            if not self.supportedProperties.has_key(name):
+            if not self.supported_properties.has_key(name):
                 if instance[name]:
                     raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Property is not supported: " + name)
                 continue
@@ -210,7 +210,7 @@ class SettingProvider(BaseProvider):
                 setting[name] = None
                 
 
-        self.settingManager.setSetting(self.classname, setting)
+        self.setting_manager.set_setting(self.classname, setting)
         return instance
 
     def delete_instance(self, env, instance_name):
@@ -239,7 +239,7 @@ class SettingProvider(BaseProvider):
         logger.log_debug('Entering %s.delete_instance()' \
                 % self.__class__.__name__)
 
-        setting = self.findInstance(instance_name['InstanceID'])
+        setting = self.find_instance(instance_name['InstanceID'])
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
                 
@@ -247,7 +247,7 @@ class SettingProvider(BaseProvider):
                 or setting.type == Setting.TYPE_PRECONFIGURED):
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot delete not-changeable setting.")
         
-        self.settingManager.deleteSetting(self.classname, setting)
+        self.setting_manager.delete_setting(self.classname, setting)
         
     def cim_method_clonesetting(self, env, object_name):
         """Implements LMI_DiskPartitionConfigurationSetting.CloneSetting()
@@ -287,23 +287,23 @@ class SettingProvider(BaseProvider):
         logger.log_debug('Entering %s.cim_method_clonesetting()' \
                 % self.__class__.__name__)
 
-        setting = self.findInstance(object_name['InstanceID'])
+        setting = self.find_instance(object_name['InstanceID'])
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
 
-        instanceId = self.settingManager.allocateId(self.classname)
-        print "instanceid = ", instanceId
-        newSetting = Setting(Setting.TYPE_TRANSIENT, instanceId)
+        instance_id = self.setting_manager.allocate_id(self.classname)
+        print "instanceid = ", instance_id
+        new_setting = Setting(Setting.TYPE_TRANSIENT, instance_id)
         for (key, value) in setting.items():
-            newSetting[key] = value
-        self.settingManager.setSetting(self.classname, newSetting)
+            new_setting[key] = value
+        self.setting_manager.set_setting(self.classname, new_setting)
         
         out_params = []
         out_params+= [pywbem.CIMParameter('Clone', type='reference', 
                            value=pywbem.CIMInstanceName(
                                    classname=self.classname,
                                    namespace=self.config.namespace,
-                                   keybindings= {'InstanceID' : instanceId}))]
+                                   keybindings= {'InstanceID' : instance_id}))]
         return (self.SettingProviderValues.CloneSetting.Success, out_params)
 
     

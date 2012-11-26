@@ -17,7 +17,7 @@
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
 
-from openlmi.storage.StorageConfiguration import StorageConfiguration
+from StorageConfiguration import StorageConfiguration
 import unittest
 
 import socket
@@ -41,8 +41,8 @@ class TestConfig(unittest.TestCase):
         
         # cfg must return default values
         self.assertEqual(cfg.namespace, "root/cimv2")
-        self.assertEqual(cfg.systemClassName, "Linux_ComputerSystem")
-        self.assertEqual(cfg.systemName, socket.getfqdn())
+        self.assertEqual(cfg.system_class_name, "Linux_ComputerSystem")
+        self.assertEqual(cfg.system_name, socket.getfqdn())
         
     def test_empty(self):
         """ Test configuration when CONFIG_FILE is empty."""
@@ -55,8 +55,8 @@ class TestConfig(unittest.TestCase):
         
         # cfg must return default values
         self.assertEqual(cfg.namespace, "root/cimv2")
-        self.assertEqual(cfg.systemClassName, "Linux_ComputerSystem")
-        self.assertEqual(cfg.systemName, socket.getfqdn())
+        self.assertEqual(cfg.system_class_name, "Linux_ComputerSystem")
+        self.assertEqual(cfg.system_name, socket.getfqdn())
 
     def test_full(self):
         """ Test configuration when CONFIG_FILE is complete."""
@@ -69,8 +69,8 @@ class TestConfig(unittest.TestCase):
         
         # cfg must NOT return default values
         self.assertEqual(cfg.namespace, "root/my/namespace")
-        self.assertEqual(cfg.systemClassName, "My_ComputerSystem")
-        self.assertEqual(cfg.systemName, socket.getfqdn())
+        self.assertEqual(cfg.system_class_name, "My_ComputerSystem")
+        self.assertEqual(cfg.system_name, socket.getfqdn())
         
     def tearDown(self):
         pass

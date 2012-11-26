@@ -29,7 +29,7 @@ class LMI_GenericDiskPartition(ExtentProvider):
         super(LMI_GenericDiskPartition, self).__init__('LMI_GenericDiskPartition', *args, **kwargs)
 
 
-    def providesDevice(self, device):
+    def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
@@ -40,10 +40,10 @@ class LMI_GenericDiskPartition(ExtentProvider):
             return True
         return False
     
-    def enumerateDevices(self):
+    def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
         """
         for device in self.storage.partitions:
-            if self.providesDevice(device):
+            if self.provides_device(device):
                 yield device

@@ -50,7 +50,7 @@ import pyanaconda.storage
 import pyanaconda.platform
 import os
 
-def initAnaconda(env):
+def init_anaconda(env):
     logger = env.get_logger()
     
     logger.log_info("Initializing Anaconda")   
@@ -77,9 +77,9 @@ def get_providers(env):
     config.load()
     
     manager = ProviderManager()
-    settingManager = SettingManager(config)
-    settingManager.load()
-    storage = initAnaconda(env)
+    setting_manager = SettingManager(config)
+    setting_manager.load()
+    storage = init_anaconda(env)
     
     providers = {}
     
@@ -88,30 +88,30 @@ def get_providers(env):
             'storage': storage,
             'config': config,
             'manager': manager,
-            'settingManager': settingManager}    
+            'setting_manager': setting_manager}    
     # StorageDevice providers
     p = LMI_StorageExtent(**opts)
-    manager.addProvider(p)
+    manager.add_provider(p)
     providers['LMI_StorageExtent'] = p
 
     p = LMI_MDRAIDStorageExtent(**opts)
-    manager.addProvider(p)
+    manager.add_provider(p)
     providers['LMI_MDRAIDStorageExtent'] = p
 
     p = LMI_DiskPartition(**opts)
-    manager.addProvider(p)
+    manager.add_provider(p)
     providers['LMI_DiskPartition'] = p
     
     p = LMI_GenericDiskPartition(**opts)
-    manager.addProvider(p)
+    manager.add_provider(p)
     providers['LMI_GenericDiskPartition'] = p
 
     p = LMI_LVStorageExtent(**opts)
-    manager.addProvider(p)
+    manager.add_provider(p)
     providers['LMI_LVStorageExtent'] = p
 
     p = LMI_VGStoragePool(**opts)
-    manager.addProvider(p)
+    manager.add_provider(p)
     providers['LMI_VGStoragePool'] = p
 
     # settings

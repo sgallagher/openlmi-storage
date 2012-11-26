@@ -29,7 +29,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         super(LMI_PartitionBasedOn, self).__init__(*args, **kwargs)
 
 
-    def enumerateDevices(self):
+    def enumerate_devices(self):
         """
             Enumerate all devices, which are in this association as
             Dependent ones, i.e. all devices, which do not have any
@@ -37,7 +37,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         """
         return self.storage.partitions
     
-    def getLogicalPartitionStart(self, device, base):
+    def get_logical_partition_start(self, device, base):
         """
             Return starting address of logical's partition metadata.
             TODO: This method probably belongs to PartitionConfigurationService
@@ -58,45 +58,45 @@ class LMI_PartitionBasedOn(BasedOnProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find metadata for the partition: ' + device.path)
         return metadata.geometry.start
 
-    def getMBRInstance(self, model, device, base):
+    def get_mbr_instance(self, model, device, base):
         # primary partitions are simple
         if device.isPrimary or device.isExtended:
-            return self.getGPTInstance(model, device, base)
+            return self.get_gpt_instance(model, device, base)
         
         # now the logical ones
-        sectorSize = device.partedDevice.sectorSize
+        sector_size = device.partedDevice.sectorSize
         # startaddress is relative to the beginning of the extended partition
-        baseStart = base.partedPartition.geometry.start * sectorSize
+        base_start = base.partedPartition.geometry.start * sector_size
         # find the metadata
-        start = self.getLogicalPartitionStart(device, base) * sectorSize
-        end = device.partedPartition.geometry.end * sectorSize
+        start = self.get_logical_partition_start(device, base) * sector_size
+        end = device.partedPartition.geometry.end * sector_size
         
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
-        model['StartingAddress'] = pywbem.Uint64(start - baseStart)
-        model['EndingAddress'] = pywbem.Uint64(end - baseStart)
+        model['StartingAddress'] = pywbem.Uint64(start - base_start)
+        model['EndingAddress'] = pywbem.Uint64(end - base_start)
         return model
 
-    def getGPTInstance(self, model, device, base):
-        sectorSize = device.partedDevice.sectorSize
+    def get_gpt_instance(self, model, device, base):
+        sector_size = device.partedDevice.sectorSize
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
-        model['StartingAddress'] = pywbem.Uint64(device.partedPartition.geometry.start * sectorSize)
-        model['EndingAddress'] = pywbem.Uint64(device.partedPartition.geometry.end * sectorSize)
+        model['StartingAddress'] = pywbem.Uint64(device.partedPartition.geometry.start * sector_size)
+        model['EndingAddress'] = pywbem.Uint64(device.partedPartition.geometry.end * sector_size)
         return model
         
     def get_instance(self, env, model, device=None, base=None):
         model = super(LMI_PartitionBasedOn, self).get_instance(env, model, device, base)
         
         if not device:
-            device = self.manager.getDeviceForName(model['Dependent'])
+            device = self.manager.get_device_for_name(model['Dependent'])
         if not base:
-            base = self.manager.getDeviceForName(model['Antecedent'])
+            base = self.manager.get_device_for_name(model['Antecedent'])
         
         if device.isLogical:
-            model = self.getMBRInstance(model, device, base)
+            model = self.get_mbr_instance(model, device, base)
         elif base.format.labelType == 'msdos':
-            model = self.getMBRInstance(model, device, base)
+            model = self.get_mbr_instance(model, device, base)
         elif base.format.labelType == 'gpt':
-            model = self.getGPTInstance(model, device, base)
+            model = self.get_gpt_instance(model, device, base)
         return model
             
         

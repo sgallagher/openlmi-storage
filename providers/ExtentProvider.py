@@ -19,7 +19,7 @@
 
 from DeviceProvider import DeviceProvider
 import pywbem
-import pyanaconda.storage
+import pyanaconda.storage.formats
 
 class ExtentProvider(DeviceProvider):
     """
@@ -30,80 +30,80 @@ class ExtentProvider(DeviceProvider):
         self.classname = classname
         super(ExtentProvider, self).__init__(*args, **kwargs)
 
-    def _getDevice(self, objectName):
+    def _getDevice(self, object_name):
         """
             Get Anaconda StorageDevice for given name, without any checks.
         """
-        path = objectName['DeviceID']
+        path = object_name['DeviceID']
         device = self.storage.devicetree.getDeviceByPath(path)
         return device
 
-    def providesName(self, objectName):
+    def provides_name(self, object_name):
         """
             Returns True, if this class is provider for given CIM InstanceName.
         """
-        if objectName['SystemName'] != self.config.systemName:
-            return False
-        
-        if objectName['SystemCreationClassName'] != self.config.systemClassName:
+        if object_name['SystemName'] != self.config.system_name:
             return False
 
-        if objectName['CreationClassName'] != self.classname:
+        if object_name['SystemCreationClassName'] != self.config.system_class_name:
             return False
-        
+
+        if object_name['CreationClassName'] != self.classname:
+            return False
+
         return True
-        
-    def getDeviceForName(self, objectName):
+
+    def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
             None if no device is found.
         """
-        if self.providesName(objectName):
-            return self._getDevice(objectName)
+        if self.provides_name(object_name):
+            return self._getDevice(object_name)
 
-    def getNameForDevice(self, device):
+    def get_name_for_device(self, device):
         """
             Returns CIM InstanceName for given Anaconda StorageDevice.
             None if no device is found.
         """
         path = device.path
         name = pywbem.CIMInstanceName(self.classname,
-                namespace = self.config.namespace,
-                keybindings = {
-                    'SystemName' : self.config.systemName,
-                    'SystemCreationClassName' : self.config.systemClassName,
+                namespace=self.config.namespace,
+                keybindings={
+                    'SystemName' : self.config.system_name,
+                    'SystemCreationClassName' : self.config.system_class_name,
                     'CreationClassName' : self.classname,
                     'DeviceID': path
                 })
         return name
-        
-    def getElementName(self, device):
+
+    def get_element_name(self, device):
         """
             Return ElementName property value for given StorageDevice.
             Device path (/dev/sda) is the default.
         """
         return device.name
-    
-    def getExtentStatus(self, device):
+
+    def get_extent_status(self, device):
         """
             Return ExtentStatus property value for given StorageDevice.
             It must be array of int16 values.
         """
         return []
 
-    GPT_TABLE_SIZE = 34*2   # there are two copies
+    GPT_TABLE_SIZE = 34 * 2   # there are two copies
     MBR_TABLE_SIZE = 1
-    def getPartitionTableSize(self, format):
+    def get_partition_table_size(self, fmt):
         """
             Return size of partition table (in blocks) for given Anaconda
             DiskLabel instance.
         """
-        if format.labelType == "gpt":
+        if fmt.labelType == "gpt":
             return self.GPT_TABLE_SIZE
-        if format.labelType == "msdos":
+        if fmt.labelType == "msdos":
             return self.MBR_TABLE_SIZE
-    
-    def getSize(self, device):
+
+    def get_size(self, device):
         """
             Return (BlockSize, NumberOfBlocks, ConsumableBlocks) properties
             for given StorageDevice.
@@ -111,25 +111,25 @@ class ExtentProvider(DeviceProvider):
             The ConsumableBlocks should be reduced by partition table size.
         """
         if device.partedDevice:
-            blockSize = pywbem.Uint64(device.partedDevice.sectorSize)
-            totalBlocks = device.partedDevice.length
-            consumableBlocks = device.partedDevice.length
+            block_size = pywbem.Uint64(device.partedDevice.sectorSize)
+            total_blocks = device.partedDevice.length
+            consumable_blocks = device.partedDevice.length
             if device.format and isinstance(device.format, pyanaconda.storage.formats.disklabel.DiskLabel):
                 # reduce by partition table size
-                consumableBlocks -= self.getPartitionTableSize(device.format)
+                consumable_blocks -= self.get_partition_table_size(device.format)
         else:
-            blockSize = None
-            totalBlocks = None
-            consumableBlocks = None
-        return (blockSize, totalBlocks, consumableBlocks)
-        
-    def getPrimordial(self, device):
+            block_size = None
+            total_blocks = None
+            consumable_blocks = None
+        return (block_size, total_blocks, consumable_blocks)
+
+    def get_primordial(self, device):
         """
             Returns True, if given StorageDevice is primordial.
         """
         return False
-    
-    def getDiscriminator(self, device):
+
+    def get_discriminator(self, device):
         """
             Returns ExtentDiscriminator property value for given StorageDevice.
             It must return array of strings.
@@ -139,58 +139,58 @@ class ExtentProvider(DeviceProvider):
             d.append(self.ExtentProviderValues.Discriminator.Pool_Component)
         return d
 
-    def get_instance(self, env, model, device = None):
+    def get_instance(self, env, model, device=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It fills common StorageExtent properties.
         """
-        if not self.providesName(model):
+        if not self.provides_name(model):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
         if not device:
             device = self._getDevice(model)
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find the extent.")
-        
-        model['ElementName'] = self.getElementName(device)
+
+        model['ElementName'] = self.get_element_name(device)
         model['NameNamespace'] = self.ExtentProviderValues.NameNamespace.OS_Device_Namespace
         model['NameFormat'] = self.ExtentProviderValues.NameFormat.OS_Device_Name
         model['Name'] = device.path
-        
-        extentStatus = self.getExtentStatus(device)
-        model['ExtentStatus'] = pywbem.CIMProperty(name='ExtentStatus', value=extentStatus, type='uint16', array_size=len(extentStatus), is_array=True)
-        
-        operationalStatus = self.getStatus(device)
-        model['OperationalStatus'] = pywbem.CIMProperty(name='OperationalStatus', value=operationalStatus, type='uint16', array_size=len(operationalStatus), is_array=True)
-        
-        (blockSize, totalBlocks, consumableBlocks) = self.getSize(device)
-        if blockSize:
-            model['BlockSize'] = pywbem.Uint64(blockSize)
-        if totalBlocks:
-            model['NumberOfBlocks'] = pywbem.Uint64(totalBlocks)
-        if consumableBlocks:
-            model['ConsumableBlocks'] = pywbem.Uint64(consumableBlocks)
-            
-        redundancy = self.getRedundancy(device)
-        model['NoSinglePointOfFailure'] = redundancy.noSinglePointOfFailure
-        model['DataRedundancy'] = pywbem.Uint16(redundancy.dataRedundancy)
-        model['PackageRedundancy'] = pywbem.Uint16(redundancy.packageRedundancy)
-        model['ExtentStripeLength'] = pywbem.Uint16(redundancy.stripeLength)
-            
+
+        extent_status = self.get_extent_status(device)
+        model['ExtentStatus'] = pywbem.CIMProperty(name='ExtentStatus', value=extent_status, type='uint16', array_size=len(extent_status), is_array=True)
+
+        operational_status = self.get_status(device)
+        model['OperationalStatus'] = pywbem.CIMProperty(name='OperationalStatus', value=operational_status, type='uint16', array_size=len(operational_status), is_array=True)
+
+        (block_size, total_blocks, consumable_blocks) = self.get_size(device)
+        if block_size:
+            model['BlockSize'] = pywbem.Uint64(block_size)
+        if total_blocks:
+            model['NumberOfBlocks'] = pywbem.Uint64(total_blocks)
+        if consumable_blocks:
+            model['ConsumableBlocks'] = pywbem.Uint64(consumable_blocks)
+
+        redundancy = self.get_redundancy(device)
+        model['NoSinglePointOfFailure'] = redundancy.no_single_point_of_failure
+        model['DataRedundancy'] = pywbem.Uint16(redundancy.data_dedundancy)
+        model['PackageRedundancy'] = pywbem.Uint16(redundancy.package_redundancy)
+        model['ExtentStripeLength'] = pywbem.Uint16(redundancy.stripe_length)
+
         # TODO: add DeltaReservation (mandatory in SMI-S)
-        
-        model['Primordial'] = self.getPrimordial(device)
-        
-        discriminator = self.getDiscriminator(device)
+
+        model['Primordial'] = self.get_primordial(device)
+
+        discriminator = self.get_discriminator(device)
         model['ExtentDiscriminator'] = pywbem.CIMProperty(name='ExtentDiscriminator', value=discriminator, type='string', array_size=len(discriminator), is_array=True)
-        
+
         return model
-        
-    def enumerateDevices(self):
+
+    def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
         """
         pass
-    
+
 
     def enum_instances(self, env, model, keys_only):
         """Enumerate instances.
@@ -216,9 +216,9 @@ class ExtentProvider(DeviceProvider):
         """
         model.path.update({'CreationClassName': None, 'SystemName': None,
             'DeviceID': None, 'SystemCreationClassName': None})
-        
-        for device in self.enumerateDevices():
-            name = self.getNameForDevice(device)
+
+        for device in self.enumerate_devices():
+            name = self.get_name_for_device(device)
             model['SystemName'] = name['SystemName']
             model['SystemCreationClassName'] = name['SystemCreationClassName']
             model['CreationClassName'] = name['CreationClassName']
@@ -239,7 +239,7 @@ class ExtentProvider(DeviceProvider):
             NodeWWN = pywbem.Uint16(6)
             SNVM = pywbem.Uint16(7)
             OS_Device_Namespace = pywbem.Uint16(8)
-            
+
         class NameFormat(object):
             Unknown = pywbem.Uint16(0)
             Other = pywbem.Uint16(1)
@@ -254,7 +254,7 @@ class ExtentProvider(DeviceProvider):
             EUI64 = pywbem.Uint16(10)
             T10VID = pywbem.Uint16(11)
             OS_Device_Name = pywbem.Uint16(12)
-            
+
         class ExtentStatus(object):
             Other = pywbem.Uint16(0)
             Unknown = pywbem.Uint16(1)
@@ -297,10 +297,10 @@ class ExtentProvider(DeviceProvider):
             Reserved_for_Sparing = pywbem.Uint16(17)
             # DMTF_Reserved = ..
             # Vendor_Reserved = 32768..65535
-            
+
         class Discriminator(object):
             Pool_Component = 'SNIA:PoolComponent'
             Composite = 'SNIA:Composite'
             Imported = 'SNIA:Imported'
             Allocated = 'SNIA:Allocated'
-            
+

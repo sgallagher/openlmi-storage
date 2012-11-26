@@ -37,36 +37,36 @@ class DeviceProvider(BaseProvider):
             Register at given ProviderManager.
         """
         super(DeviceProvider, self).__init__(*args, **kwargs)
-        self.manager.addProvider(self)
+        self.manager.add_provider(self)
         
-    def providesName(self, objectName):
+    def provides_name(self, object_name):
         """
             Returns True, if this class is provider for given CIM InstanceName.
         """
         return False
 
-    def providesDevice(self, device):
+    def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
         """
         return False
     
-    def getDeviceForName(self, objectName):
+    def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
             None if no device is found.
         """
         return None
         
-    def getNameForDevice(self, device):
+    def get_name_for_device(self, device):
         """
             Returns CIM InstanceName for given Anaconda StorageDevice.
             None if no device is found.
         """
         return None
         
-    def getStatus(self, device):
+    def get_status(self, device):
         """
             Returns OperationalStatus for given Anaconda StorageDevice.
             It combines statuses of all parent devices.
@@ -74,17 +74,17 @@ class DeviceProvider(BaseProvider):
             statuses.
         """
         status = set()
-        parents = self.getBaseDevices(device)
+        parents = self.get_base_devices(device)
         if len(parents) > 0:
             for parent in parents:
-                parentProvider = self.manager.getProviderForDevice(parent)
-                parentStatus = parentProvider.getStatus(parent)
-                status.update(parentStatus)
+                parent_provider = self.manager.get_provider_for_device(parent)
+                parent_status = parent_provider.get_status(parent)
+                status.update(parent_status)
         else:
             status.add(self.DeviceProviderValues.OperationalStatus.OK)
         return list(status)
 
-    def getBaseDevices(self, device):
+    def get_base_devices(self, device):
         """
             Return iterable with base devices for given StorageDevice.
             Base devices are StorageDevices, that the given StorageDevice
@@ -104,62 +104,62 @@ class DeviceProvider(BaseProvider):
             this method.
         """
         # assume linar device, i.e. a data is either on A or on B
-        # hence dataRedundancy is the minimum of both
-        dataRedundancy = min(a.dataRedundancy, b.dataRedundancy)
+        # hence data_redundancy is the minimum of both
+        data_redundancy = min(a.data_dedundancy, b.data_dedundancy)
         # assume the worst
-        packageRedundancy = min(a.packageRedundancy, b.packageRedundancy)
+        package_redundancy = min(a.package_redundancy, b.package_redundancy)
         # both NoSinglePointOfFailure must be true to be the result true
-        noSinglePointOfFailure= a.noSinglePointOfFailure and b.noSinglePointOfFailure
+        no_single_point_of_failure= a.no_single_point_of_failure and b.no_single_point_of_failure
         #  we don't know if the data are on A or B, so assume the worst
-        stripeLength = min(a.stripeLength, b.stripeLength)
+        stripe_length = min(a.stripe_length, b.stripe_length)
         
-        return self.Redundancy(noSinglePointOfFailure = noSinglePointOfFailure,
-                               dataRedundancy = dataRedundancy,
-                               packageRedundancy = packageRedundancy,
-                               stripeLength = stripeLength)
+        return self.Redundancy(no_single_point_of_failure = no_single_point_of_failure,
+                               data_redundancy = data_redundancy,
+                               package_redundancy = package_redundancy,
+                               stripe_length = stripe_length)
 
     def _findRedundancy(self, device):
         """
             Discover redundancy of given StorageDevice.
             It uses ProviderManager to do so.
         """
-        provider = self.manager.getProviderForDevice(device)
+        provider = self.manager.get_provider_for_device(device)
         if not provider:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
-        return provider.getRedundancy(device)
+        return provider.get_redundancy(device)
 
-    def getRedundancy(self, device):
+    def get_redundancy(self, device):
         """
             Returns redundancy characterictics for given Anaconda StorageDevice.
         """
-        parents = self.getBaseDevices(device)
+        parents = self.get_base_devices(device)
         if len(parents) > 0:
             # find all parents and get their redundancy
             redundancies = map(self._findRedundancy, parents)
             # iteratively call self._getCommonRedundancy(r1, r2), ...
-            finalRedundancy = reduce(self._getCommonRedundancy, redundancies)
+            final_redundancy = reduce(self._getCommonRedundancy, redundancies)
         else:
             # this device has no parents, assume it is simple disk
-            finalRedundancy = self.Redundancy(
-                    noSinglePointOfFailure = False,
-                    dataRedundancy = 1,
-                    packageRedundancy = 0,
-                    stripeLength = 1)
-        return finalRedundancy
+            final_redundancy = self.Redundancy(
+                    no_single_point_of_failure = False,
+                    data_redundancy=1,
+                    package_redundancy=0,
+                    stripe_length=1)
+        return final_redundancy
     
     class Redundancy(object):
         """
             Class representing redundancy characteristics of a StorageExtent
             device, i.e. both StorageExtent and StoragePool
         """
-        def __init__(self, noSinglePointOfFailure = False,
-                     dataRedundancy = 1,
-                     packageRedundancy = 0,
-                     stripeLength = 1):
-            self.noSinglePointOfFailure = noSinglePointOfFailure
-            self.dataRedundancy = dataRedundancy
-            self.packageRedundancy = packageRedundancy
-            self.stripeLength = stripeLength
+        def __init__(self, no_single_point_of_failure=False,
+                     data_redundancy=1,
+                     package_redundancy=0,
+                     stripe_length=1):
+            self.no_single_point_of_failure = no_single_point_of_failure
+            self.data_dedundancy = data_redundancy
+            self.package_redundancy = package_redundancy
+            self.stripe_length = stripe_length
             
     class DeviceProviderValues(object):
         class OperationalStatus(object):

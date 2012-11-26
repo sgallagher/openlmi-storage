@@ -30,7 +30,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
         super(LMI_MDRAIDStorageExtent, self).__init__('LMI_MDRAIDStorageExtent', *args, **kwargs)
 
 
-    def providesDevice(self, device):
+    def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
@@ -39,7 +39,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
             return True
         return False
     
-    def enumerateDevices(self):
+    def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
         """
@@ -53,75 +53,75 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
         """
         # data is spread on all devices -> DataRedundancy is sum of base DataRedundancies
         # PackageRedundancy is the minimum of PackageRedundancies
-        dataRedundancy = min(a.dataRedundancy, b.dataRedundancy)
-        packageRedundancy = min(a.packageRedundancy, b.packageRedundancy)
-        noSinglePointOfFailure = a.noSinglePointOfFailure and b.noSinglePointOfFailure
-        stripeLength = a.stripeLength + b.stripeLength
+        data_dedundancy = min(a.data_dedundancy, b.data_dedundancy)
+        package_redundancy = min(a.package_redundancy, b.package_redundancy)
+        no_single_point_of_failure = a.no_single_point_of_failure and b.no_single_point_of_failure
+        stripe_length = a.stripe_length + b.stripe_length
         
-        return self.Redundancy(noSinglePointOfFailure = noSinglePointOfFailure,
-                               dataRedundancy = dataRedundancy,
-                               packageRedundancy = packageRedundancy,
-                               stripeLength = stripeLength)
+        return self.Redundancy(no_single_point_of_failure = no_single_point_of_failure,
+                               data_dedundancy = data_dedundancy,
+                               package_redundancy = package_redundancy,
+                               stripe_length = stripe_length)
 
     def _getRedundancy1(self, a, b):
         """
             Return the combined data redundancy characteristics for
             two devices combined in RAID1.
         """
-        dataRedundancy = a.dataRedundancy + b.dataRedundancy
-        packageRedundancy = a.packageRedundancy + b.packageRedundancy
-        noSinglePointOfFailure = True
-        stripeLength = min(a.stripeLength, b.stripeLength)
+        data_dedundancy = a.data_dedundancy + b.data_dedundancy
+        package_redundancy = a.package_redundancy + b.package_redundancy
+        no_single_point_of_failure = True
+        stripe_length = min(a.stripe_length, b.stripe_length)
         
-        return self.Redundancy(noSinglePointOfFailure = noSinglePointOfFailure,
-                               dataRedundancy = dataRedundancy,
-                               packageRedundancy = packageRedundancy,
-                               stripeLength = stripeLength)
+        return self.Redundancy(no_single_point_of_failure = no_single_point_of_failure,
+                               data_dedundancy = data_dedundancy,
+                               package_redundancy = package_redundancy,
+                               stripe_length = stripe_length)
         
     def _getRedundancy5(self, a, b):
         """
             Return the combined data redundancy characteristics for
             two devices combined in RAID5.
         """
-        dataRedundancy = min(a.dataRedundancy, b.dataRedundancy)
-        packageRedundancy = min(a.packageRedundancy, b.packageRedundancy)
-        noSinglePointOfFailure = True
-        stripeLength = a.stripeLength + b.stripeLength
+        data_dedundancy = min(a.data_dedundancy, b.data_dedundancy)
+        package_redundancy = min(a.package_redundancy, b.package_redundancy)
+        no_single_point_of_failure = True
+        stripe_length = a.stripe_length + b.stripe_length
         
-        return self.Redundancy(noSinglePointOfFailure = noSinglePointOfFailure,
-                               dataRedundancy = dataRedundancy,
-                               packageRedundancy = packageRedundancy,
-                               stripeLength = stripeLength)
+        return self.Redundancy(no_single_point_of_failure = no_single_point_of_failure,
+                               data_dedundancy = data_dedundancy,
+                               package_redundancy = package_redundancy,
+                               stripe_length = stripe_length)
         
-    def getRedundancy(self, device):
+    def get_redundancy(self, device):
         """
             Returns redundancy characterictics for given Anaconda StorageDevice.
             
             Calculate RAID redundancy.
         """
-        parents = self.getBaseDevices(device)
+        parents = self.get_base_devices(device)
         # find all parents and get their redundancy
         redundancies = map(self._findRedundancy, parents)
         if (device.level == 0):
             # iteratively call self._getRedundancy0(r1, r2), ...
-            finalRedundancy = reduce(self._getRedundancy0, redundancies)
+            final_redundancy = reduce(self._getRedundancy0, redundancies)
             
         elif (device.level == 1):
             # DataRedundancy is minimum of all
             # PackageRedundancy - all but one underlying device can fail,
-            finalRedundancy = reduce(self._getRedundancy1, redundancies)
-            finalRedundancy.packageRedundancy = finalRedundancy.packageRedundancy + len(parents) - 1
+            final_redundancy = reduce(self._getRedundancy1, redundancies)
+            final_redundancy.package_redundancy = final_redundancy.package_redundancy + len(parents) - 1
             
         elif (device.level == 5):
             # DataRedundancy is minimum of all
             # PackageRedundancy - one whole underlying device can fail
-            finalRedundancy = reduce(self._getRedundancy5, redundancies)
-            finalRedundancy.packageRedundancy = finalRedundancy.packageRedundancy+1
+            final_redundancy = reduce(self._getRedundancy5, redundancies)
+            final_redundancy.package_redundancy = final_redundancy.package_redundancy+1
             
         else:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Unsupported raid type: " + str(device.level))
             
-        return finalRedundancy
+        return final_redundancy
     
     def get_instance(self, env, model, device = None):
         """

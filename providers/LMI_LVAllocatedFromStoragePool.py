@@ -35,16 +35,16 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
         model.path.update({'Dependent': None, 'Antecedent': None})
 
         for device in self.storage.lvs:
-            lvprovider = self.manager.getProviderForDevice(device)
+            lvprovider = self.manager.get_provider_for_device(device)
             if not lvprovider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
             vg = device.vg
-            vgprovider = self.manager.getProviderForDevice(vg)
+            vgprovider = self.manager.get_provider_for_device(vg)
             if not vgprovider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + vg.path)
             
-            model['Dependent'] = lvprovider.getNameForDevice(device)
-            model['Antecedent'] = vgprovider.getNameForDevice(vg)
+            model['Dependent'] = lvprovider.get_name_for_device(device)
+            model['Antecedent'] = vgprovider.get_name_for_device(vg)
             if keys_only:
                 yield model
             else:
@@ -56,12 +56,12 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
             It just checks if Dependent and Antecedent are related.
         """
         if not device:
-            device = self.manager.getDeviceForName(model['Dependent'])
+            device = self.manager.get_device_for_name(model['Dependent'])
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Dependent device")
             
         if not vg:
-            vg = self.manager.getDeviceForName(model['Antecedent'])
+            vg = self.manager.get_device_for_name(model['Antecedent'])
         if not vg:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Antecedent device")
         

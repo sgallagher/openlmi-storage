@@ -30,7 +30,7 @@ class LMI_DiskPartition(ExtentProvider):
         super(LMI_DiskPartition, self).__init__('LMI_DiskPartition', *args, **kwargs)
 
 
-    def providesDevice(self, device):
+    def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
@@ -40,25 +40,25 @@ class LMI_DiskPartition(ExtentProvider):
                 return True
         return False
     
-    def getBaseDevices(self, device):
+    def get_base_devices(self, device):
         if device.isPrimary or device.isExtended:
-            return super(LMI_DiskPartition, self).getBaseDevices(device)    
+            return super(LMI_DiskPartition, self).get_base_devices(device)    
         
         # logical partitions depend on the extended partition
-        partedExt = device.disk.format.partedDisk.getExtendedPartition()
-        if not partedExt:
+        parted_ext = device.disk.format.partedDisk.getExtendedPartition()
+        if not parted_ext:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find extended partition for device: ' + device.path)
         
-        ext = self.storage.devicetree.getDeviceByPath(partedExt.path)
+        ext = self.storage.devicetree.getDeviceByPath(parted_ext.path)
         return [ext,]
         
 
-    def enumerateDevices(self):
+    def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
         """
         for device in self.storage.partitions:
-            if self.providesDevice(device):
+            if self.provides_device(device):
                 yield device
 
     def get_instance(self, env, model, device = None):

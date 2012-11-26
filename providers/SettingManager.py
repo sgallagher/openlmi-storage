@@ -43,18 +43,18 @@ class SettingManager(object):
         /var/lib/openlmi-storage/settings/ directory.
     """
 
-    def __init__(self, storageConfiguration):
+    def __init__(self, storage_configuration):
         """
             Create new SettingManager.
         """
         # hash classname -> settings
         #   settings = hash setting_id -> Setting
         self.classes = {}
-        self.config = storageConfiguration
+        self.config = storage_configuration
         # hash classname -> last generated unique ID (integer)
         self.ids = {}
         
-    def getSettings(self, classname):
+    def get_settings(self, classname):
         """
             Return dictionary of all instances of given LMI_*Setting class.
         """
@@ -85,7 +85,7 @@ class SettingManager(object):
         self._loadDirectory(self.config.PERSISTENT_PATH 
                     + self.config.SETTINGS_DIR, Setting.TYPE_PERSISTENT)
 
-    def _loadDirectory(self, directory, settingType):
+    def _loadDirectory(self, directory, setting_type):
         if not os.path.isdir(directory):
             return
         
@@ -94,7 +94,7 @@ class SettingManager(object):
             ini.optionxform = str # don't convert to lowercase
             ini.read(directory + classname)
             for sid in ini.sections():
-                setting = Setting(settingType, sid)
+                setting = Setting(setting_type, sid)
                 setting.load(ini)
                 self._setSetting(classname, setting)
     
@@ -105,33 +105,33 @@ class SettingManager(object):
         else:
             self.classes[classname] = { setting.id : setting}
     
-    def setSetting(self, classname, setting):
+    def set_setting(self, classname, setting):
         """
             Add or set setting. If the setting is (or was) persistent, it will
             be immediately stored to disk.
         """
-        wasPersistent = False
+        was_persistent = False
         settings = self.classes.get(classname, None)
         if settings:
-            oldSetting = settings.get(setting.id, None)
-            if oldSetting and oldSetting.type == Setting.TYPE_PERSISTENT:
-                wasPersistent = True
+            old_setting = settings.get(setting.id, None)
+            if old_setting and old_setting.type == Setting.TYPE_PERSISTENT:
+                was_persistent = True
             
         self._setSetting(classname, setting)
-        if setting.type == Setting.TYPE_PERSISTENT or wasPersistent:
+        if setting.type == Setting.TYPE_PERSISTENT or was_persistent:
             self._saveClass(classname)
     
-    def deleteSetting(self, classname, setting):
+    def delete_setting(self, classname, setting):
         """
             Remove a setting. If the setting was persistent, it will
             be immediately removed from disk.
         """
         settings = self.classes.get(classname, None)
         if settings:
-            oldSetting = settings.get(setting.id, None)
-            if oldSetting:
+            old_setting = settings.get(setting.id, None)
+            if old_setting:
                 del(settings[setting.id])
-                if oldSetting.type == Setting.TYPE_PERSISTENT:
+                if old_setting.type == Setting.TYPE_PERSISTENT:
                     self._saveClass(classname)
             
     def save(self):
@@ -156,7 +156,7 @@ class SettingManager(object):
         with open(finaldir + classname, 'w') as configfile:
             ini.write(configfile)
 
-    def allocateId(self, classname):
+    def allocate_id(self, classname):
         """
             Return new unique InstanceID for given LMI_*Setting class.
         """
@@ -189,9 +189,9 @@ class Setting(object):
     # managed element, usually associated to it
     TYPE_CONFIGURATION = 4
     
-    def __init__(self, sType = None, sId = None):
-        self.type = sType
-        self.id = sId
+    def __init__(self, setting_type = None, setting_id = None):
+        self.type = setting_type
+        self.id = setting_id
         self.properties = {}
     
     def load(self, config):

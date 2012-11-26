@@ -38,13 +38,13 @@ class LMI_LVBasedOn(BaseProvider):
         model.path.update({'Dependent': None, 'Antecedent': None})
 
         for device in self.storage.lvs:
-            provider = self.manager.getProviderForDevice(device)
+            provider = self.manager.get_provider_for_device(device)
             if not provider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, "Cannot find provider for device " + device.path)
             vg = device.vg
             for base in vg.parents:
-                model['Dependent'] = provider.getNameForDevice(device)
-                model['Antecedent'] = self.manager.getNameForDevice(base)
+                model['Dependent'] = provider.get_name_for_device(device)
+                model['Antecedent'] = self.manager.get_name_for_device(base)
                 if keys_only:
                     yield model
                 else:
@@ -56,12 +56,12 @@ class LMI_LVBasedOn(BaseProvider):
             It just checks if Dependent and Antecedent are related.
         """
         if not device:
-            device = self.manager.getDeviceForName(model['Dependent'])
+            device = self.manager.get_device_for_name(model['Dependent'])
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Dependent device")
             
         if not base:
-            base = self.manager.getDeviceForName(model['Antecedent'])
+            base = self.manager.get_device_for_name(model['Antecedent'])
         if not base:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find Antecedent device")
         

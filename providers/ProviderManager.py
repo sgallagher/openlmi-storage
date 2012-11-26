@@ -31,55 +31,55 @@ class ProviderManager(object):
         instance to CIM InstanceName and back. Therefore various associations
         can easily get their Antecendent/Dependent InstanceNames.
         
-        The providers must be registered by addProvider().
+        The providers must be registered by add_provider().
         The providers must be subclasses of DeviceProvider class.
     """
         
     def __init__(self):
         self.providers = []
         
-    def addProvider(self, provider):
+    def add_provider(self, provider):
         """
             Add new provider to the manager.
         """
         self.providers.append(provider)
     
-    def getProviderForName(self, objectName):
+    def get_provider_for_name(self, object_name):
         """
             Return provider for given CIM InstanceName.
             Return None if no such provider is registered.
         """
         for p in self.providers:
-            if p.providesName(objectName):
+            if p.provides_name(object_name):
                 return p
         return None
 
-    def getDeviceForName(self, objectName):
+    def get_device_for_name(self, object_name):
         """
             Return Anaconda StorageDevice for given CIM InstanceName.
             Return None if no device exist.
         """
-        p = self.getProviderForName(objectName)
+        p = self.get_provider_for_name(object_name)
         if p:
-            return p.getDeviceForName(objectName)
+            return p.get_device_for_name(object_name)
         return None
         
-    def getProviderForDevice(self, device):
+    def get_provider_for_device(self, device):
         """
             Return provider for given Anaconda StorageDevice.
             Return None if no such provider is registered.
         """
         for p in self.providers:
-            if p.providesDevice(device):
+            if p.provides_device(device):
                 return p
         return None
     
-    def getNameForDevice(self, device):
+    def get_name_for_device(self, device):
         """
             Return CIM InstanceName for given Anaconda StorageDevice.
             Return None if no device exist.
         """
-        p = self.getProviderForDevice(device)
+        p = self.get_provider_for_device(device)
         if p:
-            return p.getNameForDevice(device)
+            return p.get_name_for_device(device)
         return None
