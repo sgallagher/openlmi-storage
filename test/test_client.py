@@ -33,14 +33,14 @@ class TestClient(StorageTestBase):
         
         for disk in disks:
             # - call partService.SetPartitionStyle(disk)
-            (ret, outparams) = self.wbemconnection.InvokeMethod('SetPartitionStyle', partService, Extent = disk, PartitionStyle = partStyle.path)
+            (ret, unused) = self.wbemconnection.InvokeMethod('SetPartitionStyle', partService, Extent=disk, PartitionStyle=partStyle.path)
             print 'SetPartitionStyle(', disk['DeviceID'], ')=', ret
         
         # create one huge partition on the disks, i.e. call
         # LMI_DiskPartitionConfigurationService.CreateOrModifyPartition(disk)
         for disk in disks: 
             # - call partService.SetPartitionStyle(disk)
-            (ret, outparams) = self.wbemconnection.InvokeMethod('CreateOrModifyPartition', partService, Extent = disk)
+            (ret, unused) = self.wbemconnection.InvokeMethod('CreateOrModifyPartition', partService, Extent=disk)
             print 'CreateOrModifyPartition(', disk['DeviceID'], ')=', ret
         
         # create RAID out of them, i.e. call
