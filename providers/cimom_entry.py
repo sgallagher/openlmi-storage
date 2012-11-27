@@ -126,6 +126,7 @@ def get_providers(env):
 
     # settings
     setting_provider = LMI_DiskPartitionConfigurationSetting(**opts)    #IGNORE:W0142
+    manager.add_device_provider(setting_provider)
     providers['LMI_DiskPartitionConfigurationSetting'] = setting_provider
     assoc_provider = ElementSettingDataProvider(#IGNORE:W0142
             setting_provider=setting_provider,
