@@ -128,3 +128,4 @@ class ProviderManager(object):
     def get_service_providers(self):
         """ Return list of registered service providers."""
         return self.service_providers
+

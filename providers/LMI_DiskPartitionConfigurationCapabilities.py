@@ -18,6 +18,8 @@
 # -*- coding: utf-8 -*-
 
 from CapabilitiesProvider import CapabilitiesProvider
+from LMI_DiskPartitionConfigurationSetting import LMI_DiskPartitionConfigurationSetting
+from SettingManager import Setting
 import pywbem
 
 MAXINT64 = pywbem.Uint64((2 << 63) - 1)
@@ -107,8 +109,39 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
 
         return self.instances
 
+    def create_setting_for_capabilities(self, capabilities):
+        """
+            Create LMI_*Setting for given capabilities.
+            Return CIMInstanceName of the setting or raise CIMError on error.
+        """
+        setting_id = self.setting_manager.allocate_id(
+                'LMI_DiskPartitionConfigurationSetting')
+        if not setting_id:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Failed to allocate setting InstanceID")
 
-    class Values(object):
+        setting = Setting(Setting.TYPE_TRANSIENT, setting_id)
+        setting['Bootable'] = False
+        setting['ElementName'] = 'CreatedFrom' + capabilities['InstanceID']
+        setting['Hidden'] = False
+        if (capabilities['PartitionStyle'] == self.Values.PartitionStyle.GPT
+                or capabilities['PartitionStyle'] == self.Values.PartitionStyle.MBR):
+            setting['PartitionType'] = LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Primary
+        else:
+            setting['PartitionType'] = LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Logical
+
+        self.setting_manager.set_setting('LMI_DiskPartitionConfigurationSetting', setting)
+
+        return pywbem.CIMInstanceName(
+                classname='LMI_DiskPartitionConfigurationSetting',
+                namespace=self.config.namespace,
+                keybindings={'InstanceID': setting_id})
+
+
+
+
+
+    class Values(CapabilitiesProvider.Values):
         class SupportedSettings(object):
             Partition_Type = pywbem.Uint16(1)
             Bootable = pywbem.Uint16(2)
@@ -120,17 +153,6 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             VTOC = pywbem.Uint16(3)
             GPT = pywbem.Uint16(4)
             EMBR = pywbem.Uint16(4100)
-
-        class CreateGoalSettings(object):
-            Success = pywbem.Uint16(0)
-            Not_Supported = pywbem.Uint16(1)
-            Unknown = pywbem.Uint16(2)
-            Timeout = pywbem.Uint16(3)
-            Failed = pywbem.Uint16(4)
-            Invalid_Parameter = pywbem.Uint16(5)
-            Alternative_Proposed = pywbem.Uint16(6)
-            # DMTF_Reserved = ..
-            # Vendor_Specific = 32768..65535
 
         class SupportedSynchronousActions(object):
             SetPartitionStyle = pywbem.Uint16(2)

@@ -84,6 +84,15 @@ class CapabilitiesProvider(BaseProvider):
         """
         return []
 
+    def create_setting_for_capabilities(self, capabilities):
+        """
+            Create LMI_*Setting for given capabilities.
+            Return CIMInstanceName of the setting or raise CIMError on error. 
+            
+            Subclasses must override this method.
+        """
+        return None
+
     def get_instance(self, env, model, capabilities=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -130,6 +139,40 @@ class CapabilitiesProvider(BaseProvider):
             with ElementCapabilities.Characteristics == Default.
         """
         return capabilities.has_key('_default')
+
+    def cim_method_createsetting(self, env, object_name):
+        """Implements LMI_DiskPartitionConfigurationCapabilities.CreateSetting()
+
+        Create LMI_DiskPartitionConfigurationSetting applicable to this
+        partition table. All properties its will have default values.
+        """
+
+        logger = env.get_logger()
+        logger.log_debug('Entering %s.cim_method_createsetting()' \
+                % self.__class__.__name__)
+
+        capabilities = self.get_capabilities_for_id(object_name['InstanceID'])
+        if not capabilities:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Capabilities not found.")
+
+        setting_name = self.create_setting_for_capabilities(capabilities)
+
+        if not setting_name:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Unknown error when creating setting.")
+        out_params = [pywbem.CIMParameter('setting', type='reference',
+                value=setting_name)]
+        rval = self.Values.CreateSetting.Success
+        return (rval, out_params)
+
+
+
+    class Values(object):
+        class CreateSetting(object):
+            Success = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Failed = pywbem.Uint32(2)
 
 class ElementCapabilitiesProvider(BaseProvider):
     """

@@ -154,7 +154,9 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
    uint16 SupportedSettings[];
    
    [Description("Create LMI_DiskPartitionConfigurationSetting applicable to this "
-        "partition table. All properties its will have default values.")]
+        "partition table. All properties its will have default values."),
+        ValueMap { "0", "1", "2" },
+        Values { "Success", "Not Supported", "Failed"}]
     uint32 CreateSetting(
         [IN(False), OUT, Description("Created setting.")]
         LMI_DiskPartitionConfigurationSetting REF Setting
