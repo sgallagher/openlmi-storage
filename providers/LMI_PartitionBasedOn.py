@@ -92,9 +92,9 @@ class LMI_PartitionBasedOn(BasedOnProvider):
                 env, model, device, base)
 
         if not device:
-            device = self.manager.get_device_for_name(model['Dependent'])
+            device = self.provider_manager.get_device_for_name(model['Dependent'])
         if not base:
-            base = self.manager.get_device_for_name(model['Antecedent'])
+            base = self.provider_manager.get_device_for_name(model['Antecedent'])
 
         if device.isLogical:
             model = self.get_mbr_instance(model, device, base)

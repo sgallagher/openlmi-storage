@@ -44,13 +44,13 @@ class BasedOnProvider(BaseProvider):
         model.path.update({'Dependent': None, 'Antecedent': None})
 
         for device in self.enumerate_devices():
-            provider = self.manager.get_provider_for_device(device)
+            provider = self.provider_manager.get_provider_for_device(device)
             if not provider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find provider for device " + device.path)
             for base in provider.get_base_devices(device):
                 model['Dependent'] = provider.get_name_for_device(device)
-                model['Antecedent'] = self.manager.get_name_for_device(base)
+                model['Antecedent'] = self.provider_manager.get_name_for_device(base)
                 if keys_only:
                     yield model
                 else:
@@ -63,18 +63,18 @@ class BasedOnProvider(BaseProvider):
             It just checks if Dependent and Antecedent are related.
         """
         if not device:
-            device = self.manager.get_device_for_name(model['Dependent'])
+            device = self.provider_manager.get_device_for_name(model['Dependent'])
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Dependent device")
 
         if not base:
-            base = self.manager.get_device_for_name(model['Antecedent'])
+            base = self.provider_manager.get_device_for_name(model['Antecedent'])
         if not base:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Antecedent device")
 
-        device_provider = self.manager.get_provider_for_name(model['Dependent'])
+        device_provider = self.provider_manager.get_provider_for_name(model['Dependent'])
         if not (base in device_provider.get_base_devices(device)):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Antecedent is not related to Dependent device")

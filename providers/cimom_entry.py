@@ -97,7 +97,7 @@ def get_providers(env):
     opts = {'env': env,
             'storage': storage,
             'config': config,
-            'manager': manager,
+            'provider_manager': manager,
             'setting_manager': setting_manager}
     # StorageDevice providers
     provider = LMI_StorageExtent(**opts)    #IGNORE:W0142

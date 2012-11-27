@@ -41,9 +41,9 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
                 env, model, device, base)
 
         if not device:
-            device = self.manager.get_device_for_name(model['Dependent'])
+            device = self.provider_manager.get_device_for_name(model['Dependent'])
         if not base:
-            base = self.manager.get_device_for_name(model['Antecedent'])
+            base = self.provider_manager.get_device_for_name(model['Antecedent'])
 
         model['OrderIndex'] = pywbem.Uint16(device.parents.index(base) + 1)
 

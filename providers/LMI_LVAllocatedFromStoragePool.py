@@ -35,12 +35,12 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
         model.path.update({'Dependent': None, 'Antecedent': None})
 
         for device in self.storage.lvs:
-            lvprovider = self.manager.get_provider_for_device(device)
+            lvprovider = self.provider_manager.get_provider_for_device(device)
             if not lvprovider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find provider for device " + device.path)
             vg = device.vg
-            vgprovider = self.manager.get_provider_for_device(vg)
+            vgprovider = self.provider_manager.get_provider_for_device(vg)
             if not vgprovider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find provider for device " + vg.path)
@@ -58,13 +58,13 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
             It just checks if Dependent and Antecedent are related.
         """
         if not device:
-            device = self.manager.get_device_for_name(model['Dependent'])
+            device = self.provider_manager.get_device_for_name(model['Dependent'])
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Dependent device")
             
         if not vg:
-            vg = self.manager.get_device_for_name(model['Antecedent'])
+            vg = self.provider_manager.get_device_for_name(model['Antecedent'])
         if not vg:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Antecedent device")

@@ -35,12 +35,12 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
         model.path.update({'GroupComponent': None, 'PartComponent': None})
 
         for vg in self.storage.vgs:
-            vgprovider = self.manager.get_provider_for_device(vg)
+            vgprovider = self.provider_manager.get_provider_for_device(vg)
             if not vgprovider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find provider for device " + vg.path)
             for pv in vg.pvs:
-                pvprovider = self.manager.get_provider_for_device(pv)
+                pvprovider = self.provider_manager.get_provider_for_device(pv)
                 if not pvprovider:
                     raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                             "Cannot find provider for device " + pv.path)
@@ -58,13 +58,13 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
             It just checks if GroupComponent and PartComponent are related.
         """
         if not vg:
-            vg = self.manager.get_device_for_name(model['GroupComponent'])
+            vg = self.provider_manager.get_device_for_name(model['GroupComponent'])
         if not vg:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find GroupComponent device")
 
         if not pv:
-            pv = self.manager.get_device_for_name(model['PartComponent'])
+            pv = self.provider_manager.get_device_for_name(model['PartComponent'])
         if not pv:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find PartComponent device")

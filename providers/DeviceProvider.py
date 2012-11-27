@@ -37,7 +37,7 @@ class DeviceProvider(BaseProvider):
             Register at given ProviderManager.
         """
         super(DeviceProvider, self).__init__(*args, **kwargs)
-        self.manager.add_provider(self)
+        self.provider_manager.add_provider(self)
 
     def provides_name(self, object_name):
         """
@@ -77,7 +77,7 @@ class DeviceProvider(BaseProvider):
         parents = self.get_base_devices(device)
         if len(parents) > 0:
             for parent in parents:
-                parent_provider = self.manager.get_provider_for_device(parent)
+                parent_provider = self.provider_manager.get_provider_for_device(parent)
                 parent_status = parent_provider.get_status(parent)
                 status.update(parent_status)
         else:
@@ -125,7 +125,7 @@ class DeviceProvider(BaseProvider):
             Discover redundancy of given StorageDevice.
             It uses ProviderManager to do so.
         """
-        provider = self.manager.get_provider_for_device(device)
+        provider = self.provider_manager.get_provider_for_device(device)
         if not provider:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Cannot find provider for device " + device.path)

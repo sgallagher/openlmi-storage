@@ -91,7 +91,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
         if not device:
             return None
 
-        return self.manager.get_name_for_device(device)
+        return self.provider_manager.get_name_for_device(device)
 
 
     class Values(SettingProvider.Values):
