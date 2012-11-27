@@ -19,28 +19,37 @@
 
 class ProviderManager(object):
     """
-        Simple class containing references to all device providers of Anaconda
-        StorageDevice subclasses and all LMI_*Setting providers.
+        Simple class containing references to various providers to simplify
+        various tasks.
         
-        Each StorageDevice subclass should have one CIM provider registered in
-        a ProviderManager. The manager can then find a CIM provider for a
+        The manager holds reference to all device providers of Anaconda
+        StorageDevice subclasses and all LMI_*Setting providers.        
+        The manager can then find a CIM provider for a
         StorageDevice instance and find provider or StorageDevice instance
         for CIM InstanceName.
-        
-        The same applies to LMI_*Settings - various providers need to get
-        Setting for given LMI_*Setting InstanceID.
-        
         The major benefit of this manager is to convert Anaconda StorageDevice
         instance to CIM InstanceName and back. Therefore various associations
         can easily get their Antecendent/Dependent InstanceNames.
-        
+
         The device providers must be registered by add_device_provider().
         The device providers must be subclasses of DeviceProvider class.
+        
+        The manager holds references to LMI_*Setting providers. For example
+        LMI_*Service providers need access to settings, so they can use this
+        manager to get them.
+        The setting providers must be registered by add_setting_provider().
+        The setting providers must be subclasses of SettingProvider class.
+        
+        The manager holds references to LMI_*Service providers, so
+        the LMI_HostedService can easily enumerate all services.
+        The service providers must be registered by add_service_provider().
+        The service providers must be subclasses of ServiceProvider class.
     """
 
     def __init__(self):
         self.device_providers = []
         self.setting_providers = []
+        self.service_providers = []
 
     def add_device_provider(self, provider):
         """
@@ -53,6 +62,12 @@ class ProviderManager(object):
             Add new setting provider to the manager.
         """
         self.setting_providers.append(provider)
+
+    def add_service_provider(self, provider):
+        """
+            Add new service provider to the manager.
+        """
+        self.service_providers.append(provider)
 
     def get_device_provider_for_name(self, object_name):
         """
@@ -110,3 +125,6 @@ class ProviderManager(object):
             if provider.setting_classname == classname:
                 return provider.find_instance(instance_id)
 
+    def get_service_providers(self):
+        """ Return list of registered service providers."""
+        return self.service_providers

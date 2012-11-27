@@ -46,6 +46,8 @@ from LMI_LVAllocatedFromStoragePool import LMI_LVAllocatedFromStoragePool
 from LMI_VGAssociatedComponentExtent import LMI_VGAssociatedComponentExtent
 from LMI_DiskPartitionConfigurationSetting import LMI_DiskPartitionConfigurationSetting
 from SettingProvider import ElementSettingDataProvider
+from LMI_DiskPartitioningConfigurationService import LMI_DiskPartitionConfigurationService
+from LMI_HostedStorageService import LMI_HostedStorageService
 
 import pyanaconda.storage
 import pyanaconda.platform
@@ -150,6 +152,15 @@ def get_providers(env):
 
     provider = LMI_VGAssociatedComponentExtent(**opts)    #IGNORE:W0142
     providers['LMI_VGAssociatedComponentExtent'] = provider
+
+    provider = LMI_HostedStorageService(**opts)    #IGNORE:W0142
+    providers['LMI_HostedStorageService'] = provider
+
+
+    # services
+    provider = LMI_DiskPartitionConfigurationService(**opts)    #IGNORE:W0142
+    manager.add_service_provider(provider)
+    providers['LMI_DiskPartitionConfigurationService'] = provider
 
 
     print "providers:", providers

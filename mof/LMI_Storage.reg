@@ -60,6 +60,15 @@ unload: never
 
 
 
+[LMI_DiskPartitionConfigurationService]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: association instance
+namespace: root/cimv2
+unload: never
+
+
+
 
 
 [LMI_PartitionBasedOn]
@@ -91,6 +100,13 @@ namespace: root/cimv2
 unload: never
 
 [LMI_VGAssociatedComponentExtent]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance association
+namespace: root/cimv2
+unload: never
+
+[LMI_HostedStorageService]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
 type: instance association
