@@ -291,8 +291,3 @@ class LMI_DiskPartitionElementSettingData : CIM_ElementSettingData
     [Implemented(true)] uint16 IsCurrent;
 };
 
-[ Experimental ]
-class LMI_HostedDiskPartitionConfigurationService : CIM_HostedService
-{
-};
-

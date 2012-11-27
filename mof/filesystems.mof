@@ -596,11 +596,6 @@ class LMI_HostedFileSystem : CIM_HostedFileSystem
 };
 
 [ Experimental ]
-class LMI_HostedFileSystemService : CIM_HostedService
-{
-};
-
-[ Experimental ]
 class LMI_FileSystemSettingsDefineCapabilities : CIM_SettingsDefineCapabilities
 {
 };
