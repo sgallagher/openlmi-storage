@@ -575,7 +575,7 @@ class LMI_StorageSetting : CIM_StorageSetting
         "will have the same class and the same properties as the original "
         "instance except ChangeableType, which will be set to "
         "\"Changeable - Transient\" in the clone, and InstanceID."),
-        ValueMap { "0", "1", "2" },
+        ValueMap { "0", "1", "4" },
         Values { "Success", "Not Supported", "Failed"}]
     uint32 CloneSetting(
         [ IN(False), OUT, Description("Created copy.")]
@@ -717,7 +717,7 @@ class LMI_LVStorageCapabilities : LMI_StorageCapabilities
         "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength. "
         "Because only basic Logical Volumes without any additional stripping or mirroring are supported, "
         "this method basically clones LMI_VGStorageSetting to LMI_LVStorageSetting."),
-        ValueMap { "0", "1", "2" },
+        ValueMap { "0", "1", "4" },
         Values { "Success", "Not Supported", "Failed"}]
     uint32 CreateLVStorageSetting(
         [IN(False), OUT, Description("Created LMI_StorageSetting.")]

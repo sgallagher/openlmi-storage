@@ -321,10 +321,10 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         class GetAlignment(object):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
-            Failed = pywbem.Uint32(2)
+            Failed = pywbem.Uint32(4)
 
         class FindPartitionLocation(object):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
-            Failed = pywbem.Uint32(2)
+            Failed = pywbem.Uint32(4)
             Not_Enough_Free_Space = pywbem.Uint32(100)

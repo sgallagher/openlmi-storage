@@ -64,3 +64,16 @@ class LMI_ContentFormat : CIM_EnabledLogicalElement
 //
 //class CIM_StorageCapabilities : CIM_Capabilities
 //class CIM_DiskPartitionConfigurationCapabilities : CIM_Capabilities
+
+
+/*
+ * LMI return codes:
+ *
+ * 0 - Success
+ * 1 - Not Supported
+ * 2 - Unknown
+ * 3 - Timeout
+ * 4 - Failed
+ * 100 - Not Enough Space
+ * 101 - In Use (e.g. 'cannot delete partition, it's used' or 'cannot create partition table, there are partitions there')
+ */

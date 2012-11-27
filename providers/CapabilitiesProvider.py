@@ -172,7 +172,7 @@ class CapabilitiesProvider(BaseProvider):
         class CreateSetting(object):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
-            Failed = pywbem.Uint32(2)
+            Failed = pywbem.Uint32(4)
 
 class ElementCapabilitiesProvider(BaseProvider):
     """

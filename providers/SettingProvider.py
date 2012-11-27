@@ -368,7 +368,7 @@ class SettingProvider(BaseProvider):
         class CloneSetting(object):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
-            Failed = pywbem.Uint32(2)
+            Failed = pywbem.Uint32(4)
 
 
 class ElementSettingDataProvider(BaseProvider):

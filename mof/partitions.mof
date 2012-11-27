@@ -156,7 +156,7 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
    [Implemented(true),
         Description("Create LMI_DiskPartitionConfigurationSetting applicable to this "
         "partition table. All properties its will have default values."),
-        ValueMap { "0", "1", "2" },
+        ValueMap { "0", "1", "4" },
         Values { "Success", "Not Supported", "Failed"}]
     uint32 CreateSetting(
         [IN(False), OUT, Description("Created setting.")]
@@ -167,7 +167,7 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
         Description("Return allignment unit for given StorageExtent (in blocks). "
         "New partitions and metadata sectors should be aligned to this "
         "unit."), Units("Blocks"),
-        ValueMap { "0", "1", "2" },
+        ValueMap { "0", "1", "4" },
         Values { "Success", "Not Supported", "Failed"}]
     uint32 GetAlignment(
         [IN, Description("The StorageExtent to get alignment for.")]
@@ -179,7 +179,7 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
 
     [Implemented(true),
         Description("This method finds the best place for partition of given size."),
-        ValueMap { "0", "1", "2", "100" },
+        ValueMap { "0", "1", "4", "100" },
         Values { "Success", "Not Supported", "Failed", "Not Enough Free Space"}]
     uint32 FindPartitionLocation(
         [IN, Description("The StorageExtent, on which the partition should be created.")]
@@ -237,7 +237,7 @@ class LMI_DiskPartitionConfigurationSetting : CIM_SettingData
         "will have the same class and the same properties as the original "
         "instance except ChangeableType, which will be set to "
         "\"Changeable - Transient\" in the clone, and InstanceID."),
-        ValueMap { "0", "1", "2" },
+        ValueMap { "0", "1", "4" },
         Values { "Success", "Not Supported", "Failed"}]
     uint32 CloneSetting(
         [ IN(False), OUT, Description("Created copy.")]
