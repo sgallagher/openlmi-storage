@@ -19,7 +19,7 @@
 
 class ProviderManager(object):
     """
-        Simple class containing references to all providers of Anaconda
+        Simple class containing references to all device providers of Anaconda
         StorageDevice subclasses.
         
         Each StorageDevice subclass should have one CIM provider registered in
@@ -31,25 +31,25 @@ class ProviderManager(object):
         instance to CIM InstanceName and back. Therefore various associations
         can easily get their Antecendent/Dependent InstanceNames.
         
-        The providers must be registered by add_provider().
-        The providers must be subclasses of DeviceProvider class.
+        The device providers must be registered by add_device_provider().
+        The device providers must be subclasses of DeviceProvider class.
     """
 
     def __init__(self):
-        self.providers = []
+        self.device_providers = []
 
-    def add_provider(self, provider):
+    def add_device_provider(self, provider):
         """
             Add new provider to the manager.
         """
-        self.providers.append(provider)
+        self.device_providers.append(provider)
 
-    def get_provider_for_name(self, object_name):
+    def get_device_provider_for_name(self, object_name):
         """
             Return provider for given CIM InstanceName.
             Return None if no such provider is registered.
         """
-        for p in self.providers:
+        for p in self.device_providers:
             if p.provides_name(object_name):
                 return p
         return None
@@ -59,7 +59,7 @@ class ProviderManager(object):
             Return Anaconda StorageDevice for given CIM InstanceName.
             Return None if no device exist.
         """
-        p = self.get_provider_for_name(object_name)
+        p = self.get_device_provider_for_name(object_name)
         if p:
             return p.get_device_for_name(object_name)
         return None
@@ -69,7 +69,7 @@ class ProviderManager(object):
             Return provider for given Anaconda StorageDevice.
             Return None if no such provider is registered.
         """
-        for p in self.providers:
+        for p in self.device_providers:
             if p.provides_device(device):
                 return p
         return None

@@ -37,7 +37,7 @@ class DeviceProvider(BaseProvider):
             Register at given ProviderManager.
         """
         super(DeviceProvider, self).__init__(*args, **kwargs)
-        self.provider_manager.add_provider(self)
+        self.provider_manager.add_device_provider(self)
 
     def provides_name(self, object_name):
         """

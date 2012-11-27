@@ -101,27 +101,27 @@ def get_providers(env):
             'setting_manager': setting_manager}
     # StorageDevice providers
     provider = LMI_StorageExtent(**opts)    #IGNORE:W0142
-    manager.add_provider(provider)
+    manager.add_device_provider(provider)
     providers['LMI_StorageExtent'] = provider
 
     provider = LMI_MDRAIDStorageExtent(**opts)    #IGNORE:W0142
-    manager.add_provider(provider)
+    manager.add_device_provider(provider)
     providers['LMI_MDRAIDStorageExtent'] = provider
 
     provider = LMI_DiskPartition(**opts)    #IGNORE:W0142
-    manager.add_provider(provider)
+    manager.add_device_provider(provider)
     providers['LMI_DiskPartition'] = provider
 
     provider = LMI_GenericDiskPartition(**opts)    #IGNORE:W0142
-    manager.add_provider(provider)
+    manager.add_device_provider(provider)
     providers['LMI_GenericDiskPartition'] = provider
 
     provider = LMI_LVStorageExtent(**opts)    #IGNORE:W0142
-    manager.add_provider(provider)
+    manager.add_device_provider(provider)
     providers['LMI_LVStorageExtent'] = provider
 
     provider = LMI_VGStoragePool(**opts)    #IGNORE:W0142
-    manager.add_provider(provider)
+    manager.add_device_provider(provider)
     providers['LMI_VGStoragePool'] = provider
 
     # settings

@@ -74,7 +74,7 @@ class BasedOnProvider(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Antecedent device")
 
-        device_provider = self.provider_manager.get_provider_for_name(model['Dependent'])
+        device_provider = self.provider_manager.get_device_provider_for_name(model['Dependent'])
         if not (base in device_provider.get_base_devices(device)):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Antecedent is not related to Dependent device")
