@@ -129,7 +129,7 @@ class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationServ
        "DiskPartitionConfigurationService.SetPartitionStyle." )]
 class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfigurationCapabilities {
 
-      [Override, Description ( 
+      [Implemented(true), Override, Description ( 
           "The partition style (i.e partition table type) "
           "associated with this capabilities instance. "
           "\n"
@@ -146,14 +146,15 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
        ArrayType ( "Indexed" )]
    uint16 ValidSubPartitionStyles[];
 
-   [Description(
+   [Implemented(true), Description(
         "List of supported properties in LMI_DiskPartitionConfigurationSetting. "
         "Different partition tables support different properties."),
         ValueMap{ "1", "2", "3" },
         Values{"Partition Type", "Bootable", "Hidden"}]
    uint16 SupportedSettings[];
    
-   [Description("Create LMI_DiskPartitionConfigurationSetting applicable to this "
+   [Implemented(true),
+        Description("Create LMI_DiskPartitionConfigurationSetting applicable to this "
         "partition table. All properties its will have default values."),
         ValueMap { "0", "1", "2" },
         Values { "Success", "Not Supported", "Failed"}]
@@ -162,20 +163,26 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
         LMI_DiskPartitionConfigurationSetting REF Setting
     );
 
-    [Description("Return allignment unit for given StorageExtent (in blocks). "
+    [Implemented(true),
+        Description("Return allignment unit for given StorageExtent (in blocks). "
         "New partitions and metadata sectors should be aligned to this "
-        "unit."), Units("Blocks")]
+        "unit."), Units("Blocks"),
+        ValueMap { "0", "1", "2" },
+        Values { "Success", "Not Supported", "Failed"}]
     uint32 GetAlignment(
-        [Description("The StorageExtent to get alignment for.")]
+        [IN, Description("The StorageExtent to get alignment for.")]
         CIM_StorageExtent REF Extent,
 
         [IN(False), OUT, Description("Suggested alignment, in nr. of blocks.")]
         uint64 Alignment
     );
 
-    [Description("This method finds the best place for partition of given size.")]
+    [Implemented(true),
+        Description("This method finds the best place for partition of given size."),
+        ValueMap { "0", "1", "2", "100" },
+        Values { "Success", "Not Supported", "Failed", "Not Enough Free Space"}]
     uint32 FindPartitionLocation(
-        [Description("The StorageExtent, on which the partition should be created.")]
+        [IN, Description("The StorageExtent, on which the partition should be created.")]
         CIM_StorageExtent REF Extent,
 
         [IN, OUT, Description("On input, the requested size of the partition. "
@@ -193,6 +200,16 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
         [IN(False), OUT, Description("Suggested ending block number of the partition. ")]
         uint64 EndingAddress
     );
+    
+    [Implemented(true)] string InstanceID;
+    [Implemented(true)] string Caption;
+    [Implemented(true)] string ElementName;
+    [Implemented(true)] uint64 MaxCapacity;
+    [Implemented(true)] uint16 MaxNumberOfPartitions;
+    [Implemented(true)] boolean OverlapAllowed;
+    [Implemented(true)] uint32 PartitionTableSize;
+    [Implemented(true)] uint16 SupportedSynchronousActions[];
+    [Implemented(true)]uint16 ValidSubPartitionStyles[];
 };
 
 [ Experimental ]

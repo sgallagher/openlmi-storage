@@ -21,8 +21,12 @@ from CapabilitiesProvider import CapabilitiesProvider
 from LMI_DiskPartitionConfigurationSetting import LMI_DiskPartitionConfigurationSetting
 from SettingManager import Setting
 import pywbem
+import pyanaconda.storage
+import pyanaconda.storage.formats
+import parted
 
 MAXINT64 = pywbem.Uint64((2 << 63) - 1)
+MEGABYTE = 1024 * 1024
 
 class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
     """
@@ -137,8 +141,153 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                 namespace=self.config.namespace,
                 keybindings={'InstanceID': setting_id})
 
+    def cim_method_getalignment(self, env, object_name,
+                                param_extent=None):
+        """
+        Implements LMI_DiskPartitionConfigurationCapabilities.GetAlignment()
 
+        Return allignment unit for given StorageExtent (in blocks). New
+        partitions and metadata sectors should be aligned to this unit.
+        """
+        logger = env.get_logger()
+        logger.log_debug('Entering %s.cim_method_createsetting()' \
+                % self.__class__.__name__)
 
+        capabilities = self.get_capabilities_for_id(object_name['InstanceID'])
+        if not capabilities:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Capabilities not found.")
+
+        if not param_extent:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Parameter Extent must be provided.")
+        device = self.provider_manager.get_device_for_name(param_extent)
+        if not device:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Extent not found.")
+        self.check_capabilities_for_device(device, capabilities)
+
+        if capabilities['PartitionStyle'] == self.Values.PartitionStyle.EMBR:
+            device = device.parents[0]
+
+        alignment = device.partedDevice.optimumAlignment.grainSize
+
+        out_params = [pywbem.CIMParameter('alignment', type='uint64',
+                value=pywbem.Uint64(alignment))]
+        retval = self.Values.GetAlignment.Success
+        return (retval, out_params)
+
+    def check_capabilities_for_device(self, device, capabilities):
+        """
+            Check if the capabilities are the right one for the device and
+            raise exception if something is wrong.
+        """
+        if capabilities['PartitionStyle'] == self.Values.PartitionStyle.MBR:
+            if (not device.format or not isinstance(
+                            device.format,
+                            pyanaconda.storage.formats.disklabel.DiskLabel)):
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "There is no partition table on the Extent.")
+            if device.format.labelType != "msdos":
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Partition table does not have given Capabilities.")
+
+        elif capabilities['PartitionStyle'] == self.Values.PartitionStyle.GPT:
+            if (not device.format or not isinstance(
+                            device.format,
+                            pyanaconda.storage.formats.disklabel.DiskLabel)):
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "There is no partition table on the Extent.")
+            if device.format.labelType != "gpt":
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Partition table does not have given Capabilities.")
+
+        else:
+            # the device must be extended partition, find its disk
+            if not isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "The extent is not an partition.")
+            if not device.isExtended:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "The extent is not an extended partition.")
+
+        return True
+
+    def cim_method_findpartitionlocation(self, env, object_name,
+                                         param_extent=None,
+                                         param_size=None):
+        """
+        Implements LMI_DiskPartitionConfigurationCapabilities.FindPartitionLocation()
+
+        This method finds the best place for partition of given size.
+        """
+        capabilities = self.get_capabilities_for_id(object_name['InstanceID'])
+        if not capabilities:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Capabilities not found.")
+
+        # check parameters
+        if not param_extent:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Parameter Extent must be provided.")
+        device = self.provider_manager.get_device_for_name(param_extent)
+        if not device:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Extent not found.")
+
+        self.check_capabilities_for_device(device, capabilities)
+
+        if capabilities['PartitionStyle'] == self.Values.PartitionStyle.EMBR:
+            device = device.parents[0]
+            part_type = parted.PARTITION_LOGICAL
+        else:
+            part_type = parted.PARTITION_NORMAL
+
+        if not param_size:
+            grow = True
+            size = 1.0
+        else:
+            grow = False
+            size = param_size / (MEGABYTE * 1.0)
+
+        print device
+        print device.format
+        print device.format.partedDisk
+        geometry = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
+                disk=device.format.partedDisk,
+                part_type=part_type,
+                req_size=size,
+                grow=grow)
+
+        if not geometry:
+            retval = self.Values.FindPartitionLocation.Not_Enough_Free_Space
+            out_params = [pywbem.CIMParameter('size', type='uint64',
+                    value=pywbem.Uint64(0))]
+            return (retval, out_params)
+
+        retval = self.Values.FindPartitionLocation.Success
+
+        start = geometry.start
+        end = geometry.end
+        sector_size = device.partedDevice.sectorSize
+        new_size = geometry.length * sector_size
+
+        # anaconda returns the whole region size, we should make it smaller
+        # to adjust to requested size
+        if not grow and new_size > param_size:
+            # truncate the end to start + size
+            end = start + (param_size / sector_size)
+            if param_size % sector_size > 0:
+                end = end + 1
+        new_size = (end - start) * sector_size
+
+        out_params = [pywbem.CIMParameter('size', type='uint64',
+                value=pywbem.Uint64(new_size))]
+        out_params += [pywbem.CIMParameter('startingaddress', type='uint64',
+                value=pywbem.Uint64(start))]
+        out_params += [pywbem.CIMParameter('endingaddress', type='uint64',
+                value=pywbem.Uint64(end))]
+        return (retval, out_params)
 
 
     class Values(CapabilitiesProvider.Values):
@@ -168,3 +317,14 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             SUN = pywbem.Uint16(4098)
             MAC = pywbem.Uint16(4099)
             EMBR = pywbem.Uint16(4100)
+
+        class GetAlignment(object):
+            Success = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Failed = pywbem.Uint32(2)
+
+        class FindPartitionLocation(object):
+            Success = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Failed = pywbem.Uint32(2)
+            Not_Enough_Free_Space = pywbem.Uint32(100)
