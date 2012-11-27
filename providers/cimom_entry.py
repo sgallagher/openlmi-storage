@@ -70,7 +70,7 @@ def init_anaconda(env):
     try:
         platform = pyanaconda.platform.getPlatform(None)
     except TypeError:
-        platform = pyanaconda.platform.getPlatform()
+        platform = pyanaconda.platform.getPlatform()  #IGNORE:E1120
     storage = pyanaconda.storage.Storage(platform=platform)
 
     # identify the system's storage devices
