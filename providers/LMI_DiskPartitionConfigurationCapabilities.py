@@ -21,7 +21,6 @@ from CapabilitiesProvider import CapabilitiesProvider
 from LMI_DiskPartitionConfigurationSetting import LMI_DiskPartitionConfigurationSetting
 from SettingManager import Setting
 import pywbem
-import pyanaconda.storage
 import pyanaconda.storage.formats
 import parted
 
