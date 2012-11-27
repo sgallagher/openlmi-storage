@@ -288,6 +288,7 @@ class LMI_DiskPartitionElementCapabilities : CIM_ElementCapabilities
 [ Experimental ]
 class LMI_DiskPartitionElementSettingData : CIM_ElementSettingData
 {
+    [Implemented(true)] uint16 IsCurrent;
 };
 
 [ Experimental ]

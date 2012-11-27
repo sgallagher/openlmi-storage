@@ -390,7 +390,7 @@ class ElementSettingDataProvider(BaseProvider):
         """
             Provider implementation of GetInstance intrinsic method.
         """
-        instance_id = model['InstanceID']
+        instance_id = model['SettingData']['InstanceID']
         element_name = self.setting_provider.get_associated_element_name(
                  instance_id)
 
@@ -398,11 +398,12 @@ class ElementSettingDataProvider(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find the ManagedElement")
 
-        if element_name != model['ElementName']:
+        if element_name != model['ManagedElement']:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "The ManagedElement is not associated to given SettingData")
 
         model['IsCurrent'] = pywbem.Uint16(1) # current
+        return model
 
     def enum_instances(self, env, model, keys_only):
         """
@@ -411,7 +412,6 @@ class ElementSettingDataProvider(BaseProvider):
         model.path.update({'ManagedElement': None, 'SettingData': None})
         for setting in self.setting_provider.enumerate_configurations():
             instance_id = setting.id
-            print "instance id:", instance_id
             model['ManagedElement'] = self.setting_provider.get_associated_element_name(instance_id)
             model['SettingData'] = pywbem.CIMInstanceName(
                     classname=self.setting_data_classname,
