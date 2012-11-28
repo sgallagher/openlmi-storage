@@ -177,6 +177,7 @@ class ExtentProvider(DeviceProvider):
         model['DataRedundancy'] = pywbem.Uint16(redundancy.data_dedundancy)
         model['PackageRedundancy'] = pywbem.Uint16(redundancy.package_redundancy)
         model['ExtentStripeLength'] = pywbem.Uint16(redundancy.stripe_length)
+        model['IsComposite'] = (len(device.parents) > 1)
 
         # TODO: add DeltaReservation (mandatory in SMI-S)
 

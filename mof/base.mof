@@ -30,6 +30,7 @@ class LMI_StorageExtent : CIM_StorageExtent
     [ Implemented(true) ] uint64 ExtentStripeLength;
     [ Implemented(true) ] boolean Primordial;
     [ Implemented(true) ] string ExtentDiscriminator[];
+    [ Implemented(true) ] boolean IsComposite;
 };
 
 [ Experimental ]
