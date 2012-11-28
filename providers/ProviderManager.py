@@ -50,6 +50,7 @@ class ProviderManager(object):
         self.device_providers = []
         self.setting_providers = []
         self.service_providers = []
+        self.capabilities_providers = []
 
     def add_device_provider(self, provider):
         """
@@ -68,6 +69,12 @@ class ProviderManager(object):
             Add new service provider to the manager.
         """
         self.service_providers.append(provider)
+
+    def add_capabilities_provider(self, provider):
+        """
+            Add new service provider to the manager.
+        """
+        self.capabilities_providers.append(provider)
 
     def get_device_provider_for_name(self, object_name):
         """
@@ -109,9 +116,12 @@ class ProviderManager(object):
             return p.get_name_for_device(device)
         return None
 
-    def get_setting_for_id(self, instance_id):
+    def get_setting_for_id(self, instance_id, setting_classname=None):
         """
             Return Setting instance for given InstanceID.
+            If setting_classname is not None, it also checks that the
+            setting classname equals setting_classname.
+            
             Return None if there is no such instance.
         """
         # parse the instance id
@@ -121,6 +131,8 @@ class ProviderManager(object):
         if parts[0] != "LMI":
             return None
         classname = parts[1]
+        if setting_classname and setting_classname != classname:
+            return None
         for provider in self.setting_providers:
             if provider.setting_classname == classname:
                 return provider.find_instance(instance_id)
@@ -129,3 +141,9 @@ class ProviderManager(object):
         """ Return list of registered service providers."""
         return self.service_providers
 
+    def get_capabilities_provider_for_class(self, classname):
+        """ Return list of registered capabilities providers."""
+        for provider in self.capabilities_providers:
+            if provider.classname == classname:
+                return provider
+        return None

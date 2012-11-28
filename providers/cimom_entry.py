@@ -165,6 +165,7 @@ def get_providers(env):
     providers['LMI_DiskPartitionConfigurationService'] = service_provider
 
     cap_provider = LMI_DiskPartitionConfigurationCapabilities(**opts)   #IGNORE:W0142
+    manager.add_capabilities_provider(cap_provider)
     providers['LMI_DiskPartitionConfigurationCapabilities'] = cap_provider
 
     assoc_provider = ElementCapabilitiesProvider(#IGNORE:W0142
