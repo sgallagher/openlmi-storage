@@ -131,6 +131,29 @@ class DeviceProvider(BaseProvider):
                     "Cannot find provider for device " + device.path)
         return provider.get_redundancy(device)
 
+    def do_delete_instance(self, device):
+        """
+            Really delete given Anaconda StorageDevice.
+            
+            Subclasses must override this method to allow DeleteInstance
+            intrinsic method.
+        """
+        raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Cannot delete this device.")
+
+    def delete_instance(self, env, instance_name):
+        """Delete an instance intrinsic method"""
+        # just check the instance validity
+        device = self.get_device_for_name(instance_name)
+        if not device:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find the device.")
+        if self.storage.deviceDeps(device):
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "The device is in use.")
+
+        self.do_delete_instance(device)
+
     def get_redundancy(self, device):
         """
             Returns redundancy characteristics for given Anaconda StorageDevice.
