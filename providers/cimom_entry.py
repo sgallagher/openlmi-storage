@@ -50,6 +50,7 @@ from LMI_DiskPartitioningConfigurationService import LMI_DiskPartitionConfigurat
 from LMI_HostedStorageService import LMI_HostedStorageService
 from LMI_DiskPartitionConfigurationCapabilities import LMI_DiskPartitionConfigurationCapabilities
 from CapabilitiesProvider import ElementCapabilitiesProvider
+from LMI_InstalledPartitionTable import LMI_InstalledPartitionTable
 
 import pyanaconda.storage
 import pyanaconda.platform
@@ -139,6 +140,22 @@ def get_providers(env):
             **opts)
     providers['LMI_DiskPartitionElementSettingData'] = assoc_provider
 
+
+    # services & capabilities
+    service_provider = LMI_DiskPartitionConfigurationService(**opts)    #IGNORE:W0142
+    manager.add_service_provider(service_provider)
+    providers['LMI_DiskPartitionConfigurationService'] = service_provider
+
+    cap_provider = LMI_DiskPartitionConfigurationCapabilities(**opts)   #IGNORE:W0142
+    manager.add_capabilities_provider(cap_provider)
+    providers['LMI_DiskPartitionConfigurationCapabilities'] = cap_provider
+
+    assoc_provider = ElementCapabilitiesProvider(#IGNORE:W0142
+            "LMI_DiskPartitionElementCapabilities",
+            cap_provider, service_provider, **opts)
+    providers['LMI_DiskPartitionElementCapabilities'] = assoc_provider
+
+
     # Associations
     provider = LMI_PartitionBasedOn(**opts)    #IGNORE:W0142
     providers['LMI_PartitionBasedOn'] = provider
@@ -158,20 +175,8 @@ def get_providers(env):
     provider = LMI_HostedStorageService(**opts)    #IGNORE:W0142
     providers['LMI_HostedStorageService'] = provider
 
-
-    # services & capabilities
-    service_provider = LMI_DiskPartitionConfigurationService(**opts)    #IGNORE:W0142
-    manager.add_service_provider(service_provider)
-    providers['LMI_DiskPartitionConfigurationService'] = service_provider
-
-    cap_provider = LMI_DiskPartitionConfigurationCapabilities(**opts)   #IGNORE:W0142
-    manager.add_capabilities_provider(cap_provider)
-    providers['LMI_DiskPartitionConfigurationCapabilities'] = cap_provider
-
-    assoc_provider = ElementCapabilitiesProvider(#IGNORE:W0142
-            "LMI_DiskPartitionElementCapabilities",
-            cap_provider, service_provider, **opts)
-    providers['LMI_DiskPartitionElementCapabilities'] = assoc_provider
+    provider = LMI_InstalledPartitionTable(**opts)    #IGNORE:W0142
+    providers['LMI_InstalledPartitionTable'] = provider
 
     print "providers:", providers
 

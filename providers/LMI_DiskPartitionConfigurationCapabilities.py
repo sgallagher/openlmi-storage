@@ -32,13 +32,17 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         LMI_DiskPartitionConfigurationCapabilities provider implementation.
     """
 
+    INSTANCE_ID_MBR = "LMI:LMI_DiskPartitionConfigurationCapabilities:MBR"
+    INSTANCE_ID_EMBR = "LMI:LMI_DiskPartitionConfigurationCapabilities:EMBR"
+    INSTANCE_ID_GPT = "LMI:LMI_DiskPartitionConfigurationCapabilities:GPT"
+
     def __init__(self, *args, **kwargs):
         super(LMI_DiskPartitionConfigurationCapabilities, self).__init__(
                 "LMI_DiskPartitionConfigurationCapabilities", *args, **kwargs)
 
         self.instances = [
             {
-                    'InstanceID': 'MBRCapabilities',
+                    'InstanceID': self.INSTANCE_ID_MBR,
                     'SupportedSettings': [
                             self.Values.SupportedSettings.Partition_Type,
                             self.Values.SupportedSettings.Bootable,
@@ -56,7 +60,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                     'OverlapAllowed' : False,
             },
             {
-                    'InstanceID': 'EMBRCapabilities',
+                    'InstanceID': self.INSTANCE_ID_EMBR,
                     'SupportedSettings': [
                             self.Values.SupportedSettings.Bootable,
                             self.Values.SupportedSettings.Hidden],
@@ -78,7 +82,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                     'OverlapAllowed' : False,
             },
             {
-                    'InstanceID': 'GPTCapabilities',
+                    'InstanceID': self.INSTANCE_ID_GPT,
                     'SupportedSettings': [
                             self.Values.SupportedSettings.Bootable, ],
                     'PartitionTableSize': pywbem.Uint32(68),
@@ -175,6 +179,26 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                 value=pywbem.Uint64(alignment))]
         retval = self.Values.GetAlignment.Success
         return (retval, out_params)
+
+    def get_capabilities_for_device(self, device):
+        """
+            Return capabilities for given StorageDevice 
+            Return None if it does not have any partition capabilities.
+        """
+
+        if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+            if device.isExtended:
+                return self.get_capabilities_for_id(self.INSTANCE_ID_EMBR)
+            return None
+
+        fmt_class = pyanaconda.storage.formats.disklabel.DiskLabel
+        if (not device.format) or (not isinstance(device.format, fmt_class)):
+            return None
+
+        if device.format.labelType == "msdos":
+            return self.get_capabilities_for_id(self.INSTANCE_ID_MBR)
+        if device.format.labelType == "gpt":
+            return self.get_capabilities_for_id(self.INSTANCE_ID_GPT)
 
     def check_capabilities_for_device(self, device, capabilities):
         """

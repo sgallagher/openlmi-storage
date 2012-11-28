@@ -175,6 +175,13 @@ class CapabilitiesProvider(BaseProvider):
                 return capabilities
         return None
 
+    def get_name_for_id(self, instance_id):
+        """ Return CIMInstanceName for given InstanceID. """
+        return pywbem.CIMInstanceName(
+                classname=self.classname,
+                namespace=self.config.namespace,
+                keybindings={"InstanceID": instance_id})
+
 
     class Values(object):
         class CreateSetting(object):
