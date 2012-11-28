@@ -31,6 +31,16 @@ class ServiceProvider(BaseProvider):
         self.classname = classname
 
 
+    def check_instance(self, model):
+        """
+            Check if the model represents real instance of this class.
+            Throw an error if not.
+        """
+        if (model['SystemCreationClassName'] != self.config.system_class_name
+                or model['SystemName'] != self.config.system_name
+                or model['CreationClassName'] != self.classname
+                or model['Name'] != self.classname):
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
 
     def get_instance(self, env, model):
         """
@@ -40,11 +50,7 @@ class ServiceProvider(BaseProvider):
         logger.log_debug('Entering %s.get_instance()' \
                 % self.__class__.__name__)
 
-        if (model['SystemCreationClassName'] != self.config.system_class_name
-                or model['SystemName'] != self.config.system_name
-                or model['CreationClassName'] != self.classname
-                or model['Name'] != self.classname):
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
+        self.check_instance(model)
 
         model['EnabledDefault'] = self.Values.EnabledDefault.Enabled
         model['EnabledState'] = self.Values.EnabledState.Enabled
