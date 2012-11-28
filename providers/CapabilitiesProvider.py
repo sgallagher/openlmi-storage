@@ -32,6 +32,8 @@ class CapabilitiesProvider(BaseProvider):
         in subclasses of this provider.
     """
 
+    DEFAULT_CAPABILITY = "_default"
+
     def __init__(self, classname, *args, **kwargs):
         super(CapabilitiesProvider, self).__init__(*args, **kwargs)
         self.classname = classname
@@ -138,7 +140,7 @@ class CapabilitiesProvider(BaseProvider):
             Return True, if the capabilities are the default one, i.e.
             with ElementCapabilities.Characteristics == Default.
         """
-        return capabilities.has_key('_default')
+        return capabilities.has_key(self.DEFAULT_CAPABILITY)
 
     def cim_method_createsetting(self, env, object_name):
         """Implements LMI_DiskPartitionConfigurationCapabilities.CreateSetting()

@@ -101,7 +101,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                     'MaxCapacity': MAXINT64,
                     'ElementName': 'GPTCapabilities',
                     'OverlapAllowed' : False,
-                    '_default': True,
+                    CapabilitiesProvider.DEFAULT_CAPABILITY: True,
             },
     ]
 
