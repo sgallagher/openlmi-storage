@@ -90,8 +90,9 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         else:
             # find the default capabilities
             capabilities = capabilities_provider.get_default_capabilities()
-            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                    "Parameter PartitionStyle is mandatory, there is no default PartitionStyle.")
+            if not capabilities:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Parameter PartitionStyle is mandatory, there is no default PartitionStyle.")
 
         if capabilities['PartitionStyle'] == capabilities_provider.Values.PartitionStyle.EMBR:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
