@@ -107,4 +107,5 @@ def remove_partition(storage, device):
     # TODO: update when Anaconda can reliably delete partitions    
     storage.devicetree._removeDevice(device)
     device.disk.format.commit()
-    device.partedDevice.removeFromCache()
+    if device.partedDevice:
+        device.partedDevice.removeFromCache()
