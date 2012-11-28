@@ -12,7 +12,7 @@
        "avoided unless the application really knows what it is doing."
         )]
 class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationService {
-      [Description ( 
+      [Implemented(true), Description ( 
           "Describes the partitioning schemes supported by the "
           "platform. AIX and HP_UX do not allow partitions. Linux "
           "allows volumes with and without partitions, Solaris "
@@ -26,7 +26,7 @@ class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationServ
           "Volumes must be partitioned" }]
    uint16 PartitioningSchemes;
 
-      [Description ( 
+      [Implemented(true), Description ( 
           "This method installs a partition table on an extent of "
           "the specified partition style; creating an association "
           "between the extent and that capabilities instances "
@@ -58,7 +58,7 @@ class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationServ
       CIM_DiskPartitionConfigurationCapabilities REF PartitionStyle);
 
 
-      [Description ( 
+      [Implemented(true),Description ( 
           "This method creates a new partition if the Partition "
           "parameter is null or modifies the partition specified. "
           "If the starting and ending address parameters are null, "
@@ -95,8 +95,8 @@ class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationServ
       CIM_StorageExtent REF extent, 
 
          [IN, Description ( "The starting block number. "
-            "If null when creating a partition, the lowest free block will be "
-            "used. If null when modifying a partition, the partition start "
+            "If null when creating a partition, the first block is used."
+            "If null when modifying a partition, the partition start "
             "won't be chnaged." )]
       uint64 StartingAddress, 
 
