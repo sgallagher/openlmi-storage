@@ -27,6 +27,7 @@ import pywbem
 import subprocess
 import pyudev
 import time
+import socket
 
 class StorageTestBase(unittest.TestCase):
     """
@@ -34,6 +35,10 @@ class StorageTestBase(unittest.TestCase):
         It monitors all devices created between setUp and tearDown
         and tries to remove them in tearDown.
     """
+
+    SYSTEM_CLASS_NAME = "Linux_ComputerSystem"
+    SYSTEM_NAME = socket.getfqdn()
+
     @classmethod
     def setUpClass(cls):
         cls.url = os.environ.get("LMI_STORAGE_URL", "https://localhost:5989")
@@ -47,11 +52,11 @@ class StorageTestBase(unittest.TestCase):
         self.start_udev_monitor()
 
     def start_udev_monitor(self):
-        self.udev_context = pyudev.Context()
-        self.udev_monitor = pyudev.Monitor.from_netlink(self.udev_context)
+        self.udev_context = pyudev.Context()  #IGNORE:W0201
+        self.udev_monitor = pyudev.Monitor.from_netlink(self.udev_context) #IGNORE:W0201
         self.udev_monitor.filter_by('block')
-        self.udev_observer = pyudev.MonitorObserver(self.udev_monitor, self.udev_event)
-        self.devices = []
+        self.udev_observer = pyudev.MonitorObserver(self.udev_monitor, self.udev_event) #IGNORE:W0201
+        self.devices = [] #IGNORE:W0201
         self.udev_observer.start()
 
     def stop_udev_monitor(self):
