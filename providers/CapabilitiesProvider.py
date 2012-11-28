@@ -166,6 +166,14 @@ class CapabilitiesProvider(BaseProvider):
         rval = self.Values.CreateSetting.Success
         return (rval, out_params)
 
+    def get_default_capabilities(self):
+        """
+            Return default capabilities or None if there are no default ones.
+        """
+        for capabilities in self.enumerate_capabilities():
+            if self.is_default(capabilities):
+                return capabilities
+        return None
 
 
     class Values(object):
