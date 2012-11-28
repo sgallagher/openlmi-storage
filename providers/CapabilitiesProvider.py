@@ -272,6 +272,9 @@ class ElementCapabilitiesProvider(BaseProvider):
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                         "ElementCapabilities not found.")
 
+        capabilities = self.capabilities_provider.get_capabilities_for_id(
+                capabilities['InstanceID'])
+
         characteristics = [self.Values.Characteristics.Current]
         if self.capabilities_provider.is_default(capabilities):
             characteristics.append(self.Values.Characteristics.Default)
