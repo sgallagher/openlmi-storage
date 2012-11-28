@@ -20,6 +20,7 @@
 from DeviceProvider import DeviceProvider
 import pywbem
 import pyanaconda.storage.formats
+import util.partitioning
 
 class ExtentProvider(DeviceProvider):
     """
@@ -91,18 +92,6 @@ class ExtentProvider(DeviceProvider):
         """
         return []
 
-    GPT_TABLE_SIZE = 34 * 2   # there are two copies
-    MBR_TABLE_SIZE = 1
-    def get_partition_table_size(self, fmt):
-        """
-            Return size of partition table (in blocks) for given Anaconda
-            DiskLabel instance.
-        """
-        if fmt.labelType == "gpt":
-            return self.GPT_TABLE_SIZE
-        if fmt.labelType == "msdos":
-            return self.MBR_TABLE_SIZE
-
     def get_size(self, device):
         """
             Return (BlockSize, NumberOfBlocks, ConsumableBlocks) properties
@@ -117,7 +106,7 @@ class ExtentProvider(DeviceProvider):
             if (device.format and isinstance(device.format,
                     pyanaconda.storage.formats.disklabel.DiskLabel)):
                 # reduce by partition table size
-                consumable_blocks -= self.get_partition_table_size(device.format)
+                consumable_blocks -= util.partitioning.get_partition_table_size(device)
         else:
             block_size = None
             total_blocks = None

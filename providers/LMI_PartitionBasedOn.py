@@ -19,7 +19,7 @@
 
 from BasedOnProvider import BasedOnProvider
 import pywbem
-import parted
+import util.partitioning
 
 class LMI_PartitionBasedOn(BasedOnProvider):
     """
@@ -37,28 +37,11 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         """
         return self.storage.partitions
 
-    def get_logical_partition_start(self, device, base):
+    def get_logical_partition_start(self, device):
         """
             Return starting address of logical's partition metadata.
-            TODO: This method probably belongs to PartitionConfigurationService
         """
-        part = base.partedPartition.nextPartition()
-        metadata = None
-        while part is not None:
-            if (part.type & parted.PARTITION_LOGICAL
-                        and part.type & parted.PARTITION_METADATA):
-                metadata = part
-            if part.path == device.path:
-                break
-            part = part.nextPartition()
-
-        if not part:
-            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                    "Cannot find the partition on the disk: " + device.path)
-        if not metadata:
-            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                    "Cannot find metadata for the partition: " + device.path)
-        return metadata.geometry.start
+        return util.partitioning.get_logical_partition_start(device)
 
     def get_mbr_instance(self, model, device, base):
         # primary partitions are simple
@@ -70,7 +53,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         # startaddress is relative to the beginning of the extended partition
         base_start = base.partedPartition.geometry.start * sector_size
         # find the metadata
-        start = self.get_logical_partition_start(device, base) * sector_size
+        start = self.get_logical_partition_start(device) * sector_size
         end = device.partedPartition.geometry.end * sector_size
 
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)

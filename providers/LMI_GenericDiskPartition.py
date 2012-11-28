@@ -19,6 +19,7 @@
 
 from ExtentProvider import ExtentProvider
 import pyanaconda.storage
+import util.partitioning
 
 class LMI_GenericDiskPartition(ExtentProvider):
     """
@@ -35,7 +36,7 @@ class LMI_GenericDiskPartition(ExtentProvider):
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
         """
-        if  isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+        if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
             if device.parents[0].format.labelType == 'msdos':
                 return False
             return True
@@ -48,3 +49,9 @@ class LMI_GenericDiskPartition(ExtentProvider):
         for device in self.storage.partitions:
             if self.provides_device(device):
                 yield device
+
+    def do_delete_instance(self, device):
+        """
+            Really delete given Anaconda StorageDevice.
+        """
+        util.partitioning.remove_partition(self.storage, device)

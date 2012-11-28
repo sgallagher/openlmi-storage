@@ -20,6 +20,7 @@
 from ExtentProvider import ExtentProvider
 import pyanaconda.storage
 import pywbem
+import util.partitioning
 
 class LMI_DiskPartition(ExtentProvider):
     """
@@ -80,6 +81,12 @@ class LMI_DiskPartition(ExtentProvider):
             model['PartitionType'] = self.Values.PartitionType.Logical
 
         return model
+
+    def do_delete_instance(self, device):
+        """
+            Really delete given Anaconda StorageDevice.
+        """
+        util.partitioning.remove_partition(self.storage, device)
 
     class Values(ExtentProvider.Values):
         class PartitionType(object):
