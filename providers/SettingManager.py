@@ -165,7 +165,7 @@ class SettingManager(object):
             self.ids[classname] = 1
 
         i = self.ids[classname]
-        settings = self.classes[classname]
+        settings = self.get_settings(classname)
         while settings.has_key("LMI:" + classname + ":" + str(i)):
             i = i + 1
 
