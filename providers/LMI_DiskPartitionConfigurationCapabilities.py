@@ -45,8 +45,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                     'InstanceID': self.INSTANCE_ID_MBR,
                     'SupportedSettings': [
                             self.Values.SupportedSettings.Partition_Type,
-                            self.Values.SupportedSettings.Bootable,
-                            self.Values.SupportedSettings.Hidden],
+                            self.Values.SupportedSettings.Bootable],
                     'PartitionTableSize': pywbem.Uint32(1),
                     'PartitionStyle': self.Values.PartitionStyle.MBR,
                     'ValidSubPartitionStyles': [self.Values.ValidSubPartitionStyles.EMBR],
@@ -58,12 +57,12 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                     'MaxCapacity': MAXINT64,
                     'ElementName': 'MBRCapabilities',
                     'OverlapAllowed' : False,
+                    # TODO: add Hidden flag? It seems it does not work on MBR partitions
             },
             {
                     'InstanceID': self.INSTANCE_ID_EMBR,
                     'SupportedSettings': [
-                            self.Values.SupportedSettings.Bootable,
-                            self.Values.SupportedSettings.Hidden],
+                            self.Values.SupportedSettings.Bootable],
                     'PartitionTableSize': pywbem.Uint32(1),
                     'PartitionStyle': self.Values.PartitionStyle.EMBR,
                     'ValidSubPartitionStyles': pywbem.CIMProperty(
@@ -130,7 +129,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         setting = Setting(Setting.TYPE_TRANSIENT, setting_id)
         setting['Bootable'] = False
         setting['ElementName'] = 'CreatedFrom' + capabilities['InstanceID']
-        setting['Hidden'] = False
+        setting['Hidden'] = None
         if (capabilities['PartitionStyle'] == self.Values.PartitionStyle.GPT
                 or capabilities['PartitionStyle'] == self.Values.PartitionStyle.MBR):
             setting['PartitionType'] = LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Primary
