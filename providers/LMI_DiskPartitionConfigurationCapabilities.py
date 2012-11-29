@@ -272,9 +272,6 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             grow = False
             size = param_size / (MEGABYTE * 1.0)
 
-        print device
-        print device.format
-        print device.format.partedDisk
         geometry = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
                 disk=device.format.partedDisk,
                 part_type=part_type,
