@@ -222,6 +222,36 @@ class TestCreatePartition(StorageTestBase):
                 extent=self.diskname,
                 Goal=goal)
 
+        # check based on
+        basedons = self.wbemconnection.References(
+                partition,
+                ResultClass="LMI_PartitionBasedOn")
+        self.assertEqual(len(basedons), 1)
+        basedon = basedons[0]
+        self.assertEqual(basedon['Antecedent'], self.diskname)
+        self.assertEqual(basedon['Dependent'], partition)
+        self.assertAlmostEqual(
+                basedon['StartingAddress'], 0, delta=2 * 1024 * 2) # 2 megabytes
+        self.assertAlmostEqual(
+                basedon['EndingAddress'],
+                disk_instance['NumberOfBlocks'],
+                delta=4 * 1024 * 2) # 4 megabytes
+
+        # check based on
+        basedons = self.wbemconnection.References(
+                partition,
+                ResultClass="LMI_PartitionBasedOn")
+        self.assertEqual(len(basedons), 1)
+        basedon = basedons[0]
+        self.assertEqual(basedon['Antecedent'], self.diskname)
+        self.assertEqual(basedon['Dependent'], partition)
+        self.assertAlmostEqual(
+                basedon['StartingAddress'], 0, delta=2 * 1024 * 2) # 2 megabytes
+        self.assertAlmostEqual(
+                basedon['EndingAddress'],
+                disk_instance['NumberOfBlocks'],
+                delta=4 * 1024 * 2) # 4 megabytes
+
         self._delete_setting(goal.path)
         self.wbemconnection.DeleteInstance(partition)
 
@@ -230,7 +260,7 @@ class TestCreatePartition(StorageTestBase):
             Try CreateOrModifyPartition on MBR partition table without
             any start/end addresses.
         """
-        # create GPT partition table
+        # create MBR partition table
         self._set_partition_style(self.STYLE_MBR)
         goal = self._create_setting(self.STYLE_MBR)
         (retval, outparams) = self.wbemconnection.InvokeMethod(
@@ -250,6 +280,21 @@ class TestCreatePartition(StorageTestBase):
                 partition_instance['NumberOfBlocks'],
                 delta=2 * 1024 * 10) # 10 megabytes
 
+        # check based on
+        basedons = self.wbemconnection.References(
+                partition,
+                ResultClass="LMI_PartitionBasedOn")
+        self.assertEqual(len(basedons), 1)
+        basedon = basedons[0]
+        self.assertEqual(basedon['Antecedent'], self.diskname)
+        self.assertEqual(basedon['Dependent'], partition)
+        self.assertAlmostEqual(
+                basedon['StartingAddress'], 0, delta=2 * 1024 * 2) # 2 megabytes
+        self.assertAlmostEqual(
+                basedon['EndingAddress'],
+                disk_instance['NumberOfBlocks'],
+                delta=4 * 1024 * 2) # 4 megabytes
+
         # second call must fail
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyPartition",
@@ -260,8 +305,183 @@ class TestCreatePartition(StorageTestBase):
         self._delete_setting(goal.path)
         self.wbemconnection.DeleteInstance(partition)
 
-    # TODO: test multiple partitions, extended & logical partitions,
-    # partition positioning (incl. BasedOn and sizes)
+    def test_gpt_positions(self):
+        """
+            Try CreateOrModifyPartition on GPT partition table with
+            start/end addresses.
+        """
+        partition_start = 35 # beware of GPT table size
+        partition_size = 1025 * 2 * 10 # 10 MB
+        partition_count = 20
+        partitions = []
+        # create GPT partition table
+        self._set_partition_style(self.STYLE_GPT)
+        goal = self._create_setting(self.STYLE_GPT)
+
+        for i in xrange(partition_count):
+            pstart = partition_start + partition_size * i
+            pend = partition_start + partition_size * (i + 1) - 1
+            (retval, outparams) = self.wbemconnection.InvokeMethod(
+                    "CreateOrModifyPartition",
+                    self.service,
+                    extent=self.diskname,
+                    StartingAddress=pywbem.Uint64(pstart),
+                    EndingAddress=pywbem.Uint64(pend),
+
+                    Goal=goal.path)
+            self.assertEqual(retval, 0)
+            self.assertIn("partition", outparams)
+
+            partition = outparams['partition']
+            partitions.append(partition)
+
+            partition_instance = self.wbemconnection.GetInstance(partition)
+            self.assertEqual(
+                    partition_size,
+                    partition_instance['NumberOfBlocks'])
+
+            # check based on
+            basedons = self.wbemconnection.References(
+                    partition,
+                    ResultClass="LMI_PartitionBasedOn")
+            self.assertEqual(len(basedons), 1)
+            basedon = basedons[0]
+            self.assertEqual(basedon['Antecedent'], self.diskname)
+            self.assertEqual(basedon['Dependent'], partition)
+            self.assertEqual(
+                    basedon['StartingAddress'],
+                    pstart)
+            self.assertEqual(
+                    basedon['EndingAddress'],
+                    pend)
+
+        self._delete_setting(goal.path)
+
+        for partition in partitions:
+            self.wbemconnection.DeleteInstance(partition)
+
+    def test_mbr_positions(self):
+        """
+            Try CreateOrModifyPartition on MBR partition table with
+            start/end addresses.
+        """
+        partition_start = 1 # beware of MBR table size
+        partition_size = 1025 * 2 * 10 # 10 MB
+        partition_count = 4
+        partitions = []
+        # create MBR partition table
+        self._set_partition_style(self.STYLE_MBR)
+        goal = self._create_setting(self.STYLE_MBR)
+
+        for i in xrange(partition_count):
+            pstart = partition_start + partition_size * i
+            pend = partition_start + partition_size * (i + 1) - 1
+            (retval, outparams) = self.wbemconnection.InvokeMethod(
+                    "CreateOrModifyPartition",
+                    self.service,
+                    extent=self.diskname,
+                    StartingAddress=pywbem.Uint64(pstart),
+                    EndingAddress=pywbem.Uint64(pend),
+
+                    Goal=goal.path)
+            self.assertEqual(retval, 0)
+            self.assertIn("partition", outparams)
+
+            partition = outparams['partition']
+            partitions.append(partition)
+
+            partition_instance = self.wbemconnection.GetInstance(partition)
+            self.assertEqual(
+                    partition_size,
+                    partition_instance['NumberOfBlocks'])
+
+            # check based on
+            basedons = self.wbemconnection.References(
+                    partition,
+                    ResultClass="LMI_PartitionBasedOn")
+            self.assertEqual(len(basedons), 1)
+            basedon = basedons[0]
+            self.assertEqual(basedon['Antecedent'], self.diskname)
+            self.assertEqual(basedon['Dependent'], partition)
+            self.assertEqual(
+                    basedon['StartingAddress'],
+                    pstart)
+            self.assertEqual(
+                    basedon['EndingAddress'],
+                    pend)
+
+        self._delete_setting(goal.path)
+
+        for partition in partitions:
+            self.wbemconnection.DeleteInstance(partition)
+
+    def test_logical_positions(self):
+        """
+            Try CreateOrModifyPartition on MBR partition table with
+            start/end addresses and logical partitions.
+        """
+        partition_start = 1 # beware of MBR table size
+        partition_size = 1025 * 2 * 10 # 10 MB
+        partition_count = 20
+        partitions = []
+        # create MBR partition table and one huge Extended partition
+        self._set_partition_style(self.STYLE_MBR)
+        goal = self._create_setting(self.STYLE_MBR)
+        goal['PartitionType'] = pywbem.Uint16(2) # Extended
+        self.wbemconnection.ModifyInstance(goal)
+        (retval, outparams) = self.wbemconnection.InvokeMethod(
+                "CreateOrModifyPartition",
+                self.service,
+                extent=self.diskname,
+                Goal=goal.path)
+        self.assertEqual(retval, 0)
+        self.assertIn("partition", outparams)
+        extended_partition = outparams['partition']
+
+        # create partition_count logical partitions on it
+        goal['PartitionType'] = pywbem.Uint16(3) # Logical
+        self.wbemconnection.ModifyInstance(goal)
+        for i in xrange(partition_count):
+            pstart = partition_start + partition_size * i
+            pend = partition_start + partition_size * (i + 1) - 1
+            (retval, outparams) = self.wbemconnection.InvokeMethod(
+                    "CreateOrModifyPartition",
+                    self.service,
+                    extent=extended_partition,
+                    StartingAddress=pywbem.Uint64(pstart),
+                    EndingAddress=pywbem.Uint64(pend),
+                    Goal=goal.path)
+            self.assertEqual(retval, 0)
+            self.assertIn("partition", outparams)
+
+            partition = outparams['partition']
+            partitions.append(partition)
+
+            partition_instance = self.wbemconnection.GetInstance(partition)
+            self.assertEqual(
+                    partition_size,
+                    partition_instance['NumberOfBlocks'])
+
+            # check based on
+            basedons = self.wbemconnection.References(
+                    partition,
+                    ResultClass="LMI_PartitionBasedOn")
+            self.assertEqual(len(basedons), 1)
+            basedon = basedons[0]
+            self.assertEqual(basedon['Antecedent'], extended_partition)
+            self.assertEqual(basedon['Dependent'], partition)
+            self.assertEqual(
+                    basedon['StartingAddress'],
+                    pstart)
+            self.assertEqual(
+                    basedon['EndingAddress'],
+                    pend)
+
+        self._delete_setting(goal.path)
+
+        for partition in partitions:
+            self.wbemconnection.DeleteInstance(partition)
+        self.wbemconnection.DeleteInstance(extended_partition)
 
     # TODO: test partition modification
 
