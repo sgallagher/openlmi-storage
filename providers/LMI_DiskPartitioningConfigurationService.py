@@ -182,13 +182,13 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find the Extent.")
             if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
-                if goal and goal['PartitionType'] != LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Logical:
+                if goal and int(goal['PartitionType']) != LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Logical:
                     raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                             "Only Goal with PartitionType == Logical can be created on this device.")
+                # don't forget to adjust their start/end addresses
+                address_shift = util.partitioning.get_logical_partition_start(device)
                 # create logical partitions on the disk, not on the extended partition
                 device = device.parents[0]
-                # and don't forget to adjust their start/end addresses
-                address_shift = util.partitioning.get_logical_partition_start(device)
             (minstart, maxend) = util.partitioning.get_available_sectors(device)
         else:
             device = None
@@ -258,14 +258,14 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         hidden = None
         if goal:
             bootable = goal['Bootable']
-            if goal['PartitionType'] == LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Extended:
+            if int(goal['PartitionType']) == LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Extended:
                 if device.format.labelType != "msdos":
                     raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                             "Goal.PartitionType cannot be Extended for this Extent.")
                 part_type = parted.PARTITION_EXTENDED
-            elif goal['PartitionType'] == LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Primary:
+            elif int(goal['PartitionType']) == LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Primary:
                 part_type = parted.PARTITION_NORMAL
-            elif goal['PartitionType'] == LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Logical:
+            elif int(goal['PartitionType']) == LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Logical:
                 if device.format.labelType != "msdos":
                     raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                             "Goal.PartitionType cannot be Logical for this Extent.")
