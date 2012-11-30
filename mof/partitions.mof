@@ -225,7 +225,7 @@ class LMI_DiskPartitionConfigurationSetting : CIM_SettingData
     
     [Description("Flag can be enabled to hide partitions "
           "from Microsoft operating systems.")]
-    boolean Hidden = False;
+    boolean Hidden;
 
     [Description("Partition type of the partition which is going to be created/modified. "
         "It should be used only for MS-DOS (MBR/EMBR) partition tables."),
