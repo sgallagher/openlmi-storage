@@ -48,13 +48,11 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         if device.isPrimary or device.isExtended:
             return self.get_gpt_instance(model, device, base)
 
-        # now the logical ones
-        sector_size = device.partedDevice.sectorSize
         # startaddress is relative to the beginning of the extended partition
-        base_start = base.partedPartition.geometry.start * sector_size
+        base_start = base.partedPartition.geometry.start
         # find the metadata
-        start = self.get_logical_partition_start(device) * sector_size
-        end = device.partedPartition.geometry.end * sector_size
+        start = self.get_logical_partition_start(device)
+        end = device.partedPartition.geometry.end
 
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
         model['StartingAddress'] = pywbem.Uint64(start - base_start)
@@ -62,12 +60,11 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         return model
 
     def get_gpt_instance(self, model, device, base):
-        sector_size = device.partedDevice.sectorSize
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
         model['StartingAddress'] = \
-            pywbem.Uint64(device.partedPartition.geometry.start * sector_size)
+            pywbem.Uint64(device.partedPartition.geometry.start)
         model['EndingAddress'] = \
-            pywbem.Uint64(device.partedPartition.geometry.end * sector_size)
+            pywbem.Uint64(device.partedPartition.geometry.end)
         return model
 
     def get_instance(self, env, model, device=None, base=None):
