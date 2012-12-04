@@ -52,15 +52,13 @@ from LMI_DiskPartitionConfigurationCapabilities import LMI_DiskPartitionConfigur
 from CapabilitiesProvider import ElementCapabilitiesProvider
 from LMI_InstalledPartitionTable import LMI_InstalledPartitionTable
 
+import cmpi_logging
 import pyanaconda.storage
 import pyanaconda.platform
 import os
 
-def init_anaconda(env):
-    """ Initialize an anaconda instance and return it. """
-    logger = env.get_logger()
-
-    logger.log_info("Initializing Anaconda")
+def init_anaconda():
+    cmpi_logging.logger.info("Initializing Anaconda")
 
     os.system('udevadm control --env=ANACONDA=1')
     os.system('udevadm trigger --subsystem-match block')
@@ -88,19 +86,20 @@ def get_providers(env):
         Called by CIMOM. Initialize OpenLMI and return dictionary of all
         providers we implement.
     """
+    cmpi_logging.init_logger(env)
+
     config = StorageConfiguration()
     config.load()
 
     manager = ProviderManager()
     setting_manager = SettingManager(config)
     setting_manager.load()
-    storage = init_anaconda(env)
+    storage = init_anaconda()
 
     providers = {}
 
     # common construction options
-    opts = {'env': env,
-            'storage': storage,
+    opts = {'storage': storage,
             'config': config,
             'provider_manager': manager,
             'setting_manager': setting_manager}
