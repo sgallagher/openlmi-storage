@@ -133,7 +133,7 @@ class TestSetPartitionStyle(StorageTestBase):
         self.assertDictEqual(outparams, {})
 
     def test_mbr(self):
-        """ Test SetPartitionStyle with GPT capabilities."""
+        """ Test SetPartitionStyle with MBR capabilities."""
         diskname = self._create_disk_name(self.disks[0])
         part_style = self._get_capabilities_name(self.STYLE_MBR)
         # Extent = sda, partStyle = MBR -> success
