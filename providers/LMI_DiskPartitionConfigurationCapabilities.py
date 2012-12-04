@@ -66,7 +66,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                     'PartitionTableSize': pywbem.Uint32(1),
                     'PartitionStyle': self.Values.PartitionStyle.EMBR,
                     'ValidSubPartitionStyles': pywbem.CIMProperty(
-                            name='MaxNumberOfPartitions',
+                            name='ValidSubPartitionStyles',
                             value=None,
                             type='uint16',
                             array_size=0,
@@ -87,7 +87,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                     'PartitionTableSize': pywbem.Uint32(68),
                     'PartitionStyle': self.Values.PartitionStyle.GPT,
                     'ValidSubPartitionStyles': pywbem.CIMProperty(
-                            name='MaxNumberOfPartitions',
+                            name='ValidSubPartitionStyles',
                             value=None,
                             type='uint16',
                             array_size=0,
