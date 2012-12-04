@@ -81,10 +81,6 @@ class LMI_InstalledPartitionTable(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.references()' \
-                % self.__class__.__name__)
         ch = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms 

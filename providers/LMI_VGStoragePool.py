@@ -147,9 +147,6 @@ class LMI_VGStoragePool(DeviceProvider):
                                      param_goal=None,
                                      param_sizes=None):
         """Implements LMI_VGStoragePool.GetSupportedSizes() """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_getsupportedsizes()' \
-                % self.__class__.__name__)
         rval = self.Values.GetSupportedSizes.Use_GetSupportedSizes_instead
         return (rval, [])
 
@@ -206,11 +203,6 @@ class LMI_VGStoragePool(DeviceProvider):
         CIM_ERR_FAILED (some other unspecified error occurred)
 
         """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_getsupportedsizerange()' \
-                % self.__class__.__name__)
-
         if not self.provides_name(object_name):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
         device = self.get_device_for_name(object_name)

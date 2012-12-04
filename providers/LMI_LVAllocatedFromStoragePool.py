@@ -27,7 +27,7 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
     """
     def __init__(self, *args, **kwargs):
         super(LMI_LVAllocatedFromStoragePool, self).__init__(*args, **kwargs)
-    
+
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -44,7 +44,7 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
             if not vgprovider:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find provider for device " + vg.path)
-            
+
             model['Dependent'] = lvprovider.get_name_for_device(device)
             model['Antecedent'] = vgprovider.get_name_for_device(vg)
             if keys_only:
@@ -52,7 +52,7 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
             else:
                 yield self.get_instance(env, model, device, vg)
 
-    def get_instance(self, env, model, device = None, vg = None):
+    def get_instance(self, env, model, device=None, vg=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It just checks if Dependent and Antecedent are related.
@@ -62,13 +62,13 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Dependent device")
-            
+
         if not vg:
             vg = self.provider_manager.get_device_for_name(model['Antecedent'])
         if not vg:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Antecedent device")
-        
+
         if not isinstance(device,
                     pyanaconda.storage.devices.LVMLogicalVolumeDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
@@ -79,7 +79,7 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
         if vg != device.vg:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Antecedent is not related to Dependent device")
-        
+
         return model
 
 
@@ -142,14 +142,11 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
 
         """
 
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.references()' \
-                % self.__class__.__name__)
         ch = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms 
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace, 
+        if ch.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_StorageExtent') or \
                 ch.is_subclass(object_name.namespace,

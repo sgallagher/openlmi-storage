@@ -210,11 +210,6 @@ class SettingProvider(BaseProvider):
         CIM_ERR_FAILED (some other unspecified error occurred)
 
         """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.set_instance()' \
-                % self.__class__.__name__)
-
         setting = self.find_instance(instance['InstanceID'])
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
@@ -282,11 +277,6 @@ class SettingProvider(BaseProvider):
         CIM_ERR_FAILED (some other unspecified error occurred)
 
         """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.delete_instance()' \
-                % self.__class__.__name__)
-
         setting = self.find_instance(instance_name['InstanceID'])
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
@@ -332,11 +322,6 @@ class SettingProvider(BaseProvider):
         CIM_ERR_FAILED (some other unspecified error occurred)
 
         """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_clonesetting()' \
-                % self.__class__.__name__)
-
         setting = self.find_instance(object_name['InstanceID'])
         if not setting:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
@@ -424,11 +409,6 @@ class ElementSettingDataProvider(BaseProvider):
 
     def references(self, env, object_name, model, result_class_name, role,
                                result_role, keys_only):
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.references()' \
-                % self.__class__.__name__)
-        ch = env.get_cimom_handle()
-
         # If you want to get references for free, implemented in terms 
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace,

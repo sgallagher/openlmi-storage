@@ -46,10 +46,6 @@ class ServiceProvider(BaseProvider):
         """
             Provider implementation of GetInstance intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.get_instance()' \
-                % self.__class__.__name__)
-
         self.check_instance(model)
 
         model['EnabledDefault'] = self.Values.EnabledDefault.Enabled
@@ -65,10 +61,6 @@ class ServiceProvider(BaseProvider):
         """
             Provider implementation of EnumerateInstances intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.enum_instances()' \
-                % self.__class__.__name__)
-
         model.path.update({'CreationClassName': None, 'SystemName': None,
             'Name': None, 'SystemCreationClassName': None})
         model['SystemName'] = self.config.system_name

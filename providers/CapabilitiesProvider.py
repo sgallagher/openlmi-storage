@@ -99,10 +99,6 @@ class CapabilitiesProvider(BaseProvider):
         """
             Provider implementation of GetInstance intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.get_instance()' \
-                % self.__class__.__name__)
-
         if not capabilities:
             instance_id = model['InstanceID']
             capabilities = self.get_capabilities_for_id(instance_id)
@@ -122,10 +118,6 @@ class CapabilitiesProvider(BaseProvider):
         """
             Provider implementation of EnumerateInstances intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.enum_instances()' \
-                % self.__class__.__name__)
-
         model.path.update({'InstanceID': None})
 
         for capabilities in self.enumerate_capabilities():
@@ -148,11 +140,6 @@ class CapabilitiesProvider(BaseProvider):
         Create LMI_DiskPartitionConfigurationSetting applicable to this
         partition table. All properties its will have default values.
         """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_createsetting()' \
-                % self.__class__.__name__)
-
         capabilities = self.get_capabilities_for_id(object_name['InstanceID'])
         if not capabilities:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
@@ -241,10 +228,6 @@ class ElementCapabilitiesProvider(BaseProvider):
         """
             Provider implementation of EnumerateInstances intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.enum_instances()' \
-                % self.__class__.__name__)
-
         model.path.update({'Capabilities': None, 'ManagedElement': None})
         for (managed_element, capabilities) in self.enumerate_capabilities():
             model['Capabilities'] = capabilities
@@ -258,10 +241,6 @@ class ElementCapabilitiesProvider(BaseProvider):
         """
             Provider implementation of GetInstance intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.get_instance()' \
-                % self.__class__.__name__)
-
         # find the capabilities instance
         if not capabilities:
             for (element_name, capabilities) in self.enumerate_capabilities():
@@ -285,9 +264,6 @@ class ElementCapabilitiesProvider(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations. """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.references()' \
-                % self.__class__.__name__)
         ch = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms 

@@ -53,10 +53,6 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             is in the PartitionTableSize property of the associated
             DiskPartitionConfigurationCapabilities instance.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_setpartitionstyle()' \
-                % self.__class__.__name__)
-
         # check parameters here, the real work is done in _setpartitionstyle
         self.check_instance(object_name)
 
@@ -147,11 +143,6 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             installed partition style (partition table); this association is
             established using SetPartitionStyle().
         """
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_createormodifypartition()' \
-                % self.__class__.__name__)
-
         # check parameters
         self.check_instance(object_name)
 

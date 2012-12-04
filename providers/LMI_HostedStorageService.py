@@ -33,10 +33,6 @@ class LMI_HostedStorageService(BaseProvider):
         """
             Provider implementation of GetInstance intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.get_instance()' \
-                % self.__class__.__name__)
-
         # just check keys
         system = model['Antecedent']
         if (system['CreationClassName'] != self.config.system_class_name
@@ -67,10 +63,6 @@ class LMI_HostedStorageService(BaseProvider):
         """
             Provider implementation of EnumerateInstances intrinsic method.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.enum_instances()' \
-                % self.__class__.__name__)
-
         model.path.update({'Dependent': None, 'Antecedent': None})
         for provider in self.provider_manager.get_service_providers():
             model['Antecedent'] = pywbem.CIMInstanceName(
@@ -94,10 +86,6 @@ class LMI_HostedStorageService(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""
-
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.references()' \
-                % self.__class__.__name__)
         ch = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms 

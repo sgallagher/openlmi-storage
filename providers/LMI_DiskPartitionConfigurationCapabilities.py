@@ -151,10 +151,6 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         Return allignment unit for given StorageExtent (in blocks). New
         partitions and metadata sectors should be aligned to this unit.
         """
-        logger = env.get_logger()
-        logger.log_debug('Entering %s.cim_method_createsetting()' \
-                % self.__class__.__name__)
-
         capabilities = self.get_capabilities_for_id(object_name['InstanceID'])
         if not capabilities:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
