@@ -177,7 +177,7 @@ class TestCreatePartition(StorageTestBase):
                 "CreateOrModifyPartition",
                 self.service,
                 extent=self.diskname,
-                Goal=goal)
+                Goal=goal.path)
 
         # try logical partition
         goal['PartitionType'] = pywbem.Uint16(3)
@@ -220,7 +220,7 @@ class TestCreatePartition(StorageTestBase):
                 "CreateOrModifyPartition",
                 self.service,
                 extent=self.diskname,
-                Goal=goal)
+                Goal=goal.path)
 
         # check based on
         basedons = self.wbemconnection.References(
@@ -300,7 +300,7 @@ class TestCreatePartition(StorageTestBase):
                 "CreateOrModifyPartition",
                 self.service,
                 extent=self.diskname,
-                Goal=goal)
+                Goal=goal.path)
 
         self._delete_setting(goal.path)
         self.wbemconnection.DeleteInstance(partition)
