@@ -41,10 +41,11 @@ class StorageTestBase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.url = os.environ.get("LMI_STORAGE_URL", "https://localhost:5989")
-        cls.username = os.environ.get("LMI_STORAGE_USERNAME", "root")
-        cls.password = os.environ.get("LMI_STORAGE_PASSWORD", "")
+        cls.url = os.environ.get("LMI_CIMOM_URL", "https://localhost:5989")
+        cls.username = os.environ.get("LMI_CIMOM_USERNAME", "root")
+        cls.password = os.environ.get("LMI_CIMOM_PASSWORD", "")
         cls.disks = os.environ.get("LMI_STORAGE_DISKS", "").split()
+        cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
 
         cls.wbemconnection = pywbem.WBEMConnection(cls.url, (cls.username, cls.password))
 
@@ -131,7 +132,7 @@ class StorageTestBase(unittest.TestCase):
         """
             Restart CIMOM
         """
-        ret = self.log_run(["systemctl", "restart", "sblim-sfcb.service"])
+        ret = self.log_run(["systemctl", "restart", self.cimom])
         time.sleep(1)
         if ret == 0:
             self.wbemconnection = pywbem.WBEMConnection(self.url, (self.username, self.password))
