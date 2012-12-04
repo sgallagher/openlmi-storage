@@ -19,6 +19,7 @@
 
 import ConfigParser
 import socket
+import cmpi_logging
 
 class StorageConfiguration(object):
     """
@@ -39,11 +40,13 @@ class StorageConfiguration(object):
         'systemclassname' : 'Linux_ComputerSystem'
     }
 
+    @cmpi_logging.trace
     def __init__(self):
         """ Initialize and load a configuration file."""
         self.config = ConfigParser.SafeConfigParser(defaults=self.defaults)
         self.load()
 
+    @cmpi_logging.trace
     def load(self):
         """
             Load configuration from CONFIG_FILE. The file does not need to
@@ -53,16 +56,19 @@ class StorageConfiguration(object):
         if not self.config.has_section('common'):
             self.config.add_section('common')
 
+    @cmpi_logging.trace
     def get_namespace(self):
         """ Return namespace of OpenLMI storage provider."""
         return self.config.get('common', 'namespace')
     namespace = property(get_namespace)
 
+    @cmpi_logging.trace
     def get_system_class_name(self):
         """ Return SystemClassName of OpenLMI storage provider."""
         return self.config.get('common', 'systemclassname')
     system_class_name = property(get_system_class_name)
 
+    @cmpi_logging.trace
     def get_system_name(self):
         """ Return SystemName of OpenLMI storage provider."""
         return socket.getfqdn()

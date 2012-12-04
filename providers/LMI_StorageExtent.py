@@ -19,6 +19,7 @@
 
 from ExtentProvider import ExtentProvider
 import pyanaconda.storage
+import cmpi_logging
 
 class LMI_StorageExtent(ExtentProvider):
     """
@@ -28,11 +29,12 @@ class LMI_StorageExtent(ExtentProvider):
         specialized providers in LMI.
     """
 
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_StorageExtent, self).__init__(
                 'LMI_StorageExtent', *args, **kwargs)
 
-
+    @cmpi_logging.trace
     def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
@@ -58,6 +60,7 @@ class LMI_StorageExtent(ExtentProvider):
             return True
         return False
 
+    @cmpi_logging.trace
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.

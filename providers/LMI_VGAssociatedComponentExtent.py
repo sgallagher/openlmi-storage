@@ -20,14 +20,17 @@
 from BaseProvider import BaseProvider
 import pywbem
 import pyanaconda.storage
+import cmpi_logging
 
 class LMI_VGAssociatedComponentExtent(BaseProvider):
     """
         Implementation of LMI_VGAssociatedComponentExtent class.
     """
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_VGAssociatedComponentExtent, self).__init__(*args, **kwargs)
 
+    @cmpi_logging.trace
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -52,6 +55,7 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
                 else:
                     yield self.get_instance(env, model, vg, pv)
 
+    @cmpi_logging.trace
     def get_instance(self, env, model, vg=None, pv=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -78,7 +82,7 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
 
         return model
 
-
+    @cmpi_logging.trace
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations.

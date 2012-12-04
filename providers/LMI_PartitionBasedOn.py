@@ -20,14 +20,18 @@
 from BasedOnProvider import BasedOnProvider
 import pywbem
 import util.partitioning
+import cmpi_logging
 
 class LMI_PartitionBasedOn(BasedOnProvider):
     """
         Implementation of BasedOn class.
     """
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_PartitionBasedOn, self).__init__(*args, **kwargs)
 
+
+    @cmpi_logging.trace
 
     def enumerate_devices(self):
         """
@@ -37,12 +41,14 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         """
         return self.storage.partitions
 
+    @cmpi_logging.trace
     def get_logical_partition_start(self, device):
         """
             Return starting address of logical's partition metadata.
         """
         return util.partitioning.get_logical_partition_start(device)
 
+    @cmpi_logging.trace
     def get_mbr_instance(self, model, device, base):
         # primary partitions are simple
         if device.isPrimary or device.isExtended:
@@ -59,6 +65,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         model['EndingAddress'] = pywbem.Uint64(end - base_start)
         return model
 
+    @cmpi_logging.trace
     def get_gpt_instance(self, model, device, base):
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
         model['StartingAddress'] = \
@@ -67,6 +74,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
             pywbem.Uint64(device.partedPartition.geometry.end)
         return model
 
+    @cmpi_logging.trace
     def get_instance(self, env, model, device=None, base=None):
         model = super(LMI_PartitionBasedOn, self).get_instance(
                 env, model, device, base)

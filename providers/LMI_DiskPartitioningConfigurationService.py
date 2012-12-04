@@ -23,21 +23,25 @@ import pywbem
 import pyanaconda.storage.formats
 import util.partitioning
 import parted
+import cmpi_logging
 
 class LMI_DiskPartitionConfigurationService(ServiceProvider):
     """
         LMI_DiskPartitionConfigurationService provider implementation.
     """
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_DiskPartitionConfigurationService, self).__init__(
                 "LMI_DiskPartitionConfigurationService", *args, **kwargs)
 
+    @cmpi_logging.trace
     def get_instance(self, env, model):
         model = super(LMI_DiskPartitionConfigurationService, self).get_instance(
                 env, model)
         model['PartitioningSchemes'] = self.Values.PartitioningSchemes.Volumes_may_be_partitioned_or_treated_as_whole
         return model
 
+    @cmpi_logging.trace
     def cim_method_setpartitionstyle(self, env, object_name,
                                      param_extent=None,
                                      param_partitionstyle=None):
@@ -97,6 +101,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         retval = self._setpartitionstyle(device, capabilities, capabilities_provider)
         return (retval, [])
 
+    @cmpi_logging.trace
     def _setpartitionstyle(self, device, capabilities, capabilities_provider):
         """
             Really set the partition style, all parameters were successfully
@@ -117,6 +122,8 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         action.execute()
         return self.Values.SetPartitionStyle.Success
 
+
+    @cmpi_logging.trace
 
     def cim_method_createormodifypartition(self, env, object_name,
                                            param_goal=None,
@@ -230,6 +237,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                            value=partition_name)]
         return (retval, out_params)
 
+    @cmpi_logging.trace
     def _modify_partition(self, partition, goal, start, end):
         """
             Modify partition to given goal, start and end.
@@ -239,6 +247,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                 "Partition modification is not supported.")
 
+    @cmpi_logging.trace
     def _create_partition(self, device, goal, start, end):
         """
             Create partition on given device with  given goal, start and end.

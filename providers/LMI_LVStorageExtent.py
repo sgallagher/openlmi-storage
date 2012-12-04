@@ -19,17 +19,19 @@
 
 from ExtentProvider import ExtentProvider
 import pyanaconda.storage
+import cmpi_logging
 
 class LMI_LVStorageExtent(ExtentProvider):
     """
         Provider of LMI_LVStorageExtent class.
     """
 
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_LVStorageExtent, self).__init__(
                 'LMI_LVStorageExtent', *args, **kwargs)
 
-
+    @cmpi_logging.trace
     def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
@@ -40,6 +42,7 @@ class LMI_LVStorageExtent(ExtentProvider):
             return True
         return False
 
+    @cmpi_logging.trace
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
@@ -47,9 +50,11 @@ class LMI_LVStorageExtent(ExtentProvider):
         for device in self.storage.lvs:
             yield device
 
+    @cmpi_logging.trace
     def get_element_name(self, device):
         return device.lvname
 
+    @cmpi_logging.trace
     def get_instance(self, env, model, device=None):
         """
             Add LV-specific properties.

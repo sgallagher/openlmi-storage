@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+import cmpi_logging
 
 class SettingHelper(object):
     """
@@ -27,9 +28,11 @@ class SettingHelper(object):
         instances associated to the managed foos.
     """
 
+    @cmpi_logging.trace
     def __init__(self, setting_classname):
         self.setting_classname = setting_classname
 
+    @cmpi_logging.trace
     def enumerate_settings(self, setting_provider):
         """
             This method returns iterable with all instances of LMI_*Setting
@@ -37,6 +40,7 @@ class SettingHelper(object):
         """
         return []
 
+    @cmpi_logging.trace
     def get_setting_for_id(self, setting_provider, instance_id):
         """
             Return Setting instance, which corresponds to LMI_*Setting with
@@ -47,6 +51,7 @@ class SettingHelper(object):
         """
         return None
 
+    @cmpi_logging.trace
     def get_associated_element_name(self, setting_provider, instance_id):
         """
             Return CIMInstanceName of ManagedElement for ElementSettingData

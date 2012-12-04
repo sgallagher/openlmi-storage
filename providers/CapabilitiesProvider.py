@@ -19,6 +19,7 @@
 
 from BaseProvider import BaseProvider
 import pywbem
+import cmpi_logging
 
 class CapabilitiesProvider(BaseProvider):
     """
@@ -34,10 +35,12 @@ class CapabilitiesProvider(BaseProvider):
 
     DEFAULT_CAPABILITY = "_default"
 
+    @cmpi_logging.trace
     def __init__(self, classname, *args, **kwargs):
         super(CapabilitiesProvider, self).__init__(*args, **kwargs)
         self.classname = classname
 
+    @cmpi_logging.trace
     def create_setting_id(self, myid):
         """
             InstanceID should have format LMI:<classname>:<ID>.
@@ -45,6 +48,7 @@ class CapabilitiesProvider(BaseProvider):
         """
         return "LMI:" + self.classname + ":" + myid
 
+    @cmpi_logging.trace
     def parse_instance_id(self, instance_id):
         """
             InstanceID should have format LMI:<classname>:<myid>.
@@ -61,6 +65,7 @@ class CapabilitiesProvider(BaseProvider):
             return None
         return parts[2]
 
+    @cmpi_logging.trace
     def get_capabilities_for_id(self, instance_id):
         """
             Return dictionary property_name -> value.
@@ -75,6 +80,7 @@ class CapabilitiesProvider(BaseProvider):
                 return capabilities
         return None
 
+    @cmpi_logging.trace
     def enumerate_capabilities(self):
         """
             Return an iterable with all capabilities instances, i.e.
@@ -86,6 +92,7 @@ class CapabilitiesProvider(BaseProvider):
         """
         return []
 
+    @cmpi_logging.trace
     def create_setting_for_capabilities(self, capabilities):
         """
             Create LMI_*Setting for given capabilities.
@@ -95,6 +102,7 @@ class CapabilitiesProvider(BaseProvider):
         """
         return None
 
+    @cmpi_logging.trace
     def get_instance(self, env, model, capabilities=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -114,6 +122,7 @@ class CapabilitiesProvider(BaseProvider):
 
         return model
 
+    @cmpi_logging.trace
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -127,6 +136,7 @@ class CapabilitiesProvider(BaseProvider):
             else:
                 yield self.get_instance(env, model, capabilities)
 
+    @cmpi_logging.trace
     def is_default(self, capabilities):
         """
             Return True, if the capabilities are the default one, i.e.
@@ -134,6 +144,7 @@ class CapabilitiesProvider(BaseProvider):
         """
         return capabilities.has_key(self.DEFAULT_CAPABILITY)
 
+    @cmpi_logging.trace
     def cim_method_createsetting(self, env, object_name):
         """Implements LMI_DiskPartitionConfigurationCapabilities.CreateSetting()
 
@@ -155,6 +166,7 @@ class CapabilitiesProvider(BaseProvider):
         rval = self.Values.CreateSetting.Success
         return (rval, out_params)
 
+    @cmpi_logging.trace
     def get_default_capabilities(self):
         """
             Return default capabilities or None if there are no default ones.
@@ -164,6 +176,7 @@ class CapabilitiesProvider(BaseProvider):
                 return capabilities
         return None
 
+    @cmpi_logging.trace
     def get_name_for_id(self, instance_id):
         """ Return CIMInstanceName for given InstanceID. """
         return pywbem.CIMInstanceName(
@@ -188,6 +201,7 @@ class ElementCapabilitiesProvider(BaseProvider):
         Otherwise, subclasses can associate capabilities to other managed
         elements.
     """
+    @cmpi_logging.trace
     def __init__(self, classname, capabilities_provider, service_provider,
             *args, **kwargs):
         self.classname = classname
@@ -195,6 +209,7 @@ class ElementCapabilitiesProvider(BaseProvider):
         self.service_provider = service_provider
         super(ElementCapabilitiesProvider, self).__init__(*args, **kwargs)
 
+    @cmpi_logging.trace
     def enumerate_capabilities(self):
         """
             Return iterable with (managed_element_name, capabilities_name),
@@ -224,6 +239,7 @@ class ElementCapabilitiesProvider(BaseProvider):
                     keybindings={'InstanceID' : capabilities['InstanceID']})
             yield (managed_element_name, capabilities_name)
 
+    @cmpi_logging.trace
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -237,6 +253,7 @@ class ElementCapabilitiesProvider(BaseProvider):
             else:
                 yield self.get_instance(env, model, capabilities)
 
+    @cmpi_logging.trace
     def get_instance(self, env, model, capabilities=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -261,6 +278,7 @@ class ElementCapabilitiesProvider(BaseProvider):
         model['Characteristics'] = characteristics
         return model
 
+    @cmpi_logging.trace
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations. """

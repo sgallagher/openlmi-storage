@@ -20,6 +20,7 @@
 from DeviceProvider import DeviceProvider
 import pywbem
 import pyanaconda.storage
+import cmpi_logging
 
 MEGABYTE = 1024 * 1024
 
@@ -27,9 +28,11 @@ class LMI_VGStoragePool(DeviceProvider):
     """
         Provider of LMI_VGStoragePool.
     """
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_VGStoragePool, self).__init__(*args, **kwargs)
 
+    @cmpi_logging.trace
     def provides_name(self, object_name):
         """
             Returns True, if this class is provider for given CIM InstanceName.
@@ -45,6 +48,7 @@ class LMI_VGStoragePool(DeviceProvider):
             return False
         return True
 
+    @cmpi_logging.trace
     def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
@@ -54,6 +58,7 @@ class LMI_VGStoragePool(DeviceProvider):
             return True
         return False
 
+    @cmpi_logging.trace
     def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
@@ -68,6 +73,7 @@ class LMI_VGStoragePool(DeviceProvider):
                     return vg
             return None
 
+    @cmpi_logging.trace
     def get_name_for_device(self, device):
         """
             Returns CIM InstanceName for given Anaconda StorageDevice.
@@ -81,6 +87,7 @@ class LMI_VGStoragePool(DeviceProvider):
                 })
         return name
 
+    @cmpi_logging.trace
     def get_instance(self, env, model, device=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -109,7 +116,7 @@ class LMI_VGStoragePool(DeviceProvider):
 
         return model
 
-
+    @cmpi_logging.trace
     def enum_instances(self, env, model, keys_only):
         """Enumerate instances.
 
@@ -142,6 +149,7 @@ class LMI_VGStoragePool(DeviceProvider):
             else:
                 yield self.get_instance(env, model, device)
 
+    @cmpi_logging.trace
     def cim_method_getsupportedsizes(self, env, object_name,
                                      param_elementtype=None,
                                      param_goal=None,
@@ -150,6 +158,7 @@ class LMI_VGStoragePool(DeviceProvider):
         rval = self.Values.GetSupportedSizes.Use_GetSupportedSizes_instead
         return (rval, [])
 
+    @cmpi_logging.trace
     def cim_method_getsupportedsizerange(self, env, object_name,
                                          param_minimumvolumesize=None,
                                          param_maximumvolumesize=None,

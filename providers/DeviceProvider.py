@@ -19,6 +19,7 @@
 
 from BaseProvider import BaseProvider
 import pywbem
+import cmpi_logging
 
 class DeviceProvider(BaseProvider):
     """
@@ -29,6 +30,7 @@ class DeviceProvider(BaseProvider):
         can convert CIM InstanceName to Anaconda's StorageDevice instance
         and a vice versa.
     """
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         """
             Initialize the provider.
@@ -39,12 +41,14 @@ class DeviceProvider(BaseProvider):
         super(DeviceProvider, self).__init__(*args, **kwargs)
         self.provider_manager.add_device_provider(self)
 
+    @cmpi_logging.trace
     def provides_name(self, object_name):
         """
             Returns True, if this class is provider for given CIM InstanceName.
         """
         return False
 
+    @cmpi_logging.trace
     def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
@@ -52,6 +56,7 @@ class DeviceProvider(BaseProvider):
         """
         return False
 
+    @cmpi_logging.trace
     def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
@@ -59,6 +64,7 @@ class DeviceProvider(BaseProvider):
         """
         return None
 
+    @cmpi_logging.trace
     def get_name_for_device(self, device):
         """
             Returns CIM InstanceName for given Anaconda StorageDevice.
@@ -66,6 +72,7 @@ class DeviceProvider(BaseProvider):
         """
         return None
 
+    @cmpi_logging.trace
     def get_status(self, device):
         """
             Returns OperationalStatus for given Anaconda StorageDevice.
@@ -84,6 +91,7 @@ class DeviceProvider(BaseProvider):
             status.add(self.Values.OperationalStatus.OK)
         return list(status)
 
+    @cmpi_logging.trace
     def get_base_devices(self, device):
         """
             Return iterable with base devices for given StorageDevice.
@@ -95,6 +103,7 @@ class DeviceProvider(BaseProvider):
             return device.parents
         return []
 
+    @cmpi_logging.trace
     def _getCommonRedundancy(self, a, b):
         """
             Return the combined data redundancy characteristics for
@@ -120,6 +129,7 @@ class DeviceProvider(BaseProvider):
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 
+    @cmpi_logging.trace
     def _find_redundancy(self, device):
         """
             Discover redundancy of given StorageDevice.
@@ -131,6 +141,7 @@ class DeviceProvider(BaseProvider):
                     "Cannot find provider for device " + device.path)
         return provider.get_redundancy(device)
 
+    @cmpi_logging.trace
     def do_delete_instance(self, device):
         """
             Really delete given Anaconda StorageDevice.
@@ -141,6 +152,7 @@ class DeviceProvider(BaseProvider):
         raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                     "Cannot delete this device.")
 
+    @cmpi_logging.trace
     def delete_instance(self, env, instance_name):
         """Delete an instance intrinsic method"""
         # just check the instance validity
@@ -154,6 +166,7 @@ class DeviceProvider(BaseProvider):
 
         self.do_delete_instance(device)
 
+    @cmpi_logging.trace
     def get_redundancy(self, device):
         """
             Returns redundancy characteristics for given Anaconda StorageDevice.
@@ -178,6 +191,7 @@ class DeviceProvider(BaseProvider):
             Class representing redundancy characteristics of a StorageExtent
             device, i.e. both StorageExtent and StoragePool
         """
+        @cmpi_logging.trace
         def __init__(self, no_single_point_of_failure=False,
                      data_redundancy=1,
                      package_redundancy=0,

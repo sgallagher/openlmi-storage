@@ -44,11 +44,11 @@ class CMPILogHandler(logging.Handler):
         elif record.levelno >= logging.INFO:
             self.cmpi_logger.log_info(msg)
         elif record.levelno >= TRACE_WARNING:
-            self.cmpi_logger.trace_warn(msg)
+            self.cmpi_logger.trace_warn(record.filename, msg)
         elif record.levelno >= TRACE_INFO:
-            self.cmpi_logger.trace_info(msg)
+            self.cmpi_logger.trace_info(record.filename, msg)
         elif record.levelno >= logging.DEBUG:
-            self.cmpi_logger.log_debug(msg)
+            self.cmpi_logger.trace_verbose(record.filename, msg)
 
 class CMPILogger(logging.Logger):
     """
@@ -66,33 +66,49 @@ class CMPILogger(logging.Logger):
         """ Log message with TRACE_VERBOSE severity. """
         self.log(TRACE_VERBOSE, msg, *args, **kwargs)
 
-class CMPIFormatter(logging.Formatter):
-    """
-        Special formatter of CMPI log messages, trace messages
-        include file name.
-    """
-    def __init__(self, *args, **kwargs):
-        self.trace_formatter = logging.Formatter(
-                '%(filename)s %(levelname)s: %(message)s')
-        self.log_formatter = logging.Formatter('%(levelname)s: %(message)s')
-        super(CMPIFormatter, self).__init__(*args, **kwargs)
-
-    def format(self, record):
-        if record.levelno >= logging.INFO:
-            return self.log_formatter.format(record)
-        else:
-            return self.trace_formatter.format(record)
-
 def init_logger(env):
     """
         Initialize logging.
     """
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
+
     cmpi_handler = CMPILogHandler(env.get_logger())
-    cmpi_handler.setLevel(logging.INFO)
-    formatter = CMPIFormatter()
+    cmpi_handler.setLevel(logging.DEBUG)
     cmpi_handler.setFormatter(formatter)
 
     my_logger = logging.getLogger('openlmi.storage')
     my_logger.addHandler(cmpi_handler)
+    my_logger.setLevel(logging.DEBUG)
 
-logger = logging.getLogger('openlmi.storage')
+    formatter = logging.Formatter('%(filename)s:%(levelname)s: %(message)s')
+
+    global logger #IGNORE:W0603
+    logger = my_logger
+    logger.info("CMPI log started")
+
+
+def trace(func):
+    """ Trace entry and exit for a function. """
+    def helper_func(*args, **kwargs):
+        """ Helper function, wrapping real function by trace decorator."""
+        logger.log(TRACE_VERBOSE,
+                "Entering %s" % (func.__name__,))
+        try:
+            ret = func(*args, **kwargs)
+        except Exception, e:
+            logger.log(TRACE_WARNING,
+                    "Function %s threw exception %s" % (
+                            func.__name__, str(e)))
+            raise
+        logger.log(
+                TRACE_VERBOSE,
+                "Exiting %s" % func.__name__)
+        return ret
+    helper_func.__name__ = func.__name__
+    helper_func.__doc__ = func.__doc__
+    helper_func.__module__ = func.__module__
+    return helper_func
+
+
+
+logger = None

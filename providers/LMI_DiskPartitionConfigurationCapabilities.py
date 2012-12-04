@@ -23,6 +23,7 @@ from SettingManager import Setting
 import pywbem
 import pyanaconda.storage.formats
 import parted
+import cmpi_logging
 
 MAXINT64 = pywbem.Uint64((2 << 63) - 1)
 MEGABYTE = 1024 * 1024
@@ -36,6 +37,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
     INSTANCE_ID_EMBR = "LMI:LMI_DiskPartitionConfigurationCapabilities:EMBR"
     INSTANCE_ID_GPT = "LMI:LMI_DiskPartitionConfigurationCapabilities:GPT"
 
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_DiskPartitionConfigurationCapabilities, self).__init__(
                 "LMI_DiskPartitionConfigurationCapabilities", *args, **kwargs)
@@ -105,6 +107,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
     ]
 
 
+    @cmpi_logging.trace
     def enumerate_capabilities(self):
         """
             Return an iterable with all capabilities instances, i.e.
@@ -115,6 +118,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
 
         return self.instances
 
+    @cmpi_logging.trace
     def create_setting_for_capabilities(self, capabilities):
         """
             Create LMI_*Setting for given capabilities.
@@ -143,6 +147,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                 namespace=self.config.namespace,
                 keybindings={'InstanceID': setting_id})
 
+    @cmpi_logging.trace
     def cim_method_getalignment(self, env, object_name,
                                 param_extent=None):
         """
@@ -175,6 +180,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         retval = self.Values.GetAlignment.Success
         return (retval, out_params)
 
+    @cmpi_logging.trace
     def get_capabilities_for_device(self, device):
         """
             Return capabilities for given StorageDevice 
@@ -195,6 +201,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         if device.format.labelType == "gpt":
             return self.get_capabilities_for_id(self.INSTANCE_ID_GPT)
 
+    @cmpi_logging.trace
     def check_capabilities_for_device(self, device, capabilities):
         """
             Check if the capabilities are the right one for the device and
@@ -231,6 +238,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
 
         return True
 
+    @cmpi_logging.trace
     def cim_method_findpartitionlocation(self, env, object_name,
                                          param_extent=None,
                                          param_size=None):

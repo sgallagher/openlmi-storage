@@ -19,6 +19,7 @@
 
 from BaseProvider import BaseProvider
 import pywbem
+import cmpi_logging
 
 class ServiceProvider(BaseProvider):
     """
@@ -26,10 +27,13 @@ class ServiceProvider(BaseProvider):
         It implements get_instance and enum_instances methods.
     """
 
+    @cmpi_logging.trace
     def __init__(self, classname, *args, **kwargs):
         super(ServiceProvider, self).__init__(*args, **kwargs)
         self.classname = classname
 
+
+    @cmpi_logging.trace
 
     def check_instance(self, model):
         """
@@ -42,6 +46,7 @@ class ServiceProvider(BaseProvider):
                 or model['Name'] != self.classname):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
 
+    @cmpi_logging.trace
     def get_instance(self, env, model):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -57,6 +62,7 @@ class ServiceProvider(BaseProvider):
         model['StartMode'] = self.Values.StartMode.Automatic
         return model
 
+    @cmpi_logging.trace
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.

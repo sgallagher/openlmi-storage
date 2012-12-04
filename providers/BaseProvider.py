@@ -18,6 +18,7 @@
 # -*- coding: utf-8 -*-
 
 from pywbem.cim_provider2 import CIMProvider2
+import cmpi_logging
 
 class BaseProvider(CIMProvider2):
     """
@@ -28,6 +29,7 @@ class BaseProvider(CIMProvider2):
         can convert CIM InstanceName to Anaconda's StorageDevice instance
         and a vice versa.
     """
+    @cmpi_logging.trace
     def __init__(self, storage, config, provider_manager, setting_manager):
         """
             Initialize the provider.

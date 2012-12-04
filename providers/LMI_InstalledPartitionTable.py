@@ -20,19 +20,20 @@
 import pyanaconda.storage.formats
 from BaseProvider import BaseProvider
 import pywbem
+import cmpi_logging
 
 class LMI_InstalledPartitionTable(BaseProvider):
     """
         LMI_InstalledPartitionTable provider implementation.
     """
 
+    @cmpi_logging.trace
     def __init__(self, *args, **kwargs):
         super(LMI_InstalledPartitionTable, self).__init__(*args, **kwargs)
         self.capabilities_provider = self.provider_manager.get_capabilities_provider_for_class(
                 "LMI_DiskPartitionConfigurationCapabilities")
 
-
-
+    @cmpi_logging.trace
     def get_instance(self, env, model):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -53,6 +54,7 @@ class LMI_InstalledPartitionTable(BaseProvider):
 
         return model
 
+    @cmpi_logging.trace
     def get_capabilities_name_for_device(self, device):
         """
             Return CIMInstanceName of DiskPartitionConfigurationCapabilities
@@ -64,6 +66,7 @@ class LMI_InstalledPartitionTable(BaseProvider):
             return self.capabilities_provider.get_name_for_id(capabilities['InstanceID'])
         return None
 
+    @cmpi_logging.trace
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -78,6 +81,7 @@ class LMI_InstalledPartitionTable(BaseProvider):
                 yield model
 
 
+    @cmpi_logging.trace
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""
