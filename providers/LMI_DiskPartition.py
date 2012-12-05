@@ -28,13 +28,13 @@ class LMI_DiskPartition(ExtentProvider):
         Provider of LMI_DiskPartition class.
     """
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_DiskPartition, self).__init__(
                 'LMI_DiskPartition', *args, **kwargs)
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
     def provides_device(self, device):
         """
@@ -46,7 +46,7 @@ class LMI_DiskPartition(ExtentProvider):
                 return True
         return False
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_base_devices(self, device):
         if device.isPrimary or device.isExtended:
             return super(LMI_DiskPartition, self).get_base_devices(device)
@@ -61,7 +61,7 @@ class LMI_DiskPartition(ExtentProvider):
         return [ext, ]
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
     def enumerate_devices(self):
         """
@@ -71,7 +71,7 @@ class LMI_DiskPartition(ExtentProvider):
             if self.provides_device(device):
                 yield device
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_instance(self, env, model, device=None):
         """
             Add partition-specific properties.
@@ -90,7 +90,7 @@ class LMI_DiskPartition(ExtentProvider):
 
         return model
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def do_delete_instance(self, device):
         """
             Really delete given Anaconda StorageDevice.

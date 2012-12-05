@@ -21,6 +21,7 @@
 
 
 import logging
+import inspect
 
 TRACE_WARNING = logging.INFO - 1
 TRACE_INFO = logging.INFO - 2
@@ -52,7 +53,7 @@ class CMPILogHandler(logging.Handler):
 
 class CMPILogger(logging.getLoggerClass()):
     """
-        A logger class, which adds trace level log methods.
+        A logger class, which adds trace_method level log methods.
     """
     def trace_warn(self, msg, *args, **kwargs):
         """ Log message with TRACE_WARNING severity. """
@@ -68,22 +69,25 @@ class CMPILogger(logging.getLoggerClass()):
 
 logging.setLoggerClass(CMPILogger)
 
-def trace(func):
+def trace_method(func):
     """ Decorator, trace entry and exit for a function. """
+    classname = inspect.getouterframes(inspect.currentframe())[1][3]
     def helper_func(*args, **kwargs):
-        """ Helper function, wrapping real function by trace decorator."""
+        """ Helper function, wrapping real function by trace_method decorator."""
         logger.log(TRACE_VERBOSE,
-                "Entering %s" % (func.__name__,))
+                "Entering %s.%s" % (classname, func.__name__,))
         try:
             ret = func(*args, **kwargs)
         except Exception, e:
             logger.log(TRACE_WARNING,
-                    "Function %s threw exception %s" % (
-                            func.__name__, str(e)))
+                    "%s.%s threw exception %s" % (
+                            classname,
+                            func.__name__,
+                            str(e)))
             raise
         logger.log(
                 TRACE_VERBOSE,
-                "Exiting %s" % func.__name__)
+                "Exiting %s.%s" % (classname, func.__name__))
         return ret
     helper_func.__name__ = func.__name__
     helper_func.__doc__ = func.__doc__
@@ -97,8 +101,8 @@ class LogManager(object):
         instantiated as soon as possible, even before reading a config.
         The config file can be provided later by set_config call.
     """
-    FORMAT_STDOUT = '%(filename)s:%(levelname)s: %(message)s'
-    FORMAT_CMPI = '%(filename)s:%(levelname)s: %(message)s'
+    FORMAT_STDOUT = '%(levelname)s: %(message)s'
+    FORMAT_CMPI = '%(levelname)s: %(message)s'
 
     def __init__(self, env):
         """
@@ -121,7 +125,7 @@ class LogManager(object):
         logger = self.logger
         logger.info("CMPI log started")
 
-    @trace
+    @trace_method
     def set_config(self, config):
         """
             Set a configuration of logging. It applies its setting immediately
@@ -132,7 +136,7 @@ class LogManager(object):
         # apply the config
         self._config_changed(config)
 
-    @trace
+    @trace_method
     def _config_changed(self, config):
         """
             Apply changed configuration, i.e. start/stop sending to stdout

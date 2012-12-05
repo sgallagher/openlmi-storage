@@ -26,12 +26,12 @@ class LMI_HostedStorageService(BaseProvider):
         Implementation of LMI_HostedStorageService provider.
     """
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_HostedStorageService, self).__init__(*args, **kwargs)
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
     def get_instance(self, env, model):
         """
@@ -63,7 +63,7 @@ class LMI_HostedStorageService(BaseProvider):
 
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
 
     def enum_instances(self, env, model, keys_only):
@@ -90,7 +90,7 @@ class LMI_HostedStorageService(BaseProvider):
                     })
         yield model
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""

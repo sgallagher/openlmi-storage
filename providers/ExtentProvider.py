@@ -28,12 +28,12 @@ class ExtentProvider(DeviceProvider):
         Base of all StorageExtent providers.
         It fills common properties in the StorageExtent.
     """
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, classname, *args, **kwargs):
         self.classname = classname
         super(ExtentProvider, self).__init__(*args, **kwargs)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def _get_device(self, object_name):
         """
             Get Anaconda StorageDevice for given name, without any checks.
@@ -42,7 +42,7 @@ class ExtentProvider(DeviceProvider):
         device = self.storage.devicetree.getDeviceByPath(path)
         return device
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def provides_name(self, object_name):
         """
             Returns True, if this class is provider for given CIM InstanceName.
@@ -58,7 +58,7 @@ class ExtentProvider(DeviceProvider):
 
         return True
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
@@ -67,7 +67,7 @@ class ExtentProvider(DeviceProvider):
         if self.provides_name(object_name):
             return self._get_device(object_name)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_name_for_device(self, device):
         """
             Returns CIM InstanceName for given Anaconda StorageDevice.
@@ -84,7 +84,7 @@ class ExtentProvider(DeviceProvider):
                 })
         return name
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_element_name(self, device):
         """
             Return ElementName property value for given StorageDevice.
@@ -92,7 +92,7 @@ class ExtentProvider(DeviceProvider):
         """
         return device.name
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_extent_status(self, device):
         """
             Return ExtentStatus property value for given StorageDevice.
@@ -100,7 +100,7 @@ class ExtentProvider(DeviceProvider):
         """
         return []
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_size(self, device):
         """
             Return (BlockSize, NumberOfBlocks, ConsumableBlocks) properties
@@ -122,14 +122,14 @@ class ExtentProvider(DeviceProvider):
             consumable_blocks = None
         return (block_size, total_blocks, consumable_blocks)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_primordial(self, device):
         """
             Returns True, if given StorageDevice is primordial.
         """
         return False
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_discriminator(self, device):
         """
             Returns ExtentDiscriminator property value for given StorageDevice.
@@ -141,7 +141,7 @@ class ExtentProvider(DeviceProvider):
             d.append(self.Values.Discriminator.Pool_Component)
         return d
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_instance(self, env, model, device=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -205,7 +205,7 @@ class ExtentProvider(DeviceProvider):
 
         return model
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
@@ -213,7 +213,7 @@ class ExtentProvider(DeviceProvider):
         pass
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enum_instances(self, env, model, keys_only):
         """Enumerate instances.
 

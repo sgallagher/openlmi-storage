@@ -27,11 +27,11 @@ class BasedOnProvider(BaseProvider):
         It should handle everything, subclasses just need to override
         enumerate_devices.
     """
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(BasedOnProvider, self).__init__(*args, **kwargs)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_devices(self):
         """
             Enumerate all devices, which are in this association as
@@ -40,7 +40,7 @@ class BasedOnProvider(BaseProvider):
         """
         return []
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -61,7 +61,7 @@ class BasedOnProvider(BaseProvider):
                     yield self.get_instance(env, model, device, base)
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_instance(self, env, model, device=None, base=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -86,7 +86,7 @@ class BasedOnProvider(BaseProvider):
 
         return model
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations.

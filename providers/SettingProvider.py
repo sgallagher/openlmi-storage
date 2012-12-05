@@ -37,7 +37,7 @@ class SettingProvider(BaseProvider):
         Preconfigured instances are stored in /etc/openlmi/storage/settings/<setting_classname>.ini
         Persistent instances are stored in /var/lib/openlmi-storage/settings/<setting_classname>.ini
     """
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, setting_classname, supported_properties, *args, **kwargs):
         """
             setting_classname = name of CIM class, which we provide
@@ -57,7 +57,7 @@ class SettingProvider(BaseProvider):
 
         super(SettingProvider, self).__init__(*args, **kwargs)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_configurations(self):
         """
             Enumerate all instances of LMI_*Setting, which are attached 
@@ -70,7 +70,7 @@ class SettingProvider(BaseProvider):
         """
         return []
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def parse_setting_id(self, instance_id):
         """
             InstanceID should have format LMI:<classname>:<myid>.
@@ -87,7 +87,7 @@ class SettingProvider(BaseProvider):
             return None
         return parts[2]
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def create_setting_id(self, myid):
         """
             InstanceID should have format LMI:<classname>:<ID>.
@@ -95,7 +95,7 @@ class SettingProvider(BaseProvider):
         """
         return "LMI:" + self.setting_classname + ":" + myid
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_configuration_for_id(self, instance_id):
         """
             Return Setting instance for given instance_id.
@@ -105,7 +105,7 @@ class SettingProvider(BaseProvider):
         """
         return None
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_associated_element_name(self, instance_id):
         """
             Return CIMInstanceName for ElementSettingData association.
@@ -114,7 +114,7 @@ class SettingProvider(BaseProvider):
         """
         return None
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -140,7 +140,7 @@ class SettingProvider(BaseProvider):
             else:
                 yield self.get_instance(env, model, setting)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def find_instance(self, instance_id):
         """
             Find an Setting instance with given InstanceID and return it.
@@ -154,7 +154,7 @@ class SettingProvider(BaseProvider):
         # find the setting in configurations
         return self.get_configuration_for_id(instance_id)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_instance(self, env, model, setting=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -182,7 +182,7 @@ class SettingProvider(BaseProvider):
 
         return model
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def string_to_bool(self, value):
         """
             Convert a string to boolean value.
@@ -195,7 +195,7 @@ class SettingProvider(BaseProvider):
         return bool(value)
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
@@ -269,7 +269,7 @@ class SettingProvider(BaseProvider):
         self.setting_manager.set_setting(self.setting_classname, setting)
         return instance
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def delete_instance(self, env, instance_name):
         """Delete an instance.
 
@@ -303,7 +303,7 @@ class SettingProvider(BaseProvider):
 
         self.setting_manager.delete_setting(self.setting_classname, setting)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def cim_method_clonesetting(self, env, object_name):
         """Implements LMI_DiskPartitionConfigurationSetting.CloneSetting()
 
@@ -376,7 +376,7 @@ class ElementSettingDataProvider(BaseProvider):
         Implementation of CIM_ElementSettingData.
         It uses functionality provided by SettingProvider.
     """
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, setting_provider,
             managed_element_classname,
             setting_data_classname,
@@ -387,7 +387,7 @@ class ElementSettingDataProvider(BaseProvider):
         super(ElementSettingDataProvider, self).__init__(*args, **kwargs)
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
     def get_instance(self, env, model):
         """
@@ -408,7 +408,7 @@ class ElementSettingDataProvider(BaseProvider):
         model['IsCurrent'] = pywbem.Uint16(1) # current
         return model
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -426,7 +426,7 @@ class ElementSettingDataProvider(BaseProvider):
             else:
                 yield self.get_instance(env, model)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def references(self, env, object_name, model, result_class_name, role,
                                result_role, keys_only):
         # If you want to get references for free, implemented in terms 
@@ -448,12 +448,12 @@ class SettingHelperProvider(SettingProvider):
         implement SettingHelper.
     """
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, setting_helper, *args, **kwargs):
         self.setting_helper = setting_helper
         super(SettingHelperProvider, self).__init__(*args, **kwargs)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_configurations(self):
         """
             Enumerate all instances of LMI_*Setting, which are attached 
@@ -463,7 +463,7 @@ class SettingHelperProvider(SettingProvider):
         """
         return self.setting_helper.enumerate_settings(self)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_configuration_for_id(self, instance_id):
         """
             Return Setting instance for given instance_id.
@@ -471,7 +471,7 @@ class SettingHelperProvider(SettingProvider):
         """
         return self.setting_helper.get_setting_for_id(self, instance_id)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_associated_element_name(self, instance_id):
         """
             Return CIMInstanceName for ElementSettingData association.

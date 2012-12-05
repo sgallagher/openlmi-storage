@@ -25,11 +25,11 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
     """
         Implementation of BasedOn class.
     """
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_MDRAIDBasedOn, self).__init__(*args, **kwargs)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_devices(self):
         """
             Enumerate all devices, which are in this association as
@@ -38,7 +38,7 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
         """
         return self.storage.mdarrays
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_instance(self, env, model, device=None, base=None):
         model = super(LMI_MDRAIDBasedOn, self).get_instance(
                 env, model, device, base)

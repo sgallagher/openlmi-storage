@@ -27,13 +27,13 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
         Provider of LMI_MDRAIDStorageExtent class.
     """
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_MDRAIDStorageExtent, self).__init__(
                 'LMI_MDRAIDStorageExtent', *args, **kwargs)
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
     def provides_device(self, device):
         """
@@ -44,7 +44,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
             return True
         return False
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
@@ -52,7 +52,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
         for device in self.storage.mdarrays:
             yield device
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def _getRedundancy0(self, a, b):
         """
             Return the combined data redundancy characteristics for
@@ -71,7 +71,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def _getRedundancy1(self, a, b):
         """
             Return the combined data redundancy characteristics for
@@ -88,7 +88,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def _getRedundancy5(self, a, b):
         """
             Return the combined data redundancy characteristics for
@@ -105,7 +105,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_redundancy(self, device):
         """
             Returns redundancy characterictics for given Anaconda StorageDevice.
@@ -139,7 +139,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
 
         return final_redundancy
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_instance(self, env, model, device=None):
         """
             Add MD RAID-specific properties.

@@ -27,13 +27,13 @@ class LMI_GenericDiskPartition(ExtentProvider):
         Provider of LMI_GenericDiskPartition class.
     """
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_GenericDiskPartition, self).__init__(
                 'LMI_GenericDiskPartition', *args, **kwargs)
 
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
 
     def provides_device(self, device):
         """
@@ -46,7 +46,7 @@ class LMI_GenericDiskPartition(ExtentProvider):
             return True
         return False
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_devices(self):
         """
             Enumerate all StorageDevices, that this provider provides.
@@ -55,7 +55,7 @@ class LMI_GenericDiskPartition(ExtentProvider):
             if self.provides_device(device):
                 yield device
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def do_delete_instance(self, device):
         """
             Really delete given Anaconda StorageDevice.

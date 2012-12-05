@@ -42,14 +42,14 @@ class StorageConfiguration(object):
         'stdout': False,
     }
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self):
         """ Initialize and load a configuration file."""
         self._listeners = []
         self.config = ConfigParser.SafeConfigParser(defaults=self.defaults)
         self.load()
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def add_listener(self, callback):
         """ 
             Add a callback, which will be called when configuration is updated.
@@ -58,7 +58,7 @@ class StorageConfiguration(object):
         """
         self._listeners.append(callback)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def _call_listeners(self):
         """
             Call all listeners that configuration has updated.
@@ -66,7 +66,7 @@ class StorageConfiguration(object):
         for callback in self._listeners:
             callback(self)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def load(self):
         """
             Load configuration from CONFIG_FILE. The file does not need to

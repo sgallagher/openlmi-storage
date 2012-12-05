@@ -29,7 +29,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
         Implementation of LMI_DiskPartitionConfigurationSetting
     """
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         supported_properties = {
             'Bootable': self.string_to_bool,
@@ -41,7 +41,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
                 supported_properties=supported_properties,
                 *args, **kwargs)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_configuration(self, device):
         setting = Setting(Setting.TYPE_CONFIGURATION,
                 self.create_setting_id(device.path))
@@ -60,7 +60,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
         setting['ElementName'] = setting.id
         return setting
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def enumerate_configurations(self):
         """
             Enumerate all instances attached to partitions.
@@ -68,7 +68,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
         for device in self.storage.partitions:
             yield self.get_configuration(device)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_configuration_for_id(self, instance_id):
         """
             Return Setting instance for given instance_id.
@@ -83,7 +83,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
             return None
         return self.get_configuration(device)
 
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def get_associated_element_name(self, instance_id):
         """
             Return CIMInstanceName for ElementSettingData association.

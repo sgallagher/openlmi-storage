@@ -29,7 +29,7 @@ class BaseProvider(CIMProvider2):
         can convert CIM InstanceName to Anaconda's StorageDevice instance
         and a vice versa.
     """
-    @cmpi_logging.trace
+    @cmpi_logging.trace_method
     def __init__(self, storage, config, provider_manager, setting_manager):
         """
             Initialize the provider.
