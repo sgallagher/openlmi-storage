@@ -50,7 +50,7 @@ class CMPILogHandler(logging.Handler):
         elif record.levelno >= logging.DEBUG:
             self.cmpi_logger.trace_verbose(record.filename, msg)
 
-class CMPILogger(logging.Logger):
+class CMPILogger(logging.getLoggerClass()):
     """
         A logger class, which adds trace level log methods.
     """
@@ -66,29 +66,10 @@ class CMPILogger(logging.Logger):
         """ Log message with TRACE_VERBOSE severity. """
         self.log(TRACE_VERBOSE, msg, *args, **kwargs)
 
-def init_logger(env):
-    """
-        Initialize logging.
-    """
-    formatter = logging.Formatter('%(levelname)s: %(message)s')
-
-    cmpi_handler = CMPILogHandler(env.get_logger())
-    cmpi_handler.setLevel(logging.DEBUG)
-    cmpi_handler.setFormatter(formatter)
-
-    my_logger = logging.getLogger('openlmi.storage')
-    my_logger.addHandler(cmpi_handler)
-    my_logger.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter('%(filename)s:%(levelname)s: %(message)s')
-
-    global logger #IGNORE:W0603
-    logger = my_logger
-    logger.info("CMPI log started")
-
+logging.setLoggerClass(CMPILogger)
 
 def trace(func):
-    """ Trace entry and exit for a function. """
+    """ Decorator, trace entry and exit for a function. """
     def helper_func(*args, **kwargs):
         """ Helper function, wrapping real function by trace decorator."""
         logger.log(TRACE_VERBOSE,
@@ -108,6 +89,75 @@ def trace(func):
     helper_func.__doc__ = func.__doc__
     helper_func.__module__ = func.__module__
     return helper_func
+
+class LogManager(object):
+    """
+        Class, which takes care of CMPI logging.
+        There should be only one instance of this class and it should be
+        instantiated as soon as possible, even before reading a config.
+        The config file can be provided later by set_config call.
+    """
+    FORMAT_STDOUT = '%(filename)s:%(levelname)s: %(message)s'
+    FORMAT_CMPI = '%(filename)s:%(levelname)s: %(message)s'
+
+    def __init__(self, env):
+        """
+            Initialize logging.
+        """
+        formatter = logging.Formatter(self.FORMAT_CMPI)
+
+        self.cmpi_handler = CMPILogHandler(env.get_logger())
+        self.cmpi_handler.setLevel(logging.DEBUG)
+        self.cmpi_handler.setFormatter(formatter)
+
+        self.logger = logging.getLogger('openlmi.storage')
+        self.logger.addHandler(self.cmpi_handler)
+        self.logger.setLevel(logging.INFO)
+
+        self.stdout_handler = None
+        self.config = None
+
+        global logger #IGNORE:W0603
+        logger = self.logger
+        logger.info("CMPI log started")
+
+    @trace
+    def set_config(self, config):
+        """
+            Set a configuration of logging. It applies its setting immediately
+            and also subscribes for configuration changes.
+        """
+        self.config = config
+        config.add_listener(self._config_changed)
+        # apply the config
+        self._config_changed(config)
+
+    @trace
+    def _config_changed(self, config):
+        """
+            Apply changed configuration, i.e. start/stop sending to stdout
+            and set appropriate log level.
+        """
+        if config.tracing:
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            self.logger.setLevel(logging.INFO)
+        if config.stdout:
+            # start sending to stdout
+            if not self.stdout_handler:
+                # create stdout handler             
+                formatter = logging.Formatter(self.FORMAT_STDOUT)
+                self.stdout_handler = logging.StreamHandler()
+                self.stdout_handler.setLevel(logging.DEBUG)
+                self.stdout_handler.setFormatter(formatter)
+                self.logger.addHandler(self.stdout_handler)
+                self.logger.info("Started logging to stdout.")
+        else:
+            # stop sending to stdout
+            if self.stdout_handler:
+                self.logger.info("Stopped logging to stdout.")
+                self.logger.removeHandler(self.stdout_handler)
+            self.stdout_handler = None
 
 
 

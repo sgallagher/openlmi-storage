@@ -37,14 +37,34 @@ class StorageConfiguration(object):
 
     defaults = {
         'namespace' : 'root/cimv2',
-        'systemclassname' : 'Linux_ComputerSystem'
+        'systemclassname' : 'Linux_ComputerSystem',
+        'tracing': False,
+        'stdout': False,
     }
 
     @cmpi_logging.trace
     def __init__(self):
         """ Initialize and load a configuration file."""
+        self._listeners = []
         self.config = ConfigParser.SafeConfigParser(defaults=self.defaults)
         self.load()
+
+    @cmpi_logging.trace
+    def add_listener(self, callback):
+        """ 
+            Add a callback, which will be called when configuration is updated.
+            The callback will be called with StorageConfiguration as parameter:
+              callback(config)
+        """
+        self._listeners.append(callback)
+
+    @cmpi_logging.trace
+    def _call_listeners(self):
+        """
+            Call all listeners that configuration has updated.
+        """
+        for callback in self._listeners:
+            callback(self)
 
     @cmpi_logging.trace
     def load(self):
@@ -55,21 +75,31 @@ class StorageConfiguration(object):
         self.config.read(self.CONFIG_FILE)
         if not self.config.has_section('common'):
             self.config.add_section('common')
+        if not self.config.has_section('debug'):
+            self.config.add_section('debug')
+        self._call_listeners()
 
-    @cmpi_logging.trace
-    def get_namespace(self):
+    @property
+    def namespace(self):
         """ Return namespace of OpenLMI storage provider."""
         return self.config.get('common', 'namespace')
-    namespace = property(get_namespace)
 
-    @cmpi_logging.trace
-    def get_system_class_name(self):
+    @property
+    def system_class_name(self):
         """ Return SystemClassName of OpenLMI storage provider."""
         return self.config.get('common', 'systemclassname')
-    system_class_name = property(get_system_class_name)
 
-    @cmpi_logging.trace
-    def get_system_name(self):
+    @property
+    def system_name(self):
         """ Return SystemName of OpenLMI storage provider."""
         return socket.getfqdn()
-    system_name = property(get_system_name)
+
+    @property
+    def tracing(self):
+        """ Return True if tracing is enabled."""
+        return self.config.get('debug', 'tracing')
+
+    @property
+    def stdout(self):
+        """ Return True if logging to stdout is enabled."""
+        return self.config.get('debug', 'stdout')

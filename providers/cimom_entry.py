@@ -86,10 +86,11 @@ def get_providers(env):
         Called by CIMOM. Initialize OpenLMI and return dictionary of all
         providers we implement.
     """
-    cmpi_logging.init_logger(env)
+    log_manager = cmpi_logging.LogManager(env)
 
     config = StorageConfiguration()
     config.load()
+    log_manager.set_config(config)
 
     manager = ProviderManager()
     setting_manager = SettingManager(config)
