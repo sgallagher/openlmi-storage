@@ -46,6 +46,7 @@ class StorageTestBase(unittest.TestCase):
         cls.password = os.environ.get("LMI_CIMOM_PASSWORD", "")
         cls.disks = os.environ.get("LMI_STORAGE_DISKS", "").split()
         cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
+        cls.clean = os.environ.get("LMI_STORAGE_CLEAN", "Yes")
 
         cls.wbemconnection = pywbem.WBEMConnection(cls.url, (cls.username, cls.password))
 
@@ -157,5 +158,6 @@ class StorageTestBase(unittest.TestCase):
             Each test should clean after itself!
         """
         # try to destroy everything and restart CIMOM
-        if self.destroy_created():
-            self.restart_cim()
+        if self.clean:
+            if self.destroy_created():
+                self.restart_cim()
