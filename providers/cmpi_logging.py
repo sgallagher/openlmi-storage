@@ -101,8 +101,10 @@ class LogManager(object):
         instantiated as soon as possible, even before reading a config.
         The config file can be provided later by set_config call.
     """
-    FORMAT_STDOUT = '%(levelname)s: %(message)s'
+    FORMAT_STDERR = '%(levelname)s: %(message)s'
     FORMAT_CMPI = '%(levelname)s: %(message)s'
+
+    LOGGER_NAME = "openlmi.storage"
 
     def __init__(self, env):
         """
@@ -114,11 +116,11 @@ class LogManager(object):
         self.cmpi_handler.setLevel(logging.DEBUG)
         self.cmpi_handler.setFormatter(formatter)
 
-        self.logger = logging.getLogger('openlmi.storage')
+        self.logger = logging.getLogger(self.LOGGER_NAME)
         self.logger.addHandler(self.cmpi_handler)
         self.logger.setLevel(logging.INFO)
 
-        self.stdout_handler = None
+        self.stderr_handler = None
         self.config = None
 
         global logger #IGNORE:W0603
@@ -139,29 +141,37 @@ class LogManager(object):
     @trace_method
     def _config_changed(self, config):
         """
-            Apply changed configuration, i.e. start/stop sending to stdout
+            Apply changed configuration, i.e. start/stop sending to stderr
             and set appropriate log level.
         """
         if config.tracing:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.INFO)
-        if config.stdout:
-            # start sending to stdout
-            if not self.stdout_handler:
-                # create stdout handler             
-                formatter = logging.Formatter(self.FORMAT_STDOUT)
-                self.stdout_handler = logging.StreamHandler()
-                self.stdout_handler.setLevel(logging.DEBUG)
-                self.stdout_handler.setFormatter(formatter)
-                self.logger.addHandler(self.stdout_handler)
-                self.logger.info("Started logging to stdout.")
+        if config.stderr:
+            # start sending to stderr
+            if not self.stderr_handler:
+                # create stderr handler             
+                formatter = logging.Formatter(self.FORMAT_STDERR)
+                self.stderr_handler = logging.StreamHandler()
+                self.stderr_handler.setLevel(logging.DEBUG)
+                self.stderr_handler.setFormatter(formatter)
+                self.logger.addHandler(self.stderr_handler)
+                self.logger.info("Started logging to stderr.")
         else:
-            # stop sending to stdout
-            if self.stdout_handler:
-                self.logger.info("Stopped logging to stdout.")
-                self.logger.removeHandler(self.stdout_handler)
-            self.stdout_handler = None
+            # stop sending to stderr
+            if self.stderr_handler:
+                self.logger.info("Stopped logging to stderr.")
+                self.logger.removeHandler(self.stderr_handler)
+            self.stderr_handler = None
+
+    def destroy(self):
+        if self.stderr_handler:
+            self.logger.removeHandler(self.stderr_handler)
+            self.stderr_handler = None
+        self.logger.removeHandler(self.cmpi_handler)
+        self.cmpi_handler = None
+        self.config.remove_listener(self._config_changed)
 
 
 

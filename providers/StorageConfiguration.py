@@ -38,14 +38,14 @@ class StorageConfiguration(object):
     defaults = {
         'namespace' : 'root/cimv2',
         'systemclassname' : 'Linux_ComputerSystem',
-        'tracing': False,
-        'stdout': False,
+        'tracing': 'false',
+        'stderr': 'false',
     }
 
     @cmpi_logging.trace_method
     def __init__(self):
         """ Initialize and load a configuration file."""
-        self._listeners = []
+        self._listeners = set()
         self.config = ConfigParser.SafeConfigParser(defaults=self.defaults)
         self.load()
 
@@ -56,7 +56,15 @@ class StorageConfiguration(object):
             The callback will be called with StorageConfiguration as parameter:
               callback(config)
         """
-        self._listeners.append(callback)
+        self._listeners.add(callback)
+
+    @cmpi_logging.trace_method
+    def remove_listener(self, callback):
+        """ 
+            Remove previously registered callback.
+        """
+
+        self._listeners.remove(callback)
 
     @cmpi_logging.trace_method
     def _call_listeners(self):
@@ -97,9 +105,10 @@ class StorageConfiguration(object):
     @property
     def tracing(self):
         """ Return True if tracing is enabled."""
-        return self.config.get('debug', 'tracing')
+        return self.config.getboolean('debug', 'tracing')
 
     @property
-    def stdout(self):
-        """ Return True if logging to stdout is enabled."""
-        return self.config.get('debug', 'stdout')
+    def stderr(self):
+        """ Return True if logging to stderr is enabled."""
+        return self.config.getboolean('debug', 'stderr')
+
