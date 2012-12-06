@@ -1,0 +1,15 @@
+digraph "Filesystem configuration instance diagram" {
+charset="utf-8"
+rankdir=BT
+node [shape="record" fontsize=10 fontname="sans-serif"]
+edge [fontsize=10 fontname="sans-serif"]
+
+sdaFS [label="{CIM_LocalFileSystem|\n* state of the filesystem on sda1 *\n\nName=\"/dev/sda1\"\lBlockSize=4096\lAvailableSpace=920223744\lFileSystemSize=1032085504\l...\l|}"]
+sdaSet [label="{CIM_FileSystemSetting|\n* configuration of the filesystem on sda1 *\n\nActualFileSystemType=ext\lJournalSize=16777216\lBlockSizeMin=NULL\lBlockSizeMax=NULL\lBlockSize=4096\l...\l|}"]
+sdaSet -> sdaFS [label="CIM_ElementSettingData"]
+
+sdbFS [label="{CIM_LocalFileSystem|\n* state of the filestystem on sdb1 *\n\nName=\"/dev/sdb1\"\lBlockSize=1024\lAvailableSpace=920223744\lFileSystemSize=1032085504\l...\l|}"]
+sdbSet [label="{CIM_FileSystemSetting|\n* configuration of the filesystem on sdb1 *\n\nActualFileSystemType=xfs\lJournalSize=8589934592\lBlockSizeMin=NULL\lBlockSizeMax=NULL\lBlockSize=1024\l...\l|}"]
+sdbSet -> sdbFS [label="CIM_ElementSettingData"]
+
+}

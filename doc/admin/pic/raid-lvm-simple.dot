@@ -1,0 +1,33 @@
+digraph "LVM instance diagram" {
+charset="utf-8"
+rankdir=BT
+node [shape="record" fontsize=10 fontname="sans-serif"]
+edge [fontsize=10 fontname="sans-serif"]
+
+raid [label="{LMI_MDRAIDStorageExtent|DeviceID=\"/dev/md0\"\lUUID=123...\lElementName=\"md0\"\l\lDataRedundancy=3\lExtentStripeLength=1\lPackageRedundancy=2\lBlockSize=512\lNumberOfBlocks=...\l...\l|}"]
+
+
+sda1 [label="{LMI_StorageExtent|DeviceID=\"/dev/sda1\"\lBlockSize=512\lNumberOfBlocks=2048000\l...\l|}"]
+sdb1 [label="{LMI_StorageExtent|DeviceID=\"/dev/sdb1\"\lBlockSize=512\lNumberOfBlocks=2048000\l...\l|}"]
+sdc1 [label="{LMI_StorageExtent|DeviceID=\"/dev/sdc1\"\lBlockSize=512\lNumberOfBlocks=2048000\l...\l|}"]
+
+raid -> sda1 [label="LMI_MDRAIDBasedOn"]
+raid -> sdb1 [label="LMI_MDRAIDBasedOn"]
+raid -> sdc1 [label="LMI_MDRAIDBasedOn"]
+
+lv [label="{LMI_LVStorageExtent|DeviceID=\"/dev/mapper/mygroup-vol1\"\lUUID=123...\l\lDataRedundancy=3\lExtentStripeLength=1\lPackageRedundancy=2\lBlockSize=512\lNumberOfBlocks=...\l...\l|}"]
+
+lv2 [label="{LMI_LVStorageExtent|DeviceID=\"/dev/mapper/mygroup-vol2\"\lUUID=234...\l\lDataRedundancy=3\lExtentStripeLength=1\lPackageRedundancy=2\lBlockSize=512\lNumberOfBlocks=...\l...\l|}"]
+
+vg [label="{LMI_VGStoragePool|InstaneID=\"/dev/mygroup\"\lPoolID=\"mygroup\"\lUUID=456...\lExtentSize=4MiB\lRemainingExtents=...\lTotalExtents=...\l\lRemainingManagedSpace=...\lTotalManagedSpace=...\l...\l}"]
+
+
+lv2 -> vg [label="LMI_LVAllocatedFromStoragePool"]
+lv -> vg [label="LMI_LVAllocatedFromStoragePool"]
+
+lv -> raid [label="LMI_LVBasedOn"]
+lv2 -> raid [label="LMI_LVBasedOn"]
+
+vg -> raid [label="LMI_VGAssociatedComponentExtent\l"]
+}
+

@@ -44,7 +44,16 @@ clean:
 %.png: %.dia
 	dia -e $@ $<
 
-figures: pic/partitions.png pic/primordial.png
+%.svg: %.dot
+	dot -Tsvg >$@ $<
+
+figures: pic/partitions.png \
+    pic/primordial.png \
+    pic/extent-inherit.svg \
+    pic/raid-lvm-simple.svg \
+    pic/intro-setting.svg \
+    pic/intro-service.svg \
+    pic/pool-inherit.svg
 
 
 html: figures

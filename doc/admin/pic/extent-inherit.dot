@@ -1,0 +1,23 @@
+
+digraph "classes_No_Name" {
+charset="utf-8"
+rankdir=BT
+node [shape="record" fontsize=10 fontname="sans-serif"]
+edge [arrowhead="empty" fontsize=10 fontname="sans-serif"]
+
+"CIM_DiskPartition"->"CIM_GenericDiskPartition"
+"LMI_MDRAIDStorageExtent"->"LMI_StorageExtent"
+"LMI_MDRAIDStorageExtent" [href="LMI_MDRAIDStorageExtent.html",shape="record", label="{LMI_MDRAIDStorageExtent|string ElementName\lstring UUID\l|}"];
+"LMI_PrimaryDiskPartition"->"CIM_DiskPartition"
+"LMI_PrimaryDiskPartition" [href="LMI_PrimaryDiskPartition.html",shape="record", label="{LMI_PrimaryDiskPartition||}"];
+"LMI_StorageExtent"->"CIM_StorageExtent"
+"LMI_StorageExtent" [href="LMI_StorageExtent.html",shape="record", label="{LMI_StorageExtent|string ElementName\l|}"];
+"CIM_MediaPartition"->"CIM_StorageExtent"
+"LMI_LVStorageExtent"->"LMI_StorageExtent"
+"LMI_LVStorageExtent" [href="LMI_LVStorageExtent.html",shape="record", label="{LMI_LVStorageExtent|string ElementName\lstring UUID\l|}"];
+"LMI_LogicalDiskPartition"->"CIM_DiskPartition"
+"LMI_LogicalDiskPartition" [href="LMI_LogicalDiskPartition.html",shape="record", label="{LMI_LogicalDiskPartition||}"];
+"CIM_GenericDiskPartition"->"CIM_MediaPartition"
+"LMI_GenericDiskPartition"->"CIM_GenericDiskPartition"
+"LMI_GenericDiskPartition" [href="LMI_GenericDiskPartition.html",shape="record", label="{LMI_GenericDiskPartition||}"];
+}

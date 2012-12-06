@@ -6,8 +6,8 @@ Profile adjustment
 
 The Disk Partition Subprofile does not reflect real-world MBR partition tables:
 
-* The profile specifies, there can be up to 4 primary partitions (correct), one
-  of them can be extended (correct) and up to 4 logical partitions can be
+* The profile specifies, there can be up to 4 primary partitions (correct),
+  one of them can be extended (correct) and up to 4 logical partitions can be
   instantiated on this extended partition (wrong, number of logical partitions
   is not limited).
 
@@ -23,15 +23,16 @@ As result of this deficiency, some adjustments were necessary:
 * The ``LMI_DiskPartition`` representing a logical partition *includes* the
   metadata sector and any alignment sectors.
 
- * ``NumberOfBlocks`` property *includes* the metadata and any alignment sectors.
+ * ``NumberOfBlocks`` property *includes* the metadata and any alignment
+   sectors.
  * ``ConsumableBlocks`` includes only the real usable data on partition.
 
 .. figure:: pic/partitions.png
 
    Correct overview of logical partitions.
 
-GPT partition tables do not have these issues and are generally preferred
-over MBR ones.
+GPT partition tables do not have these issues and are generally preferred over
+MBR ones.
 
 Implementation
 --------------

@@ -7,6 +7,7 @@ Contents:
    :maxdepth: 2
 
    smis-profiles
+   usage
    todo
 
 Indices and tables
