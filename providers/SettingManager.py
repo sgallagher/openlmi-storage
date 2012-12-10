@@ -98,7 +98,7 @@ class SettingManager(object):
 
         for classname in os.listdir(directory):
             ini = ConfigParser.SafeConfigParser()
-            ini.optionxform = str # don't convert to lowercase
+            ini.optionxform = str  # don't convert to lowercase
             ini.read(directory + classname)
             for sid in ini.sections():
                 setting = Setting(setting_type, sid)
@@ -156,7 +156,7 @@ class SettingManager(object):
     @cmpi_logging.trace_method
     def _saveClass(self, classname):
         ini = ConfigParser.SafeConfigParser()
-        ini.optionxform = str # don't convert to lowercase
+        ini.optionxform = str  # don't convert to lowercase
         for setting in self.classes[classname].values():
             if setting.type != Setting.TYPE_PERSISTENT:
                 continue

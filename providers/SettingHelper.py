@@ -60,3 +60,14 @@ class SettingHelper(object):
             Return None if no such ManagedElement exists.
         """
         return None
+
+    @cmpi_logging.trace_method
+    def get_supported_setting_properties(self):
+        """
+            Return hash property_name -> constructor.
+                constructor is a function which takes string argument
+                and returns CIM value. (i.e. pywbem.Uint16
+                or bool or string etc).
+            This hash will be passed to SettingProvider.__init__ 
+        """
+        return {}

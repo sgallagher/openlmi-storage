@@ -405,7 +405,7 @@ class ElementSettingDataProvider(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "The ManagedElement is not associated to given SettingData")
 
-        model['IsCurrent'] = pywbem.Uint16(1) # current
+        model['IsCurrent'] = pywbem.Uint16(1)  # current
         return model
 
     @cmpi_logging.trace_method
@@ -429,7 +429,7 @@ class ElementSettingDataProvider(BaseProvider):
     @cmpi_logging.trace_method
     def references(self, env, object_name, model, result_class_name, role,
                                result_role, keys_only):
-        # If you want to get references for free, implemented in terms 
+        # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
         ch = env.get_cimom_handle()
         if ch.is_subclass(object_name.namespace,
@@ -451,7 +451,9 @@ class SettingHelperProvider(SettingProvider):
     @cmpi_logging.trace_method
     def __init__(self, setting_helper, *args, **kwargs):
         self.setting_helper = setting_helper
-        super(SettingHelperProvider, self).__init__(*args, **kwargs)
+        properties = setting_helper.get_supported_setting_properties(self)
+        super(SettingHelperProvider, self).__init__(
+                supported_properties=properties, *args, **kwargs)
 
     @cmpi_logging.trace_method
     def enumerate_configurations(self):
