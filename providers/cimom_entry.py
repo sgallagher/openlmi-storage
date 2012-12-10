@@ -45,7 +45,8 @@ from LMI_LVBasedOn import LMI_LVBasedOn
 from LMI_LVAllocatedFromStoragePool import LMI_LVAllocatedFromStoragePool
 from LMI_VGAssociatedComponentExtent import LMI_VGAssociatedComponentExtent
 from LMI_DiskPartitionConfigurationSetting import LMI_DiskPartitionConfigurationSetting
-from SettingProvider import ElementSettingDataProvider
+from SettingProvider import ElementSettingDataProvider, SettingProvider, \
+    SettingHelperProvider
 from LMI_DiskPartitioningConfigurationService import LMI_DiskPartitionConfigurationService
 from LMI_HostedStorageService import LMI_HostedStorageService
 from LMI_DiskPartitionConfigurationCapabilities import LMI_DiskPartitionConfigurationCapabilities
@@ -73,7 +74,7 @@ def init_anaconda():
     try:
         platform = pyanaconda.platform.getPlatform(None)
     except TypeError:
-        platform = pyanaconda.platform.getPlatform()  #IGNORE:E1120
+        platform = pyanaconda.platform.getPlatform()  # IGNORE:E1120
     storage = pyanaconda.storage.Storage(platform=platform)
 
     # identify the system's storage devices
@@ -105,35 +106,47 @@ def get_providers(env):
             'provider_manager': manager,
             'setting_manager': setting_manager}
     # StorageDevice providers
-    provider = LMI_StorageExtent(**opts)    #IGNORE:W0142
+    provider = LMI_StorageExtent(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_StorageExtent'] = provider
 
-    provider = LMI_MDRAIDStorageExtent(**opts)    #IGNORE:W0142
+    provider = LMI_MDRAIDStorageExtent(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_MDRAIDStorageExtent'] = provider
 
-    provider = LMI_DiskPartition(**opts)    #IGNORE:W0142
+    provider = LMI_DiskPartition(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_DiskPartition'] = provider
 
-    provider = LMI_GenericDiskPartition(**opts)    #IGNORE:W0142
+    provider = LMI_GenericDiskPartition(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_GenericDiskPartition'] = provider
 
-    provider = LMI_LVStorageExtent(**opts)    #IGNORE:W0142
+    provider = LMI_LVStorageExtent(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_LVStorageExtent'] = provider
+    setting_provider = SettingHelperProvider(# IGNORE:W0142
+            setting_helper=provider,
+            setting_classname="LMI_LVStorageSetting",
+            **opts)
+    manager.add_setting_provider(setting_provider)
+    providers['LMI_LVStorageSetting'] = setting_provider
+    assoc_provider = ElementSettingDataProvider(# IGNORE:W0142
+            setting_provider=setting_provider,
+            managed_element_classname="LMI_LVStorageExtent",
+            setting_data_classname="LMI_LVStorageSetting",
+            **opts)
+    providers['LMI_LVElementSettingData'] = assoc_provider
 
-    provider = LMI_VGStoragePool(**opts)    #IGNORE:W0142
+    provider = LMI_VGStoragePool(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_VGStoragePool'] = provider
 
     # settings
-    setting_provider = LMI_DiskPartitionConfigurationSetting(**opts)    #IGNORE:W0142
+    setting_provider = LMI_DiskPartitionConfigurationSetting(**opts)  # IGNORE:W0142
     manager.add_setting_provider(setting_provider)
     providers['LMI_DiskPartitionConfigurationSetting'] = setting_provider
-    assoc_provider = ElementSettingDataProvider(#IGNORE:W0142
+    assoc_provider = ElementSettingDataProvider(# IGNORE:W0142
             setting_provider=setting_provider,
             managed_element_classname="CIM_DiskPartition",
             setting_data_classname="LMI_DiskPartitionConfigurationSetting",
@@ -142,40 +155,40 @@ def get_providers(env):
 
 
     # services & capabilities
-    service_provider = LMI_DiskPartitionConfigurationService(**opts)    #IGNORE:W0142
+    service_provider = LMI_DiskPartitionConfigurationService(**opts)  # IGNORE:W0142
     manager.add_service_provider(service_provider)
     providers['LMI_DiskPartitionConfigurationService'] = service_provider
 
-    cap_provider = LMI_DiskPartitionConfigurationCapabilities(**opts)   #IGNORE:W0142
+    cap_provider = LMI_DiskPartitionConfigurationCapabilities(**opts)  # IGNORE:W0142
     manager.add_capabilities_provider(cap_provider)
     providers['LMI_DiskPartitionConfigurationCapabilities'] = cap_provider
 
-    assoc_provider = ElementCapabilitiesProvider(#IGNORE:W0142
+    assoc_provider = ElementCapabilitiesProvider(# IGNORE:W0142
             "LMI_DiskPartitionElementCapabilities",
             cap_provider, service_provider, **opts)
     providers['LMI_DiskPartitionElementCapabilities'] = assoc_provider
 
 
     # Associations
-    provider = LMI_PartitionBasedOn(**opts)    #IGNORE:W0142
+    provider = LMI_PartitionBasedOn(**opts)  # IGNORE:W0142
     providers['LMI_PartitionBasedOn'] = provider
 
-    provider = LMI_MDRAIDBasedOn(**opts)    #IGNORE:W0142
+    provider = LMI_MDRAIDBasedOn(**opts)  # IGNORE:W0142
     providers['LMI_MDRAIDBasedOn'] = provider
 
-    provider = LMI_LVBasedOn(**opts)    #IGNORE:W0142
+    provider = LMI_LVBasedOn(**opts)  # IGNORE:W0142
     providers['LMI_LVBasedOn'] = provider
 
-    provider = LMI_LVAllocatedFromStoragePool(**opts)    #IGNORE:W0142
+    provider = LMI_LVAllocatedFromStoragePool(**opts)  # IGNORE:W0142
     providers['LMI_LVAllocatedFromStoragePool'] = provider
 
-    provider = LMI_VGAssociatedComponentExtent(**opts)    #IGNORE:W0142
+    provider = LMI_VGAssociatedComponentExtent(**opts)  # IGNORE:W0142
     providers['LMI_VGAssociatedComponentExtent'] = provider
 
-    provider = LMI_HostedStorageService(**opts)    #IGNORE:W0142
+    provider = LMI_HostedStorageService(**opts)  # IGNORE:W0142
     providers['LMI_HostedStorageService'] = provider
 
-    provider = LMI_InstalledPartitionTable(**opts)    #IGNORE:W0142
+    provider = LMI_InstalledPartitionTable(**opts)  # IGNORE:W0142
     providers['LMI_InstalledPartitionTable'] = provider
 
     print "providers:", providers

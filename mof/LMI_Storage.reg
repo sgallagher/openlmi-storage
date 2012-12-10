@@ -33,6 +33,20 @@ type: instance method
 namespace: root/cimv2
 unload: never
 
+[LMI_LVStorageSetting]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance method
+namespace: root/cimv2
+unload: never
+
+[LMI_LVElementSettingData]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: association instance
+namespace: root/cimv2
+unload: never
+
 [LMI_VGStoragePool]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
