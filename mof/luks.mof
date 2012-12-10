@@ -131,7 +131,7 @@ class LMI_LUKSFormatSetting : LMI_EncryptionFormatSetting
     string OtherIVMode;
 
     [ Description("Hash algorithm used to derive initial vector. Used only if IVMode has value of \"ESSIV\""),
-        ValueMap { "0", "1", "2", "3", "4" },
+        ValueMap { "0", "1", "2", "3" },
         Values { "SHA256", "SHA1", "MD5", "Other"}]
     uint16 ESSIVHashAlhorithm;
 
@@ -177,7 +177,7 @@ class LMI_LUKSFormatCapabilities : LMI_EncryptionFormatCapabilities
     string OtherCiphers[];
 
     [ Description("Array of supported hash algorithms used to derive initial vector in \"ESSIV\" mode."),
-        ValueMap { "0", "1", "2", "3", "4" },
+        ValueMap { "0", "1", "2", "3" },
         Values { "SHA256", "SHA1", "MD5", "Other"},
         ArrayType("Indexed")]
     uint16 ESSIVHashAlhorithms[];
