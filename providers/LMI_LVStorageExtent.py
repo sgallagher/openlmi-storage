@@ -21,7 +21,7 @@ from ExtentProvider import ExtentProvider
 import pyanaconda.storage
 import cmpi_logging
 from SettingHelper import SettingHelper
-from SettingManager import Setting
+from SettingManager import StorageSetting
 import pywbem
 
 class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
@@ -76,9 +76,11 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
     @cmpi_logging.trace_method
     def _get_setting_for_device(self, device, setting_provider):
         """ Return setting for given device """
-        setting = Setting(
-                Setting.TYPE_CONFIGURATION,
+        setting = StorageSetting(
+                StorageSetting.TYPE_CONFIGURATION,
                 setting_provider.create_setting_id(device.path))
+        setting.set_setting(self.get_redundancy(device))
+        setting['ElementName'] = device.path
         return setting
 
     @cmpi_logging.trace_method

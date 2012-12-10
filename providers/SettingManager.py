@@ -246,3 +246,23 @@ class Setting(object):
             Return all (key, value) properties.
         """
         return self.properties.items()
+
+class StorageSetting(Setting):
+    """
+        Setting for LMI_StorageSetting subclasses. It has all the redundancy
+        parameters.
+    """
+    def set_setting(self, redundancy):
+        """
+            Set setting according to given DeviceProvider.Redundancy.
+        """
+        self['DataRedundancyGoal'] = redundancy.data_dedundancy
+        self['DataRedundancyMax'] = redundancy.data_dedundancy
+        self['DataRedundancyMin'] = redundancy.data_dedundancy
+        self['ExtentStripeLength'] = redundancy.stripe_length
+        self['ExtentStripeLengthMin'] = redundancy.stripe_length
+        self['ExtentStripeLengthMax'] = redundancy.stripe_length
+        self['NoSinglePointOfFailure'] = redundancy.no_single_point_of_failure
+        self['PackageRedundancyGoal'] = redundancy.package_redundancy
+        self['PackageRedundancyMax'] = redundancy.package_redundancy
+        self['PackageRedundancyMin'] = redundancy.package_redundancy

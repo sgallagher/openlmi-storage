@@ -554,7 +554,7 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
     )]
 class LMI_StorageSetting : CIM_StorageSetting
 {
-      [Override ( "ChangeableType" ), 
+      [Implemented(true), Override ( "ChangeableType" ), 
        Description ( 
           "Enumeration indicating the type of setting. \"Fixed - "
           "Not Changeable\" settings are primordial. These setting "
@@ -571,7 +571,8 @@ class LMI_StorageSetting : CIM_StorageSetting
           "Changeable - Persistent" }]
     uint16 ChangeableType;
 
-    [ Description("Create a copy of this instance. The resulting instance "
+    [ Implemented(true),
+        Description("Create a copy of this instance. The resulting instance "
         "will have the same class and the same properties as the original "
         "instance except ChangeableType, which will be set to "
         "\"Changeable - Transient\" in the clone, and InstanceID."),
@@ -582,6 +583,17 @@ class LMI_StorageSetting : CIM_StorageSetting
         LMI_StorageSetting REF Clone
     );
 
+    [ Implemented(true) ] uint16 DataRedundancyGoal;
+    [ Implemented(true) ] uint16 DataRedundancyMax;
+    [ Implemented(true) ] uint16 DataRedundancyMin;
+    [ Implemented(true) ] uint16 ExtentStripeLength;
+    [ Implemented(true) ] uint16 ExtentStripeLengthMax;
+    [ Implemented(true) ] uint16 ExtentStripeLengthMin;
+    [ Implemented(true) ] boolean NoSinglePointOfFailure;
+    [ Implemented(true) ] uint16 PackageRedundancyGoal;
+    [ Implemented(true) ] uint16 PackageRedundancyMax;
+    [ Implemented(true) ] uint16 PackageRedundancyMax;
+    [ Implemented(true) ] uint16 PackageRedundancyMin;
 };
 
 [ Experimental, Description("This class defines characteristics of LMI_VGStoragePool which is created or modified by "
@@ -589,7 +601,7 @@ class LMI_StorageSetting : CIM_StorageSetting
     "\nCurrently only ExtentSize property is supported.")]
 class LMI_VGStorageSetting : LMI_StorageSetting
 {
-    [ Description("Size of extents of the Volume Group. The default is 4 MiB and it must be at least 1 KiB and a power of 2. "
+    [ Implemented(true), Description("Size of extents of the Volume Group. The default is 4 MiB and it must be at least 1 KiB and a power of 2. "
         "Once this value has been set, it is difficult to change it without recreating the volume group which would involve backing up and restoring data on any logical volumes. "
         "\nIf the volume group metadata uses lvm1 format, extents can vary in size from 8KB to 16GB and there is a limit of 65534 extents in each logical volume.  The default of 4 MiB leads "
         "to a maximum logical volume size of around 256GiB."
