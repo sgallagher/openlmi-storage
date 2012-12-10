@@ -30,14 +30,15 @@ class BaseProvider(CIMProvider2):
         and a vice versa.
     """
     @cmpi_logging.trace_method
-    def __init__(self, storage, config, provider_manager, setting_manager):
+    def __init__(self, storage, config, provider_manager, setting_manager,
+            *args, **kwargs):
         """
             Initialize the provider.
             Store reference to pyanaconda.storage.Storage.
             Store reference to StorageConfiguration.
             Register at given ProviderManager.
         """
-        super(BaseProvider, self).__init__()
+        super(BaseProvider, self).__init__(*args, **kwargs)
         self.storage = storage
         self.config = config
         self.provider_manager = provider_manager

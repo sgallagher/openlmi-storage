@@ -29,8 +29,9 @@ class SettingHelper(object):
     """
 
     @cmpi_logging.trace_method
-    def __init__(self, setting_classname):
+    def __init__(self, setting_classname, *args, **kwargs):
         self.setting_classname = setting_classname
+        super(SettingHelper, self).__init__(*args, **kwargs)
 
     @cmpi_logging.trace_method
     def enumerate_settings(self, setting_provider):
