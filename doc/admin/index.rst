@@ -1,7 +1,7 @@
-OpenLMI Storage Provider's documentation
-=========================================
+OpenLMI Storage Provider documentation
+======================================
 
-Contents:
+Content:
 
 .. toctree::
    :maxdepth: 2
@@ -9,6 +9,17 @@ Contents:
    smis-profiles
    usage
    todo
+
+.. toctree::
+   :maxdepth: 1
+
+OpenLMI Storage CIM classes:
+
+.. toctree::
+   :maxdepth: 1
+
+   mof/tree
+   mof/index
 
 Indices and tables
 ==================

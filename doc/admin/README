@@ -1,0 +1,13 @@
+The documentation is generated from running CIMOM, which provides description
+of all classes.
+
+Therefore it is necessary:
+
+0) Install PlantUML and Sphinx
+   http://plantuml.sourceforge.net/
+   http://sphinx-doc.org/
+
+1) Install current MOF files to your CIMCOM running on localhost and start it.
+   (or edit generated/Makefile and mof/Makefile and set HOST variable there)
+
+2) run 'make html'

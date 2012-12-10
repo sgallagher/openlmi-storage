@@ -37,12 +37,7 @@ would be no ``CIM_LocalFileSystemSetting`` for it and therefore any management
 application would not have access to its ``BlockSize``, which is important
 feature of the filesystem.
 
-
-
 .. figure:: pic/intro-setting.svg
-
-   Example configuration of two filesystems. 
-
 
 Configuration service
 ---------------------
@@ -102,8 +97,7 @@ method calls, it will be reflected in its associated
 
 In addition, if there are several different kind of *foos* supported by the
 implementation, each such kind can have its own ``CIM_FooCapabilities``
-instance to describe all available configuration options and their value
-ranges.
+instance to describe all available configuration options and their value ranges.
 
 For example, if our ``CIM_FileSystemConfigurationService`` is able to create xfs
 and ext3 filesystems, there are two ``CIM_LocalFileSystemCapabilities``
