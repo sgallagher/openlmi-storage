@@ -41,7 +41,7 @@ class CapabilitiesProvider(BaseProvider):
         self.classname = classname
 
     @cmpi_logging.trace_method
-    def create_setting_id(self, myid):
+    def create_capabilities_id(self, myid):
         """
             InstanceID should have format LMI:<classname>:<ID>.
             This method returns string LMI:<classname>:<myid>
@@ -146,10 +146,10 @@ class CapabilitiesProvider(BaseProvider):
 
     @cmpi_logging.trace_method
     def cim_method_createsetting(self, env, object_name):
-        """Implements LMI_DiskPartitionConfigurationCapabilities.CreateSetting()
+        """Implements LMI_*Capabilities.CreateSetting()
 
-        Create LMI_DiskPartitionConfigurationSetting applicable to this
-        partition table. All properties its will have default values.
+        Create LMI_*Setting according to this capabilities.
+        All properties its will have default values.
         """
         capabilities = self.get_capabilities_for_id(object_name['InstanceID'])
         if not capabilities:
@@ -284,7 +284,7 @@ class ElementCapabilitiesProvider(BaseProvider):
         """Instrument Associations. """
         ch = env.get_cimom_handle()
 
-        # If you want to get references for free, implemented in terms 
+        # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace,
                           sub=object_name.classname,
