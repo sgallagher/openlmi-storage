@@ -16,8 +16,6 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
-
-
 """
     This module is the main entry from CIMOM.
     
@@ -52,6 +50,8 @@ from LMI_HostedStorageService import LMI_HostedStorageService
 from LMI_DiskPartitionConfigurationCapabilities import LMI_DiskPartitionConfigurationCapabilities
 from CapabilitiesProvider import ElementCapabilitiesProvider
 from LMI_InstalledPartitionTable import LMI_InstalledPartitionTable
+from LMI_LVStorageCapabilities import LMI_LVStorageCapabilities, \
+    LMI_LVElementCapabilities
 
 import cmpi_logging
 import pyanaconda.storage
@@ -153,6 +153,13 @@ def get_providers(env):
             setting_data_classname="LMI_VGStorageSetting",
             **opts)
     providers['LMI_VGElementSettingData'] = assoc_provider
+    cap_provider = LMI_LVStorageCapabilities(**opts)  # IGNORE:W0142
+    manager.add_capabilities_provider(cap_provider)
+    providers['LMI_LVStorageCapabilities'] = cap_provider
+    assoc_provider = LMI_LVElementCapabilities(# IGNORE:W0142
+            "LMI_LVElementCapabilities",
+            cap_provider, provider, **opts)
+    providers['LMI_LVElementCapabilities'] = assoc_provider
 
     # settings
     setting_provider = LMI_DiskPartitionConfigurationSetting(**opts)  # IGNORE:W0142
@@ -174,7 +181,6 @@ def get_providers(env):
     cap_provider = LMI_DiskPartitionConfigurationCapabilities(**opts)  # IGNORE:W0142
     manager.add_capabilities_provider(cap_provider)
     providers['LMI_DiskPartitionConfigurationCapabilities'] = cap_provider
-
     assoc_provider = ElementCapabilitiesProvider(# IGNORE:W0142
             "LMI_DiskPartitionElementCapabilities",
             cap_provider, service_provider, **opts)

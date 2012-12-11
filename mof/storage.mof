@@ -592,7 +592,6 @@ class LMI_StorageSetting : CIM_StorageSetting
     [ Implemented(true) ] boolean NoSinglePointOfFailure;
     [ Implemented(true) ] uint16 PackageRedundancyGoal;
     [ Implemented(true) ] uint16 PackageRedundancyMax;
-    [ Implemented(true) ] uint16 PackageRedundancyMax;
     [ Implemented(true) ] uint16 PackageRedundancyMin;
 };
 
@@ -725,7 +724,8 @@ class LMI_MDRAIDStorageCapabilities : LMI_StorageCapabilities
     )]
 class LMI_LVStorageCapabilities : LMI_StorageCapabilities
 {
-    [Description("This method creates new instance of LMI_LVStorageSetting. "
+    [Implemented(true),
+        Description("This method creates new instance of LMI_LVStorageSetting. "
         "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength. "
         "Because only basic Logical Volumes without any additional stripping or mirroring are supported, "
         "this method basically clones LMI_VGStorageSetting to LMI_LVStorageSetting."),
@@ -734,6 +734,17 @@ class LMI_LVStorageCapabilities : LMI_StorageCapabilities
     uint32 CreateLVStorageSetting(
         [IN(False), OUT, Description("Created LMI_StorageSetting.")]
         LMI_StorageSetting REF Setting);
+    
+    [ Implemented(true) ] string ElementName;
+    [ Implemented(true) ] uint16 DataRedundancyDefault;
+    [ Implemented(true) ] uint16 DataRedundancyMax;
+    [ Implemented(true) ] uint16 DataRedundancyMin;
+    [ Implemented(true) ] boolean NoSinglePointOfFailure;
+    [ Implemented(true) ] boolean NoSinglePointOfFailureDefault;
+    [ Implemented(true) ] uint16 ExtentStripeLengthDefault;
+    [ Implemented(true) ] uint16 PackageRedundancyDefault;
+    [ Implemented(true) ] uint16 PackageRedundancyMax;
+    [ Implemented(true) ] uint16 PackageRedundancyMin;
 };
 
 
