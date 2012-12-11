@@ -141,6 +141,18 @@ def get_providers(env):
     provider = LMI_VGStoragePool(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_VGStoragePool'] = provider
+    setting_provider = SettingHelperProvider(# IGNORE:W0142
+            setting_helper=provider,
+            setting_classname="LMI_VGStorageSetting",
+            **opts)
+    manager.add_setting_provider(setting_provider)
+    providers['LMI_VGStorageSetting'] = setting_provider
+    assoc_provider = ElementSettingDataProvider(# IGNORE:W0142
+            setting_provider=setting_provider,
+            managed_element_classname="LMI_VGStoragePool",
+            setting_data_classname="LMI_VGStorageSetting",
+            **opts)
+    providers['LMI_VGElementSettingData'] = assoc_provider
 
     # settings
     setting_provider = LMI_DiskPartitionConfigurationSetting(**opts)  # IGNORE:W0142
