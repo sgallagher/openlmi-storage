@@ -47,6 +47,11 @@ class ExtentProvider(DeviceProvider):
         """
             Returns True, if this class is provider for given CIM InstanceName.
         """
+        if not (object_name.has_key('SystemName')
+                and object_name.has_key('SystemCreationClassName')
+                and object_name.has_key('CreationClassName')
+                and object_name.has_key('DeviceID')):
+            return False
         if object_name['SystemName'] != self.config.system_name:
             return False
 

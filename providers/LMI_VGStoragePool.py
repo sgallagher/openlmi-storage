@@ -41,6 +41,8 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         """
             Returns True, if this class is provider for given CIM InstanceName.
         """
+        if not object_name.has_key('InstanceID'):
+            return False
 
         instance_id = object_name['InstanceID']
         parts = instance_id.split(":")
