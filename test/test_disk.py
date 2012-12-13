@@ -82,7 +82,8 @@ class TestDisk(StorageTestBase):
         for diskname in disknames:
             disk = self.wbemconnection.GetInstance(diskname)
             self.assertIsNotNone(disk)
-            self._check_name(disk.path)
+            if diskname['DeviceID'] in self.disks:
+                self._check_name(disk.path)
             self.assertEqual(diskname['DeviceID'], disk['DeviceID'])
 
 
