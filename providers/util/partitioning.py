@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
     Support functions for partitioning.
 """
@@ -22,8 +21,9 @@
 import parted
 import pywbem
 import pyanaconda.storage
+import cmpi_logging
 
-GPT_TABLE_SIZE = 34 * 2   # there are two copies
+GPT_TABLE_SIZE = 34 * 2  # there are two copies
 MBR_TABLE_SIZE = 1
 
 def _align_up(address, alignment):
@@ -104,8 +104,31 @@ def remove_partition(storage, device):
     """
         Remove PartitionDevice from system, i.e. delete a partition.
     """
-    # TODO: update when Anaconda can reliably delete partitions    
-    storage.devicetree._removeDevice(device)
-    device.disk.format.commit()
-    if device.partedDevice:
-        device.partedDevice.removeFromCache()
+    action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+    do_storage_action(storage, action)
+
+def do_storage_action(storage, action, do_partitioning=False):
+    """
+        Perform Anaconda DeviceAction on given Storage instance.
+    """
+
+    cmpi_logging.logger.trace_info("Running action " + str(action))
+    cmpi_logging.logger.trace_info("    on device " + repr(action.device))
+
+    do_partitioning = False
+    if (isinstance(action.device, pyanaconda.storage.devices.PartitionDevice)
+            and isinstance(action, pyanaconda.storage.deviceaction.ActionCreateDevice)):
+        do_partitioning = True
+    storage.devicetree.registerAction(action)
+
+    try:
+        if do_partitioning:
+            # this must be called when creating a partition
+            cmpi_logging.logger.trace_verbose("Running doPartitioning()")
+            pyanaconda.storage.partitioning.doPartitioning(storage=storage)
+
+        storage.devicetree.processActions(dryRun=False)
+        if not isinstance(action, pyanaconda.storage.deviceaction.ActionDestroyDevice):
+            cmpi_logging.logger.trace_verbose("Result: " + repr(action.device))
+    finally:
+        storage.reset()

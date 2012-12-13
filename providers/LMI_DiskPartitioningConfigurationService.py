@@ -118,8 +118,8 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
 
         fmt = pyanaconda.storage.formats.getFormat('disklabel', labelType=label)
         action = pyanaconda.storage.deviceaction.ActionCreateFormat(device, fmt)
-        self.storage.devicetree.registerAction(action)
-        action.execute()
+        util.partitioning.do_storage_action(self.storage, action)
+
         return self.Values.SetPartitionStyle.Success
 
 
@@ -173,7 +173,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             goal = None
 
         # check extent:
-        address_shift = 0  # needed to adjust logical partitions addresses 
+        address_shift = 0  # needed to adjust logical partitions addresses
         if param_extent:
             device = self.provider_manager.get_device_for_name(param_extent)
             if not device:
@@ -276,8 +276,8 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                 end - start,
                 device.partedDevice.sectorSize)
         partition = self.storage.newPartition(
-                #start=start,
-                #end=end,
+                # start=start,
+                # end=end,
                 parents=[device],
                 size=size,
                 partType=part_type,
@@ -295,11 +295,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
 
         # finally, do the dirty job
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(partition)
-        self.storage.devicetree.registerAction(action)
-        pyanaconda.storage.partitioning.doPartitioning(storage=self.storage)
-        # patched Anaconda is needed for this to work
-        partition.disk.format.resetPartedDisk()
-        action.execute()
+        util.partitioning.do_storage_action(self.storage, action)
         self.storage.devicetree._actions = []
 
         return (self.Values.CreateOrModifyPartition.Success, partition)
