@@ -241,6 +241,16 @@ class Setting(object):
         self.properties[key] = value
 
     @cmpi_logging.trace_method
+    def has_key(self, key):
+        """ Emulate dict.has_key(). """
+        return self.properties.has_key(key)
+
+    @cmpi_logging.trace_method
+    def get(self, key, default=None):
+        """ Emulate dict.get(). """
+        return self.properties.get(key, default)
+
+    @cmpi_logging.trace_method
     def items(self):
         """
             Return all (key, value) properties.
