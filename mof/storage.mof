@@ -513,7 +513,14 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
 
     [Description("Create or modify Logical Volume. This method is shortcut to CreateOrModifyElementFromStoragePool "
         "with the right Goal. Lazy applications can use this method to create or modify LVs, "
-        "without calculation of the Goal setting.")]
+        "without calculation of the Goal setting."),
+       ValueMap { "0", "1", "2", "3", "4", "5", "6", "..", "4096", 
+          "4097", "4098..32767", "32768..65535" }, 
+       Values { "Job Completed with No Error", "Not Supported", 
+          "Unknown", "Timeout", "Failed", "Invalid Parameter", 
+          "In Use", "DMTF Reserved", 
+          "Method Parameters Checked - Job Started", 
+          "Size Not Supported", "Method Reserved", "Vendor Specific" }]
     uint32 CreateOrModifyLV(
         [IN, Description("Requested Logical Volume name. "
             "If this parameter is not provided, implementation will choose on "
@@ -523,7 +530,8 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
         string ElementName,
 
         [IN, Description("Requested LV size. It will be rounded to multiples of VG's ExtentSize."
-            "\n When used when modifying a LV, this LV will be resized to this size."),
+            "\n When used when modifying a LV, this LV will be resized to this size."
+            "\n Only growing of LVs is supported, shrinking is not supported now."),
           Units("Bytes")]
         uint64 Size,
 
@@ -537,7 +545,7 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
         [IN, OUT, Description("On input: LV to modify. Do not use this parameter "
             "when creating a LV."
             "\n On output: the created or modified LV.")]
-        LMI_LVStorageExtent REF LV,
+        LMI_LVStorageExtent REF TheElement,
 
         [IN(False), OUT, Description("Reference to the job (may be null if job completed).")]
         CIM_ConcreteJob REF Job
