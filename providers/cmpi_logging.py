@@ -70,7 +70,7 @@ class CMPILogger(logging.getLoggerClass()):
 logging.setLoggerClass(CMPILogger)
 
 def trace_method(func):
-    """ Decorator, trace entry and exit for a function. """
+    """ Decorator, trace entry and exit for a class method. """
     classname = inspect.getouterframes(inspect.currentframe())[1][3]
     def helper_func(*args, **kwargs):
         """ Helper function, wrapping real function by trace_method decorator."""
@@ -88,6 +88,27 @@ def trace_method(func):
         logger.log(
                 TRACE_VERBOSE,
                 "Exiting %s.%s" % (classname, func.__name__))
+        return ret
+    helper_func.__name__ = func.__name__
+    helper_func.__doc__ = func.__doc__
+    helper_func.__module__ = func.__module__
+    return helper_func
+
+def trace_function(func):
+    """ Decorator, trace entry and exit for a function outside any class. """
+    def helper_func(*args, **kwargs):
+        """ Helper function, wrapping real function by trace_method decorator."""
+        logger.log(TRACE_VERBOSE,
+                "Entering %s" % (func.__name__,))
+        try:
+            ret = func(*args, **kwargs)
+        except Exception, e:
+            logger.log(TRACE_WARNING,
+                    "%s threw exception %s" % (func.__name__, str(e)))
+            raise
+        logger.log(
+                TRACE_VERBOSE,
+                "Exiting %s" % (func.__name__))
         return ret
     helper_func.__name__ = func.__name__
     helper_func.__doc__ = func.__doc__
@@ -123,7 +144,7 @@ class LogManager(object):
         self.stderr_handler = None
         self.config = None
 
-        global logger #IGNORE:W0603
+        global logger  # IGNORE:W0603
         logger = self.logger
         logger.info("CMPI log started")
 
@@ -151,7 +172,7 @@ class LogManager(object):
         if config.stderr:
             # start sending to stderr
             if not self.stderr_handler:
-                # create stderr handler             
+                # create stderr handler
                 formatter = logging.Formatter(self.FORMAT_STDERR)
                 self.stderr_handler = logging.StreamHandler()
                 self.stderr_handler.setLevel(logging.DEBUG)

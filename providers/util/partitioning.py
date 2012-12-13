@@ -32,6 +32,7 @@ def _align_up(address, alignment):
 def _align_down(address, alignment):
     return (address / alignment) * alignment
 
+@cmpi_logging.trace_function
 def get_logical_partition_start(partition):
     """
         Return starting sector of logical partition metadata, relative to
@@ -60,6 +61,7 @@ def get_logical_partition_start(partition):
 
     return metadata.geometry.start
 
+@cmpi_logging.trace_function
 def get_partition_table_size(device):
     """
         Return size of partition table (in blocks) for given Anaconda
@@ -73,6 +75,7 @@ def get_partition_table_size(device):
             return MBR_TABLE_SIZE
     return 0
 
+@cmpi_logging.trace_function
 def get_available_sectors(device):
     """
         Return (start, end), where start is the first usable sector after
@@ -100,6 +103,7 @@ def get_available_sectors(device):
 
     return (0, size - 1)
 
+@cmpi_logging.trace_function
 def remove_partition(storage, device):
     """
         Remove PartitionDevice from system, i.e. delete a partition.
@@ -107,7 +111,8 @@ def remove_partition(storage, device):
     action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
     do_storage_action(storage, action)
 
-def do_storage_action(storage, action, do_partitioning=False):
+@cmpi_logging.trace_function
+def do_storage_action(storage, action):
     """
         Perform Anaconda DeviceAction on given Storage instance.
     """
