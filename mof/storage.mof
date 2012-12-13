@@ -219,7 +219,7 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
 
 
 
-      [Override, Description ( 
+      [Implemented(true), Override, Description ( 
           "Start a job to create (or modify) a Logical Volume from a "
           "LMI_StoragePool. One of the parameters for this method is "
           "Size. As an input parameter, Size specifies the desired "
@@ -511,7 +511,8 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
         CIM_ConcreteJob REF Job
     );
 
-    [Description("Create or modify Logical Volume. This method is shortcut to CreateOrModifyElementFromStoragePool "
+    [Implemented(true),
+    Description("Create or modify Logical Volume. This method is shortcut to CreateOrModifyElementFromStoragePool "
         "with the right Goal. Lazy applications can use this method to create or modify LVs, "
         "without calculation of the Goal setting."),
        ValueMap { "0", "1", "2", "3", "4", "5", "6", "..", "4096", 
@@ -550,6 +551,13 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
         [IN(False), OUT, Description("Reference to the job (may be null if job completed).")]
         CIM_ConcreteJob REF Job
     );
+    [ Implemented(true) ] uint16 EnabledDefault;
+    [ Implemented(true) ] uint16 EnabledState;
+    [ Implemented(true) ] uint16 HealthState;
+    [ Implemented(true) ] uint16 OperationalStatus[];
+    [ Implemented(true) ] uint16 PrimaryStatus;
+    [ Implemented(true) ] string StartMode;
+    [ Implemented(true) ] boolean Started;
 };
 
 
@@ -643,7 +651,9 @@ class LMI_MDRAIDStorageSetting : LMI_StorageSetting
 class LMI_VGStorageCapabilities : CIM_StorageCapabilities
 {
     [Description("This method creates new instance of LMI_VGStorageSetting. "
-        "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength.")]
+        "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength."),
+        ValueMap { "0", "1", "4" },
+        Values { "Success", "Not Supported", "Failed"}]
     uint32 CreateVGStorageSetting(
         [IN, Description("List of devices, from which the new Volume Group will be created. "
             "The created LMI_VGStorageSetting will take redundancy and striping of these devices into account. "
@@ -660,6 +670,24 @@ class LMI_VGStorageCapabilities : CIM_StorageCapabilities
 
         [IN(False), OUT, Description("Created LMI_StorageSetting.")]
         LMI_StorageSetting REF Setting);
+
+    [Implemented(true),
+        Description("Default size of Volume Group physical extents."),
+        Units ( "Bytes" ),
+        PUnit ( "byte" )]
+    uint64 ExtentSizeDefault;
+    
+    [ Implemented(true) ] string ElementName;
+    [ Implemented(true) ] uint16 DataRedundancyDefault;
+    [ Implemented(true) ] uint16 DataRedundancyMax;
+    [ Implemented(true) ] uint16 DataRedundancyMin;
+    [ Implemented(true) ] boolean NoSinglePointOfFailure;
+    [ Implemented(true) ] boolean NoSinglePointOfFailureDefault;
+    [ Implemented(true) ] uint16 ExtentStripeLengthDefault;
+    [ Implemented(true) ] uint16 PackageRedundancyDefault;
+    [ Implemented(true) ] uint16 PackageRedundancyMax;
+    [ Implemented(true) ] uint16 PackageRedundancyMin;
+    
 };
 
 [ Experimental, Description("This class represents capability of LMI_StorageConfigurationService to create MD RAID arrays. "
