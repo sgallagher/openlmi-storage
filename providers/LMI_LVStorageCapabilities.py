@@ -160,7 +160,7 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
                     "Wrong value of SettingType parameter.")
 
         (retval, outvars) = super(LMI_LVStorageCapabilities, self).cim_method_createsetting(
-                self, env, object_name)
+                env, object_name)
 
         # rename output param from 'setting' to 'newsetting'
         if outvars and outvars[0].name == "setting":
@@ -182,7 +182,7 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
             LMI_LVStorageSetting.
         """
         return super(LMI_LVStorageCapabilities, self).cim_method_createsetting(
-                self, env, object_name)
+                env, object_name)
 
 
     class Values(CapabilitiesProvider.Values):

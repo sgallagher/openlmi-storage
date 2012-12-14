@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+from LMI_VGStorageCapabilities import LMI_VGStorageCapabilities
 """
     This module is the main entry from CIMOM.
     
@@ -177,6 +178,14 @@ def get_providers(env):
     service_provider = LMI_StorageConfigurationService(**opts)  # IGNORE:W0142
     manager.add_service_provider(service_provider)
     providers['LMI_StorageConfigurationService'] = service_provider
+    cap_provider = LMI_VGStorageCapabilities(**opts)  # IGNORE:W0142
+    manager.add_capabilities_provider(cap_provider)
+    providers['LMI_VGStorageCapabilities'] = cap_provider
+    assoc_provider = ElementCapabilitiesProvider(# IGNORE:W0142
+            "LMI_VGElementCapabilities",
+            cap_provider, service_provider, **opts)
+    providers['LMI_VGElementCapabilities'] = assoc_provider
+
 
     service_provider = LMI_DiskPartitionConfigurationService(**opts)  # IGNORE:W0142
     manager.add_service_provider(service_provider)
