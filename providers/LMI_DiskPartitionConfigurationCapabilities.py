@@ -24,9 +24,7 @@ import pywbem
 import pyanaconda.storage.formats
 import parted
 import cmpi_logging
-
-MAXINT64 = pywbem.Uint64((2 << 63) - 1)
-MEGABYTE = 1024 * 1024
+import util.units
 
 class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
     """
@@ -56,7 +54,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                             self.Values.SupportedSynchronousActions.CreateOrModifyPartition,
                             self.Values.SupportedSynchronousActions.SetPartitionStyle],
                     'Caption': "Capabilities of MS-DOS style primary partitions.",
-                    'MaxCapacity': MAXINT64,
+                    'MaxCapacity': pywbem.Uint64(util.units.MAXINT64),
                     'ElementName': 'MBRCapabilities',
                     'OverlapAllowed' : False,
                     # TODO: add Hidden flag? It seems it does not work on MBR partitions
@@ -78,7 +76,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                             self.Values.SupportedSynchronousActions.CreateOrModifyPartition,
                             self.Values.SupportedSynchronousActions.SetPartitionStyle],
                     'Caption': "Capabilities of MS-DOS style logical partitions.",
-                    'MaxCapacity': MAXINT64,
+                    'MaxCapacity': pywbem.Uint64(util.units.MAXINT64),
                     'ElementName': 'EMBRCapabilities',
                     'OverlapAllowed' : False,
             },
@@ -99,7 +97,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                             self.Values.SupportedSynchronousActions.CreateOrModifyPartition,
                             self.Values.SupportedSynchronousActions.SetPartitionStyle],
                     'Caption': "Capabilities of GPT partitions.",
-                    'MaxCapacity': MAXINT64,
+                    'MaxCapacity': pywbem.Uint64(util.units.MAXINT64),
                     'ElementName': 'GPTCapabilities',
                     'OverlapAllowed' : False,
                     CapabilitiesProvider.DEFAULT_CAPABILITY: True,
@@ -274,7 +272,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             size = 1.0
         else:
             grow = False
-            size = param_size / (MEGABYTE * 1.0)
+            size = param_size / (util.units.MEGABYTE * 1.0)
 
         geometry = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
                 disk=device.format.partedDisk,

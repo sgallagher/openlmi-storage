@@ -22,9 +22,8 @@ from SettingManager import Setting
 import pywbem
 import cmpi_logging
 
-MAXINT32 = 65535
-MEGABYTE = 1024 * 1024
-DEFAULT_EXTENT_SIZE = 4 * MEGABYTE
+import util.units
+DEFAULT_EXTENT_SIZE = 4 * util.units.MEGABYTE
 
 class LMI_VGStorageCapabilities(CapabilitiesProvider):
     """
@@ -43,13 +42,13 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
                     'InstanceID': LMI_VGStorageCapabilities.INSTANCE_ID,
                     'ElementName': LMI_VGStorageCapabilities.INSTANCE_ID,
                     'DataRedundancyDefault': pywbem.Uint16(1),
-                    'DataRedundancyMax': pywbem.Uint16(MAXINT32),
+                    'DataRedundancyMax': pywbem.Uint16(util.units.MAXINT16),
                     'DataRedundancyMin': pywbem.Uint16(1),
                     'NoSinglePointOfFailure': True,
                     'NoSinglePointOfFailureDefault': False,
                     'ExtentStripeLengthDefault': pywbem.Uint16(1),
                     'PackageRedundancyDefault': pywbem.Uint16(0),
-                    'PackageRedundancyMax': pywbem.Uint16(MAXINT32),
+                    'PackageRedundancyMax': pywbem.Uint16(util.units.MAXINT16),
                     'PackageRedundancyMin': pywbem.Uint16(0),
                     'ExtentSizeDefault': pywbem.Uint64(DEFAULT_EXTENT_SIZE),
             },

@@ -23,8 +23,7 @@ import pyanaconda.storage
 import cmpi_logging
 from SettingHelper import SettingHelper
 from SettingManager import StorageSetting
-
-MEGABYTE = 1024 * 1024
+import util.units
 
 class LMI_VGStoragePool(DeviceProvider, SettingHelper):
     """
@@ -111,11 +110,11 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         model['PoolID'] = device.name
 
         model['TotalManagedSpace'] = pywbem.Uint64(
-                device.extents * device.peSize * MEGABYTE)
+                device.extents * device.peSize * util.units.MEGABYTE)
         model['RemainingManagedSpace'] = pywbem.Uint64(
-                device.freeExtents * device.peSize * MEGABYTE)
+                device.freeExtents * device.peSize * util.units.MEGABYTE)
 
-        model['ExtentSize'] = pywbem.Uint64(device.peSize * MEGABYTE)
+        model['ExtentSize'] = pywbem.Uint64(device.peSize * util.units.MEGABYTE)
         model['TotalExtents'] = pywbem.Uint64(device.extents)
         model['RemainingExtents'] = pywbem.Uint64(device.freeExtents)
         model['UUID'] = device.uuid
@@ -232,8 +231,8 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
 
         # TODO: check Goal setting!
 
-        extent_size = long(device.peSize * MEGABYTE)
-        available_size = long(device.peSize * device.freeExtents * MEGABYTE)
+        extent_size = long(device.peSize * util.units.MEGABYTE)
+        available_size = long(device.peSize * device.freeExtents * util.units.MEGABYTE)
 
         out_params = []
         out_params += [pywbem.CIMParameter('minimumvolumesize', type='uint64',
@@ -253,7 +252,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
                 StorageSetting.TYPE_CONFIGURATION,
                 setting_provider.create_setting_id(device.path))
         setting.set_setting(self.get_redundancy(device))
-        setting['ExtentSize'] = device.peSize * MEGABYTE
+        setting['ExtentSize'] = device.peSize * util.units.MEGABYTE
         setting['ElementName'] = device.path
         return setting
 

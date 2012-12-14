@@ -21,9 +21,7 @@ from ServiceProvider import ServiceProvider
 import pywbem
 import pyanaconda.storage
 import cmpi_logging
-import util
-
-MEGABYTE = 1024 * 1024
+import util.units
 
 class LMI_StorageConfigurationService(ServiceProvider):
     """ Provider of LMI_StorageConfigurationService. """
@@ -99,7 +97,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             # resize
 
             # check PE size
-            newsize = device.vg.align(float(size) / MEGABYTE, True)
+            newsize = device.vg.align(float(size) / util.units.MEGABYTE, True)
             oldsize = device.vg.align(device.size, False)
             print "oldszie", oldsize, "newsize", newsize
             if newsize != oldsize:
@@ -109,7 +107,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
                 self.storage.devicetree.processActions(dryRun=False)
                 self.storage.reset()
 
-        newsize = device.size * MEGABYTE
+        newsize = device.size * util.units.MEGABYTE
         outparams.append(pywbem.CIMParameter(
                 name="Size",
                 type="uint64",
@@ -130,7 +128,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         """
         args = {}
         args['parents'] = [pool]
-        args['size'] = pool.align(float(size) / MEGABYTE, True)
+        args['size'] = pool.align(float(size) / util.units.MEGABYTE, True)
         print "size:", args['size']
         if name:
             args['name'] = name
@@ -138,7 +136,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(lv)
         util.partitioning.do_storage_action(self.storage, action)
 
-        newsize = lv.size * MEGABYTE
+        newsize = lv.size * util.units.MEGABYTE
         outparams = [
                 pywbem.CIMParameter(
                         name='theelement',
@@ -214,7 +212,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         # check if resize is needed
         if newsize and device:
-            oldsize = device.vg.align(device.size, False) * MEGABYTE
+            oldsize = device.vg.align(device.size, False) * util.units.MEGABYTE
             if newsize < oldsize:
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                         "Shrinking of logical volumes is not supported.")
