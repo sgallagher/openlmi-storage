@@ -104,32 +104,6 @@ class DeviceProvider(BaseProvider):
         return []
 
     @cmpi_logging.trace_method
-    def _getCommonRedundancy(self, a, b):
-        """
-            Return the combined data redundancy characteristics for
-            two devices.
-            Linear device is assumed, i.e. the data are either on A or on B.
-            Any specific DeviceProviderSubclasses (e.g. RAID) must override
-            this method.
-        """
-        # assume linear device, i.e. a data is either on A or on B
-        # hence data_redundancy is the minimum of both
-        data_redundancy = min(a.data_dedundancy, b.data_dedundancy)
-        # assume the worst
-        package_redundancy = min(a.package_redundancy, b.package_redundancy)
-        # both NoSinglePointOfFailure must be true to be the result true
-        no_single_point_of_failure = (
-                a.no_single_point_of_failure and b.no_single_point_of_failure)
-        #  we don't know if the data are on A or B, so assume the worst
-        stripe_length = min(a.stripe_length, b.stripe_length)
-
-        return self.Redundancy(
-                no_single_point_of_failure=no_single_point_of_failure,
-                data_redundancy=data_redundancy,
-                package_redundancy=package_redundancy,
-                stripe_length=stripe_length)
-
-    @cmpi_logging.trace_method
     def _find_redundancy(self, device):
         """
             Discover redundancy of given StorageDevice.
@@ -175,8 +149,9 @@ class DeviceProvider(BaseProvider):
         if len(parents) > 0:
             # find all parents and get their redundancy
             redundancies = map(self._find_redundancy, parents)
-            # iteratively call self._getCommonRedundancy(r1, r2), ...
-            final_redundancy = reduce(self._getCommonRedundancy, redundancies)
+            # iteratively call self.get_common_redundancy(r1, r2), ...
+            final_redundancy = self.Redundancy.get_common_redundancy_list(
+                    redundancies)
         else:
             # this device has no parents, assume it is simple disk
             final_redundancy = self.Redundancy(
@@ -200,6 +175,41 @@ class DeviceProvider(BaseProvider):
             self.data_dedundancy = data_redundancy
             self.package_redundancy = package_redundancy
             self.stripe_length = stripe_length
+
+        @cmpi_logging.trace_method
+        def get_common_redundancy(self, b):
+            """
+                Return the combined data redundancy characteristics for
+                two devices.
+                Linear device is assumed, i.e. the data are either on self or on B.
+            """
+            # assume linear device, i.e. a data is either on A or on B
+            # hence data_redundancy is the minimum of both
+            data_redundancy = min(self.data_dedundancy, b.data_dedundancy)
+            # assume the worst
+            package_redundancy = min(self.package_redundancy, b.package_redundancy)
+            # both NoSinglePointOfFailure must be true to be the result true
+            no_single_point_of_failure = (
+                    self.no_single_point_of_failure and b.no_single_point_of_failure)
+            #  we don't know if the data are on A or B, so assume the worst
+            stripe_length = min(self.stripe_length, b.stripe_length)
+            return DeviceProvider.Redundancy(
+                    no_single_point_of_failure=no_single_point_of_failure,
+                    data_redundancy=data_redundancy,
+                    package_redundancy=package_redundancy,
+                    stripe_length=stripe_length)
+
+        @staticmethod
+        @cmpi_logging.trace_function
+        def get_common_redundancy_list(redundancy_list):
+            """
+                Return common redundancy characteristics for list of devices.
+                Linear device is assumed, i.e. the data are either on self or on B.
+            """
+            redundancy = reduce(
+                    lambda a, b: a.get_common_redundancy(b),
+                    redundancy_list)
+            return redundancy
 
     class Values(object):
         class OperationalStatus(object):
