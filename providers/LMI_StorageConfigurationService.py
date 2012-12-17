@@ -19,9 +19,10 @@
 
 from ServiceProvider import ServiceProvider
 import pywbem
-import pyanaconda.storage
+import pyanaconda.storage.formats
 import cmpi_logging
 import util.units
+from DeviceProvider import DeviceProvider
 
 class LMI_StorageConfigurationService(ServiceProvider):
     """ Provider of LMI_StorageConfigurationService. """
@@ -298,6 +299,208 @@ class LMI_StorageConfigurationService(ServiceProvider):
                 param_size)
 
 
+    @cmpi_logging.trace_method
+    def _modify_vg(self, pool, goal, devices, name):
+        """
+            Modify existing Volume Group. The parameters were already checked.
+        """
+        if name is not None:
+            # rename
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Rename of volume group is not yet supported.")
+
+        # check extent size
+        if goal and goal['ExtentSize'] != pool.peSize:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Changing ExtentSize is not supported.")
+
+        # check for added and removed devices:
+        add_devices = []
+        for device in devices:
+            if device not in pool.pvs:
+                add_devices.append(device)
+
+        rm_devices = []
+        for device in pool.pvs:
+            if device not in devices:
+                rm_devices.append(device)
+
+        # now do it
+        if add_devices:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Adding new devices to volume group is not yet supported.")
+        if rm_devices:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Removing devices from volume group is not yet supported.")
+
+
+    @cmpi_logging.trace_method
+    def _create_vg(self, goal, devices, name):
+        """
+            Create new  Volume Group. The parameters were already checked.
+        """
+        for device in devices:
+            # TODO: check if it is unused!
+            if not (device.format
+                    and isinstance(device.format,
+                            pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume)):
+                # create the pv format there
+                pv = pyanaconda.storage.formats.getFormat('lvmpv')
+                self.storage.formatDevice(device, pv)
+
+        args = {}
+        args['parents'] = devices
+        if goal and goal['ExtentSize']:
+            args['peSize'] = goal['ExtentSize']
+        if name:
+            args['name'] = name
+
+        vg = self.storage.newVG(**args)
+        action = pyanaconda.storage.ActionCreateDevice(vg)
+        util.partitioning.do_storage_action(self.storage, action)
+
+        newsize = vg.size * util.units.MEGABYTE
+        outparams = [
+                pywbem.CIMParameter(
+                        name='pool',
+                        type='reference',
+                        value=self.provider_manager.get_name_for_device(vg)),
+                pywbem.CIMParameter(
+                    name="size",
+                    type="uint64",
+                    value=pywbem.Uint64(newsize))
+        ]
+        retval = self.Values.CreateOrModifyVG.Job_Completed_with_No_Error
+        return (retval, outparams)
+
+
+    @cmpi_logging.trace_method
+    def cim_method_createormodifyvg(self, env, object_name,
+                                    param_elementname=None,
+                                    param_goal=None,
+                                    param_inextents=None,
+                                    param_pool=None):
+        """
+            Implements LMI_StorageConfigurationService.CreateOrModifyVG()
+
+            Create or modify Volume Group. This method is shortcut to
+            CreateOrModifyStoragePool with the right Goal. Lazy applications
+            can use this method to create or modify VGs, without calculation
+            of the Goal setting.
+        """
+        # check parameters
+        self.check_instance(object_name)
+
+        # goal
+        if param_goal:
+            instance_id = param_goal['InstanceID']
+
+            goal = self.provider_manager.get_setting_for_id(
+                    instance_id, "LMI_VGStorageSetting")
+            if not goal:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "LMI_VGStorageSetting Goal does not found.")
+        else:
+            goal = None
+
+        # pool
+        if param_pool:
+            pool = self.provider_manager.get_device_for_name(param_pool)
+            if not pool:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Cannot find the Pool device.")
+            if not isinstance(pool, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "The Pool parameter is not LMI_VGStoragePool.")
+        else:
+            pool = None
+
+        # inextents
+        devices = []
+        redundancies = []
+        if param_inextents:
+            for extent_name in param_inextents:
+                provider = self.provider_manager.get_device_provider_for_name(
+                        extent_name)
+                if not provider:
+                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Cannot find provider for InExtent " + str(extent_name))
+                device = provider.get_device_for_name(extent_name)
+                if not provider:
+                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Cannot find device for InExtent " + str(extent_name))
+                devices.append(device)
+                redundancies.append(provider.get_redundancy(device))
+
+        # extents vs goal:
+        if devices and goal:
+            final_redundancy = DeviceProvider.Redundancy.get_common_redundancy_list(
+                    redundancies)
+            error = self._check_redundancy_setting(final_redundancy, goal)
+            if error:
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "The Goal does not match InExtents' capabilities: "
+                            + error)
+
+        # elementname
+        name = None
+        if param_elementname:
+            name = param_elementname
+            if pool and param_elementname == pool.name:
+                # no rename is needed
+                name = None
+
+        if not pool and not devices:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Either Pool or InExtents must be specified")
+
+        if pool:
+            return self._modify_vg(pool, goal, devices, name)
+        else:
+            return self._create_vg(goal, devices, name)
+
+
+    @cmpi_logging.trace_method
+    def cim_method_createormodifystoragepool(self, env, object_name,
+                                             param_elementname=None,
+                                             param_goal=None,
+                                             param_inpools=None,
+                                             param_inextents=None,
+                                             param_pool=None,
+                                             param_size=None):
+        """
+            Implements LMI_StorageConfigurationService.CreateOrModifyStoragePool()
+
+            Starts a job to create (or modify) a StoragePool.Only Volume Groups
+            can be created or modified using this method.\nLMI supports only
+            creation of pools from whole StorageExtents, it is not possible to
+            allocate only part of an StorageExtent.\nOne of the parameters for
+            this method is Size. As an input parameter, Size specifies the
+            desired size of the pool. It must match sum of all input extent
+            sizes. Error will be returned if not, with correct Size output
+            parameter value. \nAny InPools as parameter will result in
+            error.\nThe capability requirements that the Pool must support are
+            defined using the Goal parameter. \n This method supports renaming
+            of a Volume Group and adding and removing StorageExtents to/from a
+            Volume Group. \nIf 0 is returned, then the task completed
+            successfully and the use of ConcreteJob was not required. If the
+            task will take some time to complete, a ConcreteJob will be
+            created and its reference returned in the output parameter Job. \n
+            This method automatically formats the StorageExtents added to a
+            Volume Group as Physical Volumes.
+        """
+        # check parameters
+        if param_size:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Parameter Size is not supported.")
+        if param_inpools:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Parameter InPools is not supported.")
+        return self.cim_method_createormodifyvg(env, object_name,
+                param_elementname, param_goal, param_inextents, param_pool)
+
+
+
     class Values(ServiceProvider.Values):
         class CreateOrModifyElementFromStoragePool(object):
             Job_Completed_with_No_Error = pywbem.Uint32(0)
@@ -324,6 +527,31 @@ class LMI_StorageConfigurationService(ServiceProvider):
                 # Vendor_Specific = 32768..65535
 
         class CreateOrModifyLV(object):
+            Job_Completed_with_No_Error = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Unknown = pywbem.Uint32(2)
+            Timeout = pywbem.Uint32(3)
+            Failed = pywbem.Uint32(4)
+            Invalid_Parameter = pywbem.Uint32(5)
+            In_Use = pywbem.Uint32(6)
+            # DMTF_Reserved = ..
+            Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
+            Size_Not_Supported = pywbem.Uint32(4097)
+            # Method_Reserved = 4098..32767
+            # Vendor_Specific = 32768..65535
+
+        class CreateOrModifyVG(object):
+            Job_Completed_with_No_Error = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Unknown = pywbem.Uint32(2)
+            Timeout = pywbem.Uint32(3)
+            Failed = pywbem.Uint32(4)
+            Invalid_Parameter = pywbem.Uint32(5)
+            In_Use = pywbem.Uint32(6)
+            Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
+            Size_Not_Supported = pywbem.Uint32(4097)
+
+        class CreateOrModifyStoragePool(object):
             Job_Completed_with_No_Error = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
             Unknown = pywbem.Uint32(2)

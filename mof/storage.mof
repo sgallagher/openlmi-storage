@@ -480,7 +480,14 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
 
     [Description("Create or modify Volume Group. This method is shortcut to CreateOrModifyStoragePool "
         "with the right Goal. Lazy applications can use this method to create or modify VGs, "
-        "without calculation of the Goal setting.")]
+        "without calculation of the Goal setting."),
+       ValueMap { "0", "1", "2", "3", "4", "5", "6", "4096", 
+          "4097" }, 
+       Values { "Job Completed with No Error", "Not Supported", 
+          "Unknown", "Timeout", "Failed", "Invalid Parameter", 
+          "In Use",
+          "Method Parameters Checked - Job Started", 
+          "Size Not Supported", "Method Reserved"}]
     uint32 CreateOrModifyVG(
         [IN, Description("Requested volume group name. "
             "If this parameter is not provided, implementation will choose on "
@@ -488,6 +495,10 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
             "\n When modifying a Volume Group, the VG will be renamed to this name."
             )]
         string ElementName,
+
+        [IN, Description("Only for advanced use, simple application should "
+            "not set this parameter.")]
+        LMI_VGStorageSetting REF Goal,
 
         [IN, Description("List of all Physical Volumes of the VG."
             "\n When creating a VG, these devices will be PVs of the VG."
@@ -498,17 +509,20 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
         )]
         CIM_StorageExtent REF InExtents[],
 
-        [IN, Description("Only for advanced use, simple application should "
-            "not set this parameter.")]
-        LMI_VGStorageSetting REF Goal,
-
         [IN, OUT, Description("On input: VG to modify. Do not use this parameter "
             "when creating a VG."
             "\n On output: the created or modified VG.")]
         LMI_VGStoragePool REF Pool,
 
         [IN(False), OUT, Description("Reference to the job (may be null if job completed).")]
-        CIM_ConcreteJob REF Job
+        CIM_ConcreteJob REF Job,
+
+        [IN(False), OUT, Description ( 
+             "Size of the volume group." ), 
+          Units ( "Bytes" ), 
+          PUnit ( "byte" )]
+      uint64 Size
+
     );
 
     [Implemented(true),
