@@ -23,6 +23,7 @@ import cmpi_logging
 from SettingHelper import SettingHelper
 from SettingManager import StorageSetting
 import pywbem
+import util
 
 class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
     """
@@ -153,3 +154,8 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
                 'PackageRedundancyMax' : pywbem.Uint16,
                 'PackageRedundancyMin' : pywbem.Uint16,
         }
+    @cmpi_logging.trace_method
+
+    def do_delete_instance(self, device):
+        action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+        util.partitioning.do_storage_action(self.storage, action)

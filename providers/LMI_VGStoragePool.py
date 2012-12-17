@@ -328,6 +328,10 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
                 'PackageRedundancyMin' : pywbem.Uint16,
         }
 
+    def do_delete_instance(self, device):
+        action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+        util.partitioning.do_storage_action(self.storage, action)
+
 
     class Values(DeviceProvider.Values):
         class GetSupportedSizeRange(object):

@@ -23,6 +23,7 @@ import pyanaconda.storage.formats
 import cmpi_logging
 import util.units
 from DeviceProvider import DeviceProvider
+from SettingProvider import SettingProvider
 
 class LMI_StorageConfigurationService(ServiceProvider):
     """ Provider of LMI_StorageConfigurationService. """
@@ -44,41 +45,43 @@ class LMI_StorageConfigurationService(ServiceProvider):
         drmax = setting.get('DataRedundancyMax', None)
         drmin = setting.get('DataRedundancyMin', None)
         drgoal = setting.get('DataRedundancyGoal', None)
-        if drmax is not None and drmax < redundancy.data_redundancy:
+        if drmax is not None and int(drmax) < redundancy.data_redundancy:
             return "DataRedundancyMax is too low."
-        if drmin is not None and drmin > redundancy.data_redundancy:
+        if drmin is not None and int(drmin) > redundancy.data_redundancy:
             return "DataRedundancyMin is too high."
         if (drmax is None and drmin is None and drgoal is not None
-                and drgoal != redundancy.data_redundancy):
+                and int(drgoal) != redundancy.data_redundancy):
             # only goal is set - it must match
             return "DataRedundancyGoal does not match."
 
         esmax = setting.get('ExtentStripeLengthMax', None)
         esmin = setting.get('ExtentStripeLengthMin', None)
         esgoal = setting.get('ExtentStripeLength', None)
-        if esmax is not None and esmax < redundancy.stripe_length:
+        if esmax is not None and int(esmax) < redundancy.stripe_length:
             return "ExtentStripeLengthMax is too low."
-        if esmin is not None and esmin > redundancy.stripe_length:
+        if esmin is not None and int(esmin) > redundancy.stripe_length:
             return "ExtentStripeLengthMin is too high."
         if (esmax is None and esmin is None and esgoal is not None
-                and esgoal != redundancy.stripe_length):
+                and int(esgoal) != redundancy.stripe_length):
             # only goal is set - it must match
             return "ExtentStripeLength does not match."
 
         prmax = setting.get('PackageRedundancyMax', None)
         prmin = setting.get('PackageRedundancyMin', None)
         prgoal = setting.get('PackageRedundancyGoal', None)
-        if prmax is not None and prmax < redundancy.package_redundancy:
+        if prmax is not None and int(prmax) < redundancy.package_redundancy:
             return "PackageRedundancyMax is too low."
-        if prmin is not None and prmin > redundancy.package_redundancy:
+        if prmin is not None and int(prmin) > redundancy.package_redundancy:
             return "PackageRedundancyMin is too high."
-        if (prmax is None and prmin is None and prgoal is not None
+        if (prmax is None and int(prmin) is None and prgoal is not None
                 and prgoal != redundancy.package_redundancy):
             # only goal is set - it must match
             return "PackageRedundancyGoal does not match."
 
         nspof = setting.get('NoSinglePointOfFailure', None)
-        if nspof is not None and nspof != redundancy.no_single_point_of_failure:
+        if (nspof is not None
+                and SettingProvider.string_to_bool(nspof)
+                    != redundancy.no_single_point_of_failure):
             return "NoSinglePointOfFailure does not match."
 
         return None
@@ -351,7 +354,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         args = {}
         args['parents'] = devices
         if goal and goal['ExtentSize']:
-            args['peSize'] = goal['ExtentSize']
+            args['peSize'] = float(goal['ExtentSize']) / util.units.MEGABYTE
         if name:
             args['name'] = name
 
