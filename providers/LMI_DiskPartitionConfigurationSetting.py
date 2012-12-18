@@ -39,6 +39,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
         super(LMI_DiskPartitionConfigurationSetting, self).__init__(
                 setting_classname="LMI_DiskPartitionConfigurationSetting",
                 supported_properties=supported_properties,
+                validate_properties=None,
                 *args, **kwargs)
 
     @cmpi_logging.trace_method

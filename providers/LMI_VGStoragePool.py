@@ -24,6 +24,7 @@ import cmpi_logging
 from SettingHelper import SettingHelper
 from SettingManager import StorageSetting
 import util.units
+import math
 
 class LMI_VGStoragePool(DeviceProvider, SettingHelper):
     """
@@ -327,6 +328,29 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
                 'PackageRedundancyMax' : pywbem.Uint16,
                 'PackageRedundancyMin' : pywbem.Uint16,
         }
+
+    @cmpi_logging.trace_method
+    def get_setting_validators(self, setting_provider):
+        return {
+                'ExtentSize': self._check_extent_size
+        }
+
+    def _check_extent_size(self, value):
+        """
+            Check if the given value is acceptable as
+            VGStorageSetting.ExtentSize.
+        """
+        # lowest value is 1k
+        if value < 1024:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Property ExtentSize must be at least 1KiB")
+        # must be power of 2
+        exp = math.log(value, 2)
+        if math.floor(exp) != exp:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Property ExtentSize must be power of 2")
+        return True
+
 
     def do_delete_instance(self, device):
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)

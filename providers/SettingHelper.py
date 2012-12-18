@@ -62,7 +62,7 @@ class SettingHelper(object):
         return None
 
     @cmpi_logging.trace_method
-    def get_supported_setting_properties(self):
+    def get_supported_setting_properties(self, setting_provider):
         """
             Return hash property_name -> constructor.
                 constructor is a function which takes string argument
@@ -71,3 +71,13 @@ class SettingHelper(object):
             This hash will be passed to SettingProvider.__init__ 
         """
         return {}
+
+    @cmpi_logging.trace_method
+    def get_setting_validators(self, setting_provider):
+        """
+            Return hash property_name -> validator
+                validator is a function which takes pywbem (Uint32, bool ...)
+                value as parameter and returns True, if the value is correct for
+                the property. Not all properties do need to have a validator.
+        """
+        return None

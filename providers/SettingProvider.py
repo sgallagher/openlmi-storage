@@ -38,13 +38,17 @@ class SettingProvider(BaseProvider):
         Persistent instances are stored in /var/lib/openlmi-storage/settings/<setting_classname>.ini
     """
     @cmpi_logging.trace_method
-    def __init__(self, setting_classname, supported_properties, *args, **kwargs):
+    def __init__(self, setting_classname, supported_properties, validate_properties=None, *args, **kwargs):
         """
             setting_classname = name of CIM class, which we provide
             supported_properties = hash property_name -> constructor
                 constructor is a function which takes string argument
                 and returns CIM value. (i.e. pywbem.Uint16
                 or bool or string etc).
+            validate_properties = hash property_name -> validator
+                validator is a function which takes pywbem (Uint32, bool ...)
+                value as parameter and returns True, if the value is correct for
+                the property. Not all properties do need to have a validator.
         """
         self.setting_classname = setting_classname
         supported_properties['Caption'] = str
@@ -54,6 +58,7 @@ class SettingProvider(BaseProvider):
         supported_properties['ElementName'] = str
 
         self.supported_properties = supported_properties
+        self.validate_properties = validate_properties
 
         super(SettingProvider, self).__init__(*args, **kwargs)
 
@@ -260,7 +265,14 @@ class SettingProvider(BaseProvider):
 
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot modify ChangeableType property to new value.")
+            # finally, we should set the variable
             if instance[name] is not None:
+                if self.validate_properties and self.validate_properties.has_key(name):
+                    # check validity of the property
+                    validator = self.validate_properties[name]
+                    if not validator(instance[name]):
+                        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                                "The value of property %s is invalid." % (name))
                 setting[name] = str(instance[name])
             else:
                 setting[name] = None
@@ -452,8 +464,11 @@ class SettingHelperProvider(SettingProvider):
     def __init__(self, setting_helper, *args, **kwargs):
         self.setting_helper = setting_helper
         properties = setting_helper.get_supported_setting_properties(self)
+        validators = setting_helper.get_setting_validators(self)
         super(SettingHelperProvider, self).__init__(
-                supported_properties=properties, *args, **kwargs)
+                supported_properties=properties,
+                validate_properties=validators,
+                *args, **kwargs)
 
     @cmpi_logging.trace_method
     def enumerate_configurations(self):
