@@ -63,9 +63,9 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         caps = {}
         caps['InstanceID'] = self.create_capabilities_id(device.path)
         caps['ElementName'] = device.path
-        caps['DataRedundancyDefault'] = pywbem.Uint16(redundancy.data_dedundancy)
-        caps['DataRedundancyMax'] = pywbem.Uint16(redundancy.data_dedundancy)
-        caps['DataRedundancyMin'] = pywbem.Uint16(redundancy.data_dedundancy)
+        caps['DataRedundancyDefault'] = pywbem.Uint16(redundancy.data_redundancy)
+        caps['DataRedundancyMax'] = pywbem.Uint16(redundancy.data_redundancy)
+        caps['DataRedundancyMin'] = pywbem.Uint16(redundancy.data_redundancy)
         caps['NoSinglePointOfFailure'] = redundancy.no_single_point_of_failure
         caps['NoSinglePointOfFailureDefault'] = redundancy.no_single_point_of_failure
         caps['ExtentStripeLengthDefault'] = pywbem.Uint16(redundancy.stripe_length)

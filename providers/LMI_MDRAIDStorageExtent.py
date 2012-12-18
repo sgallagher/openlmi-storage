@@ -60,14 +60,14 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
         """
         # data is spread on all devices -> DataRedundancy is sum of base DataRedundancies
         # PackageRedundancy is the minimum of PackageRedundancies
-        data_dedundancy = min(a.data_dedundancy, b.data_dedundancy)
+        data_redundancy = min(a.data_redundancy, b.data_redundancy)
         package_redundancy = min(a.package_redundancy, b.package_redundancy)
         no_single_point_of_failure = a.no_single_point_of_failure and b.no_single_point_of_failure
         stripe_length = a.stripe_length + b.stripe_length
 
         return self.Redundancy(
                 no_single_point_of_failure=no_single_point_of_failure,
-                data_dedundancy=data_dedundancy,
+                data_redundancy=data_redundancy,
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 
@@ -77,14 +77,14 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
             Return the combined data redundancy characteristics for
             two devices combined in RAID1.
         """
-        data_dedundancy = a.data_dedundancy + b.data_dedundancy
+        data_redundancy = a.data_redundancy + b.data_redundancy
         package_redundancy = a.package_redundancy + b.package_redundancy
         no_single_point_of_failure = True
         stripe_length = min(a.stripe_length, b.stripe_length)
 
         return self.Redundancy(
                 no_single_point_of_failure=no_single_point_of_failure,
-                data_dedundancy=data_dedundancy,
+                data_redundancy=data_redundancy,
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 
@@ -94,14 +94,14 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
             Return the combined data redundancy characteristics for
             two devices combined in RAID5.
         """
-        data_dedundancy = min(a.data_dedundancy, b.data_dedundancy)
+        data_redundancy = min(a.data_redundancy, b.data_redundancy)
         package_redundancy = min(a.package_redundancy, b.package_redundancy)
         no_single_point_of_failure = True
         stripe_length = a.stripe_length + b.stripe_length
 
         return self.Redundancy(
                 no_single_point_of_failure=no_single_point_of_failure,
-                data_dedundancy=data_dedundancy,
+                data_redundancy=data_redundancy,
                 package_redundancy=package_redundancy,
                 stripe_length=stripe_length)
 

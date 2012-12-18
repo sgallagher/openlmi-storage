@@ -266,9 +266,9 @@ class StorageSetting(Setting):
         """
             Set setting according to given DeviceProvider.Redundancy.
         """
-        self['DataRedundancyGoal'] = redundancy.data_dedundancy
-        self['DataRedundancyMax'] = redundancy.data_dedundancy
-        self['DataRedundancyMin'] = redundancy.data_dedundancy
+        self['DataRedundancyGoal'] = redundancy.data_redundancy
+        self['DataRedundancyMax'] = redundancy.data_redundancy
+        self['DataRedundancyMin'] = redundancy.data_redundancy
         self['ExtentStripeLength'] = redundancy.stripe_length
         self['ExtentStripeLengthMin'] = redundancy.stripe_length
         self['ExtentStripeLengthMax'] = redundancy.stripe_length

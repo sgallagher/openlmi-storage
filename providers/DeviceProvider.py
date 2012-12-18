@@ -172,7 +172,7 @@ class DeviceProvider(BaseProvider):
                      package_redundancy=0,
                      stripe_length=1):
             self.no_single_point_of_failure = no_single_point_of_failure
-            self.data_dedundancy = data_redundancy
+            self.data_redundancy = data_redundancy
             self.package_redundancy = package_redundancy
             self.stripe_length = stripe_length
 
@@ -185,7 +185,7 @@ class DeviceProvider(BaseProvider):
             """
             # assume linear device, i.e. a data is either on A or on B
             # hence data_redundancy is the minimum of both
-            data_redundancy = min(self.data_dedundancy, b.data_dedundancy)
+            data_redundancy = min(self.data_redundancy, b.data_redundancy)
             # assume the worst
             package_redundancy = min(self.package_redundancy, b.package_redundancy)
             # both NoSinglePointOfFailure must be true to be the result true

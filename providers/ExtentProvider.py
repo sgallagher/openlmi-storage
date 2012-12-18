@@ -191,7 +191,7 @@ class ExtentProvider(DeviceProvider):
 
         redundancy = self.get_redundancy(device)
         model['NoSinglePointOfFailure'] = redundancy.no_single_point_of_failure
-        model['DataRedundancy'] = pywbem.Uint16(redundancy.data_dedundancy)
+        model['DataRedundancy'] = pywbem.Uint16(redundancy.data_redundancy)
         model['PackageRedundancy'] = pywbem.Uint16(redundancy.package_redundancy)
         model['ExtentStripeLength'] = pywbem.Uint64(redundancy.stripe_length)
         model['IsComposite'] = (len(device.parents) > 1)
