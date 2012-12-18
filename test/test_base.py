@@ -54,11 +54,11 @@ class StorageTestBase(unittest.TestCase):
         self.start_udev_monitor()
 
     def start_udev_monitor(self):
-        self.udev_context = pyudev.Context()  #IGNORE:W0201
-        self.udev_monitor = pyudev.Monitor.from_netlink(self.udev_context) #IGNORE:W0201
+        self.udev_context = pyudev.Context()  # IGNORE:W0201
+        self.udev_monitor = pyudev.Monitor.from_netlink(self.udev_context)  # IGNORE:W0201
         self.udev_monitor.filter_by('block')
-        self.udev_observer = pyudev.MonitorObserver(self.udev_monitor, self.udev_event) #IGNORE:W0201
-        self.devices = [] #IGNORE:W0201
+        self.udev_observer = pyudev.MonitorObserver(self.udev_monitor, self.udev_event)  # IGNORE:W0201
+        self.devices = []  # IGNORE:W0201
         self.udev_observer.start()
 
     def stop_udev_monitor(self):
@@ -82,7 +82,7 @@ class StorageTestBase(unittest.TestCase):
         """
         count = 0
 
-        # remove them in reverse order        
+        # remove them in reverse order
         while self.devices:
             device = self.devices.pop()
             udev_device = pyudev.Device.from_device_file(
@@ -99,9 +99,9 @@ class StorageTestBase(unittest.TestCase):
                         count += 1
                         self.destroy_md(device)
                 except KeyError:
-                    pass # it's not RATD
+                    pass  # it's not RATD
 
-            #TODO: add LVM
+            # TODO: add LVM
         return count
 
 
@@ -161,3 +161,12 @@ class StorageTestBase(unittest.TestCase):
         if self.clean:
             if self.destroy_created():
                 self.restart_cim()
+
+def short_test_only():
+    """
+        Returns True, if only short test should be executed, i.e.
+        LMI_STORAGE_SHORT_ONLY is set.
+    """
+    if os.environ.get("LMI_STORAGE_SHORT_ONLY", None):
+        return True
+    return False
