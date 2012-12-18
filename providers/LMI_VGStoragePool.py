@@ -336,6 +336,17 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
                 'ExtentSize': self._check_extent_size
         }
 
+    @cmpi_logging.trace_method
+    def get_setting_ignore(self, setting_provider):
+        return {
+                'CompressedElement': False,
+                'CompressionRate': 1,
+                'InitialSynchronization': 0,
+                'SpaceLimit': 0,
+                'ThinProvisionedInitialReserve': 0,
+                'UseReplicationBuffer': 0,
+        }
+
     def _check_extent_size(self, value):
         """
             Check if the given value is acceptable as

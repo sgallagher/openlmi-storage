@@ -73,6 +73,17 @@ class SettingHelper(object):
         return {}
 
     @cmpi_logging.trace_method
+    def get_setting_ignore(self, setting_provider):
+        """
+            Return hash property_name -> default value.
+            If this value of the property is set, the ModifyInstance
+            won't complain, but it will silently ignore the value.
+            This is useful when someone tries to set default value
+            of a property and the provider does not implement it. 
+        """
+        return None
+
+    @cmpi_logging.trace_method
     def get_setting_validators(self, setting_provider):
         """
             Return hash property_name -> validator

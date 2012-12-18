@@ -38,7 +38,12 @@ class SettingProvider(BaseProvider):
         Persistent instances are stored in /var/lib/openlmi-storage/settings/<setting_classname>.ini
     """
     @cmpi_logging.trace_method
-    def __init__(self, setting_classname, supported_properties, validate_properties=None, *args, **kwargs):
+    def __init__(self,
+            setting_classname,
+            supported_properties,
+            validate_properties=None,
+            ignore_defaults=None,
+            *args, **kwargs):
         """
             setting_classname = name of CIM class, which we provide
             supported_properties = hash property_name -> constructor
@@ -49,6 +54,11 @@ class SettingProvider(BaseProvider):
                 validator is a function which takes pywbem (Uint32, bool ...)
                 value as parameter and returns True, if the value is correct for
                 the property. Not all properties do need to have a validator.
+            ignore_defaults = hash property_name -> default value.
+                If this value of the property is set, the ModifyInstance
+                won't complain, but it will silently ignore the value.
+                This is useful when someone tries to set default value
+                of a property and the provider does not implement it. 
         """
         self.setting_classname = setting_classname
         supported_properties['Caption'] = str
@@ -59,6 +69,7 @@ class SettingProvider(BaseProvider):
 
         self.supported_properties = supported_properties
         self.validate_properties = validate_properties
+        self.ignore_defaults = ignore_defaults
 
         super(SettingProvider, self).__init__(*args, **kwargs)
 
@@ -188,7 +199,7 @@ class SettingProvider(BaseProvider):
         return model
 
     @staticmethod
-    @cmpi_logging.trace_method
+    @cmpi_logging.trace_function
     def string_to_bool(value):
         """
             Convert a string to boolean value.
@@ -244,6 +255,15 @@ class SettingProvider(BaseProvider):
         for name in instance.iterkeys():
             if name == 'InstanceID':
                 continue
+            # is it default?
+            if self.ignore_defaults and self.ignore_defaults.has_key(name):
+                if self.ignore_defaults[name] != instance[name]:
+                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                            "Property is not supported: " + name)
+                # ignore the property, it has the default value
+                continue
+
+            # is it supported?
             if not self.supported_properties.has_key(name):
                 if instance[name]:
                     raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
@@ -265,6 +285,7 @@ class SettingProvider(BaseProvider):
 
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot modify ChangeableType property to new value.")
+
             # finally, we should set the variable
             if instance[name] is not None:
                 if self.validate_properties and self.validate_properties.has_key(name):
@@ -465,9 +486,11 @@ class SettingHelperProvider(SettingProvider):
         self.setting_helper = setting_helper
         properties = setting_helper.get_supported_setting_properties(self)
         validators = setting_helper.get_setting_validators(self)
+        ignore = setting_helper.get_setting_ignore(self)
         super(SettingHelperProvider, self).__init__(
                 supported_properties=properties,
                 validate_properties=validators,
+                ignore_defaults=ignore,
                 *args, **kwargs)
 
     @cmpi_logging.trace_method
