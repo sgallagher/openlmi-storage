@@ -187,8 +187,9 @@ class SettingProvider(BaseProvider):
 
         return model
 
+    @staticmethod
     @cmpi_logging.trace_method
-    def string_to_bool(self, value):
+    def string_to_bool(value):
         """
             Convert a string to boolean value.
             '1', 'true' and 'True' are True, the rest is False.
@@ -200,8 +201,7 @@ class SettingProvider(BaseProvider):
         return bool(value)
 
 
-    @cmpi_logging.trace_method
-
+    @cmpi_logging.trace_function
     def set_instance(self, env, instance, modify_existing):
         """Return a newly created or modified instance.
 

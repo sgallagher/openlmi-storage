@@ -32,8 +32,8 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
     @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         supported_properties = {
-            'Bootable': self.string_to_bool,
-            'Hidden': self.string_to_bool,
+            'Bootable': SettingProvider.string_to_bool,
+            'Hidden': SettingProvider.string_to_bool,
             'PartitionType': pywbem.Uint16,
         }
         super(LMI_DiskPartitionConfigurationSetting, self).__init__(

@@ -24,6 +24,7 @@ from SettingHelper import SettingHelper
 from SettingManager import StorageSetting
 import pywbem
 import util
+from SettingProvider import SettingProvider
 
 class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
     """
@@ -149,7 +150,7 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
                 'ExtentStripeLength' : pywbem.Uint16,
                 'ExtentStripeLengthMax' : pywbem.Uint16,
                 'ExtentStripeLengthMin' : pywbem.Uint16,
-                'NoSinglePointOfFailure' : setting_provider.string_to_bool,
+                'NoSinglePointOfFailure' : SettingProvider.string_to_bool,
                 'PackageRedundancyGoal' : pywbem.Uint16,
                 'PackageRedundancyMax' : pywbem.Uint16,
                 'PackageRedundancyMin' : pywbem.Uint16,

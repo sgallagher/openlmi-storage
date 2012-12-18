@@ -25,6 +25,7 @@ from SettingHelper import SettingHelper
 from SettingManager import StorageSetting
 import util.units
 import math
+from SettingProvider import SettingProvider
 
 class LMI_VGStoragePool(DeviceProvider, SettingHelper):
     """
@@ -323,7 +324,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
                 'ExtentStripeLength' : pywbem.Uint16,
                 'ExtentStripeLengthMax' : pywbem.Uint16,
                 'ExtentStripeLengthMin' : pywbem.Uint16,
-                'NoSinglePointOfFailure' : setting_provider.string_to_bool,
+                'NoSinglePointOfFailure' : SettingProvider.string_to_bool,
                 'PackageRedundancyGoal' : pywbem.Uint16,
                 'PackageRedundancyMax' : pywbem.Uint16,
                 'PackageRedundancyMin' : pywbem.Uint16,
