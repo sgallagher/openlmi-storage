@@ -47,6 +47,7 @@ class StorageTestBase(unittest.TestCase):
         cls.disks = os.environ.get("LMI_STORAGE_DISKS", "").split()
         cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
         cls.clean = os.environ.get("LMI_STORAGE_CLEAN", "Yes")
+        cls.verbose = os.environ.get("LMI_STORAGE_VERBOSE", None)
 
         cls.wbemconnection = pywbem.WBEMConnection(cls.url, (cls.username, cls.password))
 
@@ -68,7 +69,8 @@ class StorageTestBase(unittest.TestCase):
         if action == 'change':
             return
 
-        print "UDEV event:", action, device.device_node
+        if self.verbose:
+            print "UDEV event:", action, device.device_node
         if action == 'add':
             self.devices.append(device.device_node)
         if action == 'remove':
@@ -87,7 +89,8 @@ class StorageTestBase(unittest.TestCase):
             device = self.devices.pop()
             udev_device = pyudev.Device.from_device_file(
                     self.udev_context, device)
-            print "Destroying %s:%s" % (device, udev_device.device_type)
+            if self.verbose:
+                print "Destroying %s:%s" % (device, udev_device.device_type)
 
             if udev_device.device_type == 'partition':
                 count += 1
