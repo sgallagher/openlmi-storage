@@ -16,7 +16,6 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
-from LMI_VGStorageCapabilities import LMI_VGStorageCapabilities
 """
     This module is the main entry from CIMOM.
     
@@ -53,6 +52,8 @@ from LMI_InstalledPartitionTable import LMI_InstalledPartitionTable
 from LMI_LVStorageCapabilities import LMI_LVStorageCapabilities, \
     LMI_LVElementCapabilities
 from LMI_StorageConfigurationService import LMI_StorageConfigurationService
+from LMI_VGStorageCapabilities import LMI_VGStorageCapabilities
+from LMI_MDRAIDStorageCapabilities import LMI_MDRAIDStorageCapabilities
 
 import cmpi_logging
 import pyanaconda.storage
@@ -114,6 +115,18 @@ def get_providers(env):
     provider = LMI_MDRAIDStorageExtent(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
     providers['LMI_MDRAIDStorageExtent'] = provider
+    setting_provider = SettingHelperProvider(# IGNORE:W0142
+            setting_helper=provider,
+            setting_classname="LMI_MDRAIDStorageSetting",
+            **opts)
+    manager.add_setting_provider(setting_provider)
+    providers['LMI_MDRAIDStorageSetting'] = setting_provider
+    assoc_provider = ElementSettingDataProvider(# IGNORE:W0142
+            setting_provider=setting_provider,
+            managed_element_classname="LMI_MDRAIDStorageExtent",
+            setting_data_classname="LMI_MDRAIDStorageSetting",
+            **opts)
+    providers['LMI_MDRAIDElementSettingData'] = assoc_provider
 
     provider = LMI_DiskPartition(**opts)  # IGNORE:W0142
     manager.add_device_provider(provider)
@@ -185,6 +198,14 @@ def get_providers(env):
             "LMI_VGElementCapabilities",
             cap_provider, service_provider, **opts)
     providers['LMI_VGElementCapabilities'] = assoc_provider
+
+    cap_provider = LMI_MDRAIDStorageCapabilities(**opts)  # IGNORE:W0142
+    manager.add_capabilities_provider(cap_provider)
+    providers['LMI_MDRAIDStorageCapabilities'] = cap_provider
+    assoc_provider = ElementCapabilitiesProvider(# IGNORE:W0142
+            "LMI_MDRAIDElementCapabilities",
+            cap_provider, service_provider, **opts)
+    providers['LMI_MDRAIDElementCapabilities'] = assoc_provider
 
 
     service_provider = LMI_DiskPartitionConfigurationService(**opts)  # IGNORE:W0142

@@ -22,8 +22,11 @@ import pyanaconda.storage
 import pywbem
 import cmpi_logging
 from DeviceProvider import DeviceProvider
+from SettingHelper import SettingHelper
+from SettingManager import StorageSetting
+from SettingProvider import SettingProvider
 
-class LMI_MDRAIDStorageExtent(ExtentProvider):
+class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
     """
         Provider of LMI_MDRAIDStorageExtent class.
     """
@@ -31,7 +34,9 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
     @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_MDRAIDStorageExtent, self).__init__(
-                'LMI_MDRAIDStorageExtent', *args, **kwargs)
+                classname='LMI_MDRAIDStorageExtent',
+                setting_classname='LMI_LVStorageSetting',
+                *args, **kwargs)
 
 
     @cmpi_logging.trace_method
@@ -80,3 +85,95 @@ class LMI_MDRAIDStorageExtent(ExtentProvider):
             device = self._get_device(model)
         model['UUID'] = device.uuid
         return model
+
+    @cmpi_logging.trace_method
+    def _get_setting_for_device(self, device, setting_provider):
+        """ Return setting for given device """
+        setting = StorageSetting(
+                StorageSetting.TYPE_CONFIGURATION,
+                setting_provider.create_setting_id(device.path))
+        setting.set_setting(self.get_redundancy(device))
+        setting['ElementName'] = device.path
+        return setting
+
+    @cmpi_logging.trace_method
+    def enumerate_settings(self, setting_provider):
+        """
+            This method returns iterable with all instances of LMI_*Setting
+            as Setting instances.
+        """
+        for md in self.storage.mdarrays:
+            yield self._get_setting_for_device(md, setting_provider)
+
+    @cmpi_logging.trace_method
+    def get_setting_for_id(self, setting_provider, instance_id):
+        """
+            Return Setting instance, which corresponds to LMI_*Setting with
+            given InstanceID.
+            Return None if there is no such instance.
+            
+            Subclasses must override this method.
+        """
+        path = setting_provider.parse_setting_id(instance_id)
+        if not path:
+            return None
+        device = self.storage.devicetree.getDeviceByPath(path)
+        if not path:
+            return None
+        if not isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
+            cmpi_logging.logger.trace_warn(
+                    "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
+            return None
+        return self._get_setting_for_device(device, setting_provider)
+
+    @cmpi_logging.trace_method
+    def get_associated_element_name(self, setting_provider, instance_id):
+        """
+            Return CIMInstanceName of ManagedElement for ElementSettingData
+            association for setting with given ID.
+            Return None if no such ManagedElement exists.
+        """
+        path = setting_provider.parse_setting_id(instance_id)
+        if not path:
+            return None
+        device = self.storage.devicetree.getDeviceByPath(path)
+        if not path:
+            return None
+        if not isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
+            cmpi_logging.logger.trace_warn(
+                    "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
+            return None
+        return self.get_name_for_device(device)
+
+    @cmpi_logging.trace_method
+    def get_supported_setting_properties(self, setting_provider):
+        """
+            Return hash property_name -> constructor.
+                constructor is a function which takes string argument
+                and returns CIM value. (i.e. pywbem.Uint16
+                or bool or string etc).
+            This hash will be passed to SettingProvider.__init__ 
+        """
+        return {
+                'DataRedundancyGoal': pywbem.Uint16,
+                'DataRedundancyMax': pywbem.Uint16,
+                'DataRedundancyMin': pywbem.Uint16,
+                'ExtentStripeLength' : pywbem.Uint16,
+                'ExtentStripeLengthMax' : pywbem.Uint16,
+                'ExtentStripeLengthMin' : pywbem.Uint16,
+                'NoSinglePointOfFailure' : SettingProvider.string_to_bool,
+                'PackageRedundancyGoal' : pywbem.Uint16,
+                'PackageRedundancyMax' : pywbem.Uint16,
+                'PackageRedundancyMin' : pywbem.Uint16,
+        }
+
+    @cmpi_logging.trace_method
+    def get_setting_ignore(self, setting_provider):
+        return {
+                'CompressedElement': False,
+                'CompressionRate': 1,
+                'InitialSynchronization': 0,
+                'SpaceLimit': 0,
+                'ThinProvisionedInitialReserve': 0,
+                'UseReplicationBuffer': 0,
+        }
