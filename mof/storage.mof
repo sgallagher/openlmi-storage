@@ -711,11 +711,13 @@ class LMI_VGStorageCapabilities : CIM_StorageCapabilities
 class LMI_MDRAIDStorageCapabilities : CIM_StorageCapabilities
 {
     [Description("This method creates new instance of LMI_MDRAIDStorageSetting, which will represent given RAID level. "
-        "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength.")]
+        "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength."),
+        ValueMap { "0", "1", "4" },
+        Values { "Success", "Not Supported", "Failed"}]
     uint32 CreateMDRAIDStorageSetting(
         [IN, Description("Requested level."),
-            ValueMap{"RAID0", "RAID1", "RAID5", "RAID6", "Linear"},
-            Values{"0", "1", "5", "6", "4096"}]
+            ValueMap{"0", "1", "5", "6", "4096"},
+            Values{"RAID0", "RAID1", "RAID5", "RAID6", "Linear"}]
         uint16 Level,
 
         [IN, Description("List of devices, from which the new device will be created. "
@@ -730,7 +732,7 @@ class LMI_MDRAIDStorageCapabilities : CIM_StorageCapabilities
             "DataRedundancy and PackageRedundancy as the minimum of "
             "the first and the second RAID1 extents and ExtentStripeLength will be 2 to indicate RAID0 with two devices."
         )]
-        InExtents REF CIM_StorageExtent[],
+        CIM_StorageExtent REF InExtents[],
 
         [IN(False), OUT, Description("Created LMI_StorageSetting.")]
         LMI_StorageSetting REF Setting);
