@@ -87,6 +87,39 @@ class LMI_StorageConfigurationService(ServiceProvider):
         return None
 
     @cmpi_logging.trace_method
+    def _check_redundancy_goal_setting(self, redundancy, setting):
+        """
+            Check that DeviceProvider.Redundancy matches Setting['*Goal'].
+            Return None if so or string with error message if it does
+            not match.
+            
+            If any of the *Goal property is missing, the min/max is checked
+            if it fits.
+        """
+        drgoal = setting.get('DataRedundancyGoal', None)
+        if (drgoal is not None
+                and int(drgoal) != redundancy.data_redundancy):
+            return "DataRedundancyGoal does not match."
+
+        esgoal = setting.get('ExtentStripeLength', None)
+        if (esgoal is not None
+                and int(esgoal) != redundancy.stripe_length):
+            return "ExtentStripeLength does not match."
+
+        prgoal = setting.get('PackageRedundancyGoal', None)
+        if (prgoal is not None
+                and prgoal != redundancy.package_redundancy):
+            return "PackageRedundancyGoal does not match."
+
+        nspof = setting.get('NoSinglePointOfFailure', None)
+        if (nspof is not None
+                and SettingProvider.string_to_bool(nspof)
+                    != redundancy.no_single_point_of_failure):
+            return "NoSinglePointOfFailure does not match."
+
+        return self._check_redundancy_setting(redundancy, setting)
+
+    @cmpi_logging.trace_method
     def _modify_lv(self, device, name, size):
         """
             Really modify the logical volume, all parameters were checked.
@@ -502,6 +535,242 @@ class LMI_StorageConfigurationService(ServiceProvider):
         return self.cim_method_createormodifyvg(env, object_name,
                 param_elementname, param_goal, param_inextents, param_pool)
 
+    def cim_method_createormodifyelementfromelements(self, env, object_name,
+                                                     param_inelements,
+                                                     param_elementtype,
+                                                     param_elementname=None,
+                                                     param_goal=None,
+                                                     param_theelement=None,
+                                                     param_size=None):
+        """
+            Implements LMI_StorageConfigurationService.CreateOrModifyElementFromElements()
+
+            Start a job to create (or modify) a MD RAID from specified input
+            StorageExtents. Only whole StorageExtents can be added to a
+            RAID.\nAs an input parameter, Size specifies the desired size of
+            the element and must match size of all input StorageVolumes
+            combined in the RAID. Use null to avoid this calculation. As an
+            output parameter, it specifies the size achieved. \n The desired
+            Settings for the element are specified by the Goal parameter. \n
+            If 0 is returned, the function completed successfully and no
+            ConcreteJob instance was required. If 4096/0x1000 is returned, a
+            ConcreteJob will be started to create the element. The Job\'s
+            reference will be returned in the output parameter Job.\n This
+            method does not support MD RAID modification for now.
+        """
+        pass
+
+    @cmpi_logging.trace_method
+    def _find_raid_level(self, redundancies, goal):
+        """
+           Find and return RAID level corresponding to given Goal and set of
+           redundancies of input devices.
+        """
+        # find redundancies of the devices
+        # try all possible RAID levels and take the best one
+        # hash level -> redundancy of the RAID with given level
+        levels = {
+                0: DeviceProvider.Redundancy.get_common_redundancy_list(
+                        redundancies, 0),
+                1: DeviceProvider.Redundancy.get_common_redundancy_list(
+                        redundancies, 1),
+                5: DeviceProvider.Redundancy.get_common_redundancy_list(
+                        redundancies, 5),
+                6: DeviceProvider.Redundancy.get_common_redundancy_list(
+                        redundancies, 6),
+                DeviceProvider.Redundancy.LINEAR : DeviceProvider.Redundancy.get_common_redundancy_list(
+                        redundancies, DeviceProvider.Redundancy.LINEAR)
+        }
+
+        # first, check the goal[*Goal] properties
+        for (level, redundancy) in levels.iteritems():
+            err = self._check_redundancy_goal_setting(redundancy, goal)
+            if err is None:
+                # we have match which either completely satisfied goal[*Goal]
+                # or the redundancy matches goal[*Min/Max] properties
+                cmpi_logging.logger.trace_info(
+                        "Goal check: selected RAID%d: %s"
+                            % (level, err))
+                return level
+            else:
+                cmpi_logging.logger.trace_debug(
+                        "Goal check: skipping goal RAID%d: %s"
+                            % (level, err))
+
+        # then, find any that matches
+        for (level, redundancy) in levels.iteritems():
+            err = self._check_redundancy_setting(redundancy, goal)
+            if err is None:
+                cmpi_logging.logger.trace_info(
+                        "Any check: selected RAID%d: %s"
+                            % (level, err))
+                return level
+            else:
+                cmpi_logging.logger.trace_debug(
+                        "Any check: skipping RAID%d: %s"
+                            % (level, err))
+        return None
+
+    @cmpi_logging.trace_method
+    def _create_mdraid(self, level, goal, devices, name):
+        """
+            Create new  MD RAID. The parameters were already checked.
+        """
+        # TODO: check if devices are unused!
+        args = {}
+        args['parents'] = devices
+        if name:
+            args['name'] = name
+        if level in [0, 1, 5, 6]:
+            args['level'] = str(level)
+        else:
+            args['level'] = 'Linear'
+        args['memberDevices'] = len(devices)
+
+        raid = self.storage.newMDArray(**args)
+        action = pyanaconda.storage.ActionCreateDevice(raid)
+        util.partitioning.do_storage_action(self.storage, action)
+
+        newsize = raid.size * util.units.MEGABYTE
+        outparams = [
+                pywbem.CIMParameter(
+                        name='theelement',
+                        type='reference',
+                        value=self.provider_manager.get_name_for_device(raid)),
+                pywbem.CIMParameter(
+                    name="size",
+                    type="uint64",
+                    value=pywbem.Uint64(newsize))
+        ]
+        retval = self.Values.CreateOrModifyMDRAID.Completed_with_No_Error
+        return (retval, outparams)
+
+    @cmpi_logging.trace_method
+    def _modify_mdraid(self, raid, level, goal, devices, name):
+        """
+            Modify existing MD RAID. The parameters were already checked.
+        """
+        raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                "MD RAID modification is not supported yet.")
+
+    @cmpi_logging.trace_method
+    def cim_method_createormodifymdraid(self, env, object_name,
+                                        param_elementname=None,
+                                        param_theelement=None,
+                                        param_goal=None,
+                                        param_level=None,
+                                        param_inextents=None):
+        """
+            Implements LMI_StorageConfigurationService.CreateOrModifyMDRAID()
+
+            Create or modify MD RAID array. This method is shortcut to
+            CreateOrModifyElementFromElements with the right Goal. Lazy
+            applications can use this method to create or modify MD RAID with
+            the right level, without calculation of the Goal setting.\n Either
+            Level or Goal must be specified. If both are specified, they must
+            match.\n RAID modification is not yet supported.
+        """
+        # check parameters
+        self.check_instance(object_name)
+
+        # goal
+        if param_goal:
+            instance_id = param_goal['InstanceID']
+
+            goal = self.provider_manager.get_setting_for_id(
+                    instance_id, "LMI_MDRAIDStorageSetting")
+            if not goal:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "LMI_MDRAIDStorageSetting Goal does not found.")
+        else:
+            goal = None
+
+        # theelement
+        if param_theelement:
+            raid = self.provider_manager.get_device_for_name(param_theelement)
+            if not raid:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Cannot find the TheElement device.")
+            if not isinstance(raid, pyanaconda.storage.devices.MDRaidArrayDevice):
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "The Pool parameter is not LMI_MDRAIDStorageExtent.")
+        else:
+            raid = None
+
+        # inextents
+        devices = []
+        redundancies = []
+        if param_inextents:
+            for extent_name in param_inextents:
+                provider = self.provider_manager.get_device_provider_for_name(
+                        extent_name)
+                if not provider:
+                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Cannot find provider for InExtent " + str(extent_name))
+                device = provider.get_device_for_name(extent_name)
+                if not provider:
+                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Cannot find device for InExtent " + str(extent_name))
+                devices.append(device)
+                redundancies.append(provider.get_redundancy(device))
+
+        # level
+        if param_level is not None:
+            if param_level not in (
+                    self.Values.CreateOrModifyMDRAID.Level.RAID0,
+                    self.Values.CreateOrModifyMDRAID.Level.RAID1,
+                    self.Values.CreateOrModifyMDRAID.Level.RAID5,
+                    self.Values.CreateOrModifyMDRAID.Level.RAID6,
+                    self.Values.CreateOrModifyMDRAID.Level.Linear):
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                        "Invalid value of parameter Level.")
+        level = param_level
+
+        # goal vs level
+        if goal and level is not None:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Only one of Level and Goal parameters may be used.")
+
+        # extents vs goal:
+        if devices and goal:
+            # guess RAID level
+            level = self._find_raid_level(redundancies, goal)
+            if level is None:
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "The Goal does not match any RAID level for InExtents.")
+
+        # nr. of devices vs level
+        if ((level == 0
+                or level == 1
+                or level == DeviceProvider.Redundancy.LINEAR)
+                    and len(devices) < 2):
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "At least two devices are required for RAID level %d."
+                    % (level))
+
+        if level == 5 and len(devices) < 3:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "At least three devices are required for RAID level 5.")
+        if level == 6 and len(devices) < 4:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "At least four devices are required for RAID level 6.")
+
+        # elementname
+        name = None
+        if param_elementname:
+            name = param_elementname
+            if raid and param_elementname == raid.name:
+                # no rename is needed
+                name = None
+
+        if not raid and not devices:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Either TheElement or InExtents must be specified")
+
+        if raid:
+            return self._modify_mdraid(raid, level, goal, devices, name)
+        else:
+            return self._create_mdraid(level, goal, devices, name)
 
 
     class Values(ServiceProvider.Values):
@@ -567,3 +836,48 @@ class LMI_StorageConfigurationService(ServiceProvider):
             Size_Not_Supported = pywbem.Uint32(4097)
             # Method_Reserved = 4098..32767
             # Vendor_Specific = 32768..65535
+
+        class CreateOrModifyElementFromElements(object):
+            Completed_with_No_Error = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Unknown = pywbem.Uint32(2)
+            Timeout = pywbem.Uint32(3)
+            Failed = pywbem.Uint32(4)
+            Invalid_Parameter = pywbem.Uint32(5)
+            In_Use = pywbem.Uint32(6)
+            # DMTF_Reserved = ..
+            Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
+            Size_Not_Supported = pywbem.Uint32(4097)
+            # Method_Reserved = 4098..32767
+            # Vendor_Specific = 32768..65535
+            class ElementType(object):
+                Unknown = pywbem.Uint16(0)
+                Reserved = pywbem.Uint16(1)
+                Storage_Volume = pywbem.Uint16(2)
+                Storage_Extent = pywbem.Uint16(3)
+                Storage_Pool = pywbem.Uint16(4)
+                Logical_Disk = pywbem.Uint16(5)
+                ThinlyProvisionedStorageVolume = pywbem.Uint16(6)
+                ThinlyProvisionedLogicalDisk = pywbem.Uint16(7)
+                # DMTF_Reserved = ..
+                # Vendor_Specific = 32768..65535
+
+        class CreateOrModifyMDRAID(object):
+            Completed_with_No_Error = pywbem.Uint32(0)
+            Not_Supported = pywbem.Uint32(1)
+            Unknown = pywbem.Uint32(2)
+            Timeout = pywbem.Uint32(3)
+            Failed = pywbem.Uint32(4)
+            Invalid_Parameter = pywbem.Uint32(5)
+            In_Use = pywbem.Uint32(6)
+            # DMTF_Reserved = ..
+            Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
+            Size_Not_Supported = pywbem.Uint32(4097)
+            # Method_Reserved = 4098..32767
+            # Vendor_Specific = 32768..65535
+            class Level(object):
+                RAID0 = pywbem.Uint16(0)
+                RAID1 = pywbem.Uint16(1)
+                RAID5 = pywbem.Uint16(5)
+                RAID6 = pywbem.Uint16(6)
+                Linear = pywbem.Uint16(4096)

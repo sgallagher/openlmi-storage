@@ -448,11 +448,18 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
         "with the right Goal. Lazy applications can use this method to create or modify MD RAID with the right level, "
         "without calculation of the Goal setting."
         "\n Either Level or Goal must be specified. If both are specified, they must match."
-        "\n RAID modification is not yet supported.")]
+        "\n RAID modification is not yet supported."),
+       ValueMap { "0", "1", "2", "3", "4", "5", "6", "..", "4096", 
+          "4097", "4098..32767", "32768..65535" }, 
+       Values { "Completed with No Error", "Not Supported", 
+          "Unknown", "Timeout", "Failed", "Invalid Parameter", 
+          "In Use", "DMTF Reserved", 
+          "Method Parameters Checked - Job Started", 
+          "Size Not Supported", "Method Reserved", "Vendor Specific" }]
     uint32 CreateOrModifyMDRAID(
         [IN, Description("Requested RAID level."),
-            ValueMap{"RAID0", "RAID1", "RAID5", "RAID6", "Linear"},
-            Values{"0", "1", "5", "6", "4096"}]
+            Values{"RAID0", "RAID1", "RAID5", "RAID6", "Linear"},
+            ValueMap{"0", "1", "5", "6", "4096"}]
         uint16 Level,
 
         [IN, Description("Requested MD RAID name, i.e. if /dev/md/my_name "
@@ -472,10 +479,16 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
         [IN, OUT, Description("On input: MD RAID device to modify. Do not use "
             "this parameter when creating new array."
             "\n On output: the created MD RAID.")]
-        LMI_MDRAIDStorageExtent REF RAID,
+        LMI_MDRAIDStorageExtent REF TheElement,
 
         [IN(False), OUT, Description("Reference to the job (may be null if job completed).")]
-        CIM_ConcreteJob REF Job
+        CIM_ConcreteJob REF Job,
+        
+        [IN(False), OUT, Description ( 
+             "Size of the RAID device." ), 
+          Units ( "Bytes" ), 
+          PUnit ( "byte" )]
+      uint64 Size
     );
 
     [Description("Create or modify Volume Group. This method is shortcut to CreateOrModifyStoragePool "
@@ -710,7 +723,8 @@ class LMI_VGStorageCapabilities : CIM_StorageCapabilities
     )]
 class LMI_MDRAIDStorageCapabilities : CIM_StorageCapabilities
 {
-    [Description("This method creates new instance of LMI_MDRAIDStorageSetting, which will represent given RAID level. "
+    [Implemented(True),
+        Description("This method creates new instance of LMI_MDRAIDStorageSetting, which will represent given RAID level. "
         "Applications then do not need to calculate DataRedundancy, PackageRedundancy and ExtentStripeLength."),
         ValueMap { "0", "1", "4" },
         Values { "Success", "Not Supported", "Failed"}]
@@ -736,6 +750,17 @@ class LMI_MDRAIDStorageCapabilities : CIM_StorageCapabilities
 
         [IN(False), OUT, Description("Created LMI_StorageSetting.")]
         LMI_StorageSetting REF Setting);
+
+    [ Implemented(true) ] string ElementName;
+    [ Implemented(true) ] uint16 DataRedundancyDefault;
+    [ Implemented(true) ] uint16 DataRedundancyMax;
+    [ Implemented(true) ] uint16 DataRedundancyMin;
+    [ Implemented(true) ] boolean NoSinglePointOfFailure;
+    [ Implemented(true) ] boolean NoSinglePointOfFailureDefault;
+    [ Implemented(true) ] uint16 ExtentStripeLengthDefault;
+    [ Implemented(true) ] uint16 PackageRedundancyDefault;
+    [ Implemented(true) ] uint16 PackageRedundancyMax;
+    [ Implemented(true) ] uint16 PackageRedundancyMin;
 };
 
 
