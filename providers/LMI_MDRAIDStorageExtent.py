@@ -25,6 +25,7 @@ from DeviceProvider import DeviceProvider
 from SettingHelper import SettingHelper
 from SettingManager import StorageSetting
 from SettingProvider import SettingProvider
+import util
 
 class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
     """
@@ -177,3 +178,8 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
                 'ThinProvisionedInitialReserve': 0,
                 'UseReplicationBuffer': 0,
         }
+
+    @cmpi_logging.trace_method
+    def do_delete_instance(self, device):
+        action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+        util.partitioning.do_storage_action(self.storage, action)
