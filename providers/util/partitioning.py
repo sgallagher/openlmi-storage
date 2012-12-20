@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import time
+import subprocess
 """
     Support functions for partitioning.
 """
@@ -126,6 +128,9 @@ def do_storage_action(storage, action):
         do_partitioning = True
     storage.devicetree.registerAction(action)
 
+    do_raid = False
+    if isinstance(action.device, pyanaconda.storage.devices.MDRaidArrayDevice):
+            do_raid = True
     try:
         if do_partitioning:
             # this must be called when creating a partition
@@ -135,5 +140,18 @@ def do_storage_action(storage, action):
         storage.devicetree.processActions(dryRun=False)
         if not isinstance(action, pyanaconda.storage.deviceaction.ActionDestroyDevice):
             cmpi_logging.logger.trace_verbose("Result: " + repr(action.device))
+        if do_raid:
+            # work around mdadm not waiting for device to appear/disappear
+            time.sleep(2)
+            if isinstance(action, pyanaconda.storage.deviceaction.ActionDestroyDevice):
+                # remove the metadata, otherwise reset() still recognizes
+                # the array
+                for device in action.device.parents:
+                    subprocess.call([
+                            'dd',
+                            'if=/dev/zero',
+                            'of=' + device.path,
+                            'bs=1024',
+                            'count=1024'])
     finally:
         storage.reset()
