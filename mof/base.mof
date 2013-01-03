@@ -48,15 +48,9 @@ class LMI_ContentFormat : CIM_EnabledLogicalElement
 //
 //class CIM_StorageConfigurationService : CIM_Service
 //class CIM_DiskPartitionConfigurationService : CIM_Service
-//class SNIA_FileSystemConfigurationService : CIM_Service
 //
 //class CIM_StorageSetting : CIM_SettingData
-//class SNIA_FileSystemSetting : CIM_SettingData
 //
-//class SNIA_ElementCapabilities : CIM_ElementCapabilties
-//
-//class SNIA_FileSystemConfigurationCapabilities : CIM_Capabilities
-//class SNIA_FileSystemCapabilities : CIM_FileSystemCapabilities
 //class CIM_FileSystemCapabilities : CIM_Capabilities
 //class CIM_FileSystemSetting : CIM_SettingData
 //class CIM_GenericDiskPartition : CIM_MediaPartition
