@@ -240,13 +240,13 @@ class TestCreateVG(StorageTestBase):
         self._delete_setting(goal.path)
         self._destroy_partitions(partitions)
 
-    def test_create_setting_2m(self):
+    def test_create_setting_1m(self):
         """
             Test CreateOrModifyVG with 2MiB ExtentSize.
         """
         partitions = self._prepare_partitions(self.disks[0], 1)
         goal = self._create_setting()
-        goal['ExtentSize'] = pywbem.Uint64(2 * MEGABYTE)
+        goal['ExtentSize'] = pywbem.Uint64(MEGABYTE)
         self.wbemconnection.ModifyInstance(goal)
 
         (ret, outparams) = self.wbemconnection.InvokeMethod(
@@ -268,7 +268,7 @@ class TestCreateVG(StorageTestBase):
         self.assertNotEqual(vg['ElementName'], None)
         self.assertNotEqual(vg['UUID'], '')
         self.assertNotEqual(vg['UUID'], None)
-        self.assertEqual(vg['ExtentSize'], 2 * MEGABYTE)
+        self.assertEqual(vg['ExtentSize'], MEGABYTE)
         self.assertEqual(
                 vg['ExtentSize'] * vg['TotalExtents'],
                 vg['TotalManagedSpace'])
@@ -305,54 +305,8 @@ class TestCreateVG(StorageTestBase):
         partitions = self._prepare_partitions(self.disks[0], 1)
         goal = self._create_setting()
         goal['ExtentSize'] = pywbem.Uint64(64 * 1024)
-        self.wbemconnection.ModifyInstance(goal)
-
-        (ret, outparams) = self.wbemconnection.InvokeMethod(
-                    "CreateOrModifyVG",
-                    self.service,
-                    InExtents=partitions,
-                    Goal=goal.path
-                    )
-        self.assertEqual(ret, 0)
-        self.assertEqual(len(outparams), 2)
-        self.assertAlmostEqual(
-                outparams['size'],
-                self._get_disk_size(self.disks[0]),
-                delta=50 * MEGABYTE)
-        vgname = outparams['pool']
-        vg = self.wbemconnection.GetInstance(vgname)
-        self.assertEqual(vg['TotalManagedSpace'], outparams['size'])
-        self.assertNotEqual(vg['ElementName'], '')
-        self.assertNotEqual(vg['ElementName'], None)
-        self.assertNotEqual(vg['UUID'], '')
-        self.assertNotEqual(vg['UUID'], None)
-        self.assertEqual(vg['ExtentSize'], 64 * 1024)
-        self.assertEqual(
-                vg['ExtentSize'] * vg['TotalExtents'],
-                vg['TotalManagedSpace'])
-        self.assertEqual(
-                vg['ExtentSize'] * vg['RemainingExtents'],
-                vg['RemainingManagedSpace'])
-
-        # check it has a setting associated
-        settings = self.wbemconnection.Associators(
-                vgname,
-                AssocClass="LMI_VGElementSettingData")
-        self.assertEqual(len(settings), 1)
-        setting = settings[0]
-        self.assertEqual(setting['ExtentSize'], goal['ExtentSize'])
-        self.assertEqual(setting['DataRedundancyGoal'], goal['DataRedundancyGoal'])
-        self.assertLessEqual(setting['DataRedundancyMax'], goal['DataRedundancyMax'])
-        self.assertGreaterEqual(setting['DataRedundancyMin'], goal['DataRedundancyMin'])
-        self.assertEqual(setting['ExtentStripeLength'], goal['ExtentStripeLength'])
-        self.assertLessEqual(setting['ExtentStripeLengthMax'], goal['ExtentStripeLengthMax'])
-        self.assertGreaterEqual(setting['ExtentStripeLengthMin'], goal['ExtentStripeLengthMin'])
-        self.assertEqual(setting['NoSinglePointOfFailure'], goal['NoSinglePointOfFailure'])
-        self.assertEqual(setting['PackageRedundancyGoal'], goal['PackageRedundancyGoal'])
-        self.assertLessEqual(setting['PackageRedundancyMax'], goal['PackageRedundancyMax'])
-        self.assertGreaterEqual(setting['PackageRedundancyMin'], goal['PackageRedundancyMin'])
-
-        self.wbemconnection.DeleteInstance(vgname)
+        self.assertRaises(pywbem.CIMError, self.wbemconnection.ModifyInstance,
+                goal)
         self._delete_setting(goal.path)
         self._destroy_partitions(partitions)
 

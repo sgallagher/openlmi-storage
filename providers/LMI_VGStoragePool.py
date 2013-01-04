@@ -352,10 +352,10 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
             Check if the given value is acceptable as
             VGStorageSetting.ExtentSize.
         """
-        # lowest value is 1k
-        if value < 1024:
+        # lowest value is 1MB
+        if value < util.units.MEGABYTE:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                    "Property ExtentSize must be at least 1KiB")
+                    "Property ExtentSize must be at least 1MiB")
         # must be power of 2
         exp = math.log(value, 2)
         if math.floor(exp) != exp:

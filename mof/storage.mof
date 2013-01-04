@@ -643,7 +643,7 @@ class LMI_StorageSetting : CIM_StorageSetting
     "\nCurrently only ExtentSize property is supported.")]
 class LMI_VGStorageSetting : LMI_StorageSetting
 {
-    [ Implemented(true), Description("Size of extents of the Volume Group. The default is 4 MiB and it must be at least 1 KiB and a power of 2. "
+    [ Implemented(true), Description("Size of extents of the Volume Group. The default is 4 MiB and it must be at least 1 MiB and a power of 2. "
         "Once this value has been set, it is difficult to change it without recreating the volume group which would involve backing up and restoring data on any logical volumes. "
         "\nIf the volume group metadata uses lvm1 format, extents can vary in size from 8KB to 16GB and there is a limit of 65534 extents in each logical volume.  The default of 4 MiB leads "
         "to a maximum logical volume size of around 256GiB."
