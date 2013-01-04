@@ -174,7 +174,7 @@ class TestSetPartitionStyle(StorageTestBase):
 
         # create partition on the disk
         (retval, outparams) = self.wbemconnection.InvokeMethod(
-                "CreateOrModifyPartition",
+                "LMI_CreateOrModifyPartition",
                 self.service,
                 extent=diskname)
         self.assertEqual(retval, 0)
@@ -195,7 +195,7 @@ class TestSetPartitionStyle(StorageTestBase):
 
 
 
-    #TODO: add SetPartitionStyle on RAID, LVM etc.
+    # TODO: add SetPartitionStyle on RAID, LVM etc.
 
 if __name__ == '__main__':
     unittest.main()

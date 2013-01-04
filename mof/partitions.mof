@@ -58,7 +58,7 @@ class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationServ
       CIM_DiskPartitionConfigurationCapabilities REF PartitionStyle);
 
 
-      [Implemented(true),Description ( 
+      [Implemented(false),Description ( 
           "This method creates a new partition if the Partition "
           "parameter is null or modifies the partition specified. "
           "If the starting and ending address parameters are null, "
@@ -69,6 +69,9 @@ class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationServ
           "\n"
           "In contradiction to SMI-S, no LogicalDisk will be created "
           "on the partition."
+          "\n"
+          "This methods is only for compatibility with SMI-S."
+          "Applications should use LMI_CreateOrModifyPartition instead."
           "\n"
           "If logical partition is being created, it's start/end sector "
           "must include space for partition metadata and any alignment "
@@ -120,7 +123,62 @@ class LMI_DiskPartitionConfigurationService : CIM_DiskPartitionConfigurationServ
       [IN, Description("Setting to be applied to created/modified partition.")]
       LMI_DiskPartitionConfigurationSetting REF Goal
     );
+    
+   [Implemented(true), Description("Create new partition on given extent."
+        "Partition modification is not yet supported."
+        "The implementation will select the best space to fit the partition, "
+        "with all alignment rules etc. "
+        "\n"
+        "If no Size parameter is provided, the largest possible partition "
+        "is created."
+        "\n"
+        "The Goal parameter is not supported for now, the behavior below "
+        "applies."
+        "\n"
+        "If no Goal is provided and GPT partition is requested, "
+        "normal partition is created. "
+        "If no Goal is provided and MS-DOS partition is requested "
+        "and there is extended partition already on the device, "
+        "a logical partition is created. If there is no extended partition "
+        "on the device and there are at most two primary partitions on the "
+        "device, primary partition is created. "
+        "If there is no extended partition and three primary partitions "
+        "already exist, new extended partition with all remaining space is "
+        "created and a logical partition with requested size is created."),
+   ValueMap { "0", "1", "2", "3", "4", "5", "6", "..", "4096", 
+       "4097", "4098..32767", "32768..65535" }, 
+   Values { "Job Completed with No Error", "Not Supported", 
+      "Unknown", "Timeout", "Failed", "Invalid Parameter", 
+      "In Use", "DMTF Reserved", 
+      "Method Parameters Checked - Job Started", 
+      "Size Not Supported", "Method Reserved", "Vendor Specific" }]
+   uint32 LMI_CreateOrModifyPartition(
+         [IN, Description ( 
+             "A reference to the underlying extent the partition is base on."
+              )]
+      CIM_StorageExtent REF extent, 
+
+         [IN, OUT, Description ( "Requested size of the partition to create. "
+            "If null when creating a partition, the larges possible "
+            "partition is created."
+            "On output, the achieved size is returned."),
+            Units("Bytes")]
+      uint64 Size,
+
+         [IN, OUT, Description ( 
+             "A reference an existing partition instance to "
+             "modify or null to request a new partition." )]
+      CIM_GenericDiskPartition REF Partition,
+
+      [IN, Description("Setting to be applied to created/modified partition.")]
+      LMI_DiskPartitionConfigurationSetting REF Goal,
+      
+      [IN(false), OUT, Description (
+            "A reference to started job (may be null if job is completed).")]
+      CIM_ConcreteJob REF Job
+   );
 };
+
    [Experimental, Description ( 
        "DiskPartitionConfigurationCapabilities instances describe a "
        "partition style supported by the platform. An instance of this "
@@ -209,7 +267,7 @@ class LMI_DiskPartitionConfigurationCapabilities : CIM_DiskPartitionConfiguratio
     [Implemented(true)] boolean OverlapAllowed;
     [Implemented(true)] uint32 PartitionTableSize;
     [Implemented(true)] uint16 SupportedSynchronousActions[];
-    [Implemented(true)]uint16 ValidSubPartitionStyles[];
+    [Implemented(true)] uint16 ValidSubPartitionStyles[];
 };
 
 [ Experimental ]
