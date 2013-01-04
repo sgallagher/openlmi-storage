@@ -50,49 +50,6 @@ class TestCreatePool(StorageTestBase):
         self.capabilities = self.wbemconnection.EnumerateInstanceNames(
                 "LMI_VGStorageCapabilities")[0]
 
-    def _prepare_partitions(self, diskname, partition_count):
-        """ Create partition table and partitions on given device """
-        disk_path = pywbem.CIMInstanceName(
-                classname=self.DISK_CLASS,
-                keybindings={
-                    'DeviceID': diskname,
-                    'SystemCreationClassName': self.SYSTEM_CLASS_NAME,
-                    'SystemName': self.SYSTEM_NAME,
-                    'CreationClassName': self.DISK_CLASS})
-
-        caps = pywbem.CIMInstanceName(
-                classname="LMI_DiskPartitionConfigurationCapabilities",
-                keybindings={
-                        'InstanceID': "LMI:LMI_DiskPartitionConfigurationCapabilities:GPT"
-                })
-        (retval, outparams) = self.wbemconnection.InvokeMethod(
-                "SetPartitionStyle",
-                self.part_service,
-                Extent=disk_path,
-                PartitionStyle=caps)
-        self.assertEqual(retval, 0)
-        disk = self.wbemconnection.GetInstance(disk_path)
-        offset = 2048  # first usable sector
-        size = disk['NumberOfBlocks']
-        size = size - 2 * offset  # reserve also some space at the end
-        partition_size = size / partition_count
-        partitions = []
-        for i in range(partition_count):
-            (retval, outparams) = self.wbemconnection.InvokeMethod(
-                "CreateOrModifyPartition",
-                self.part_service,
-                extent=disk_path,
-                StartingAddress=pywbem.Uint64(offset + i * partition_size),
-                EndingAddress=pywbem.Uint64(offset + (i + 1) * partition_size))
-            self.assertEqual(retval, 0)
-            partitions.append(outparams['partition'])
-        return partitions
-
-    def _destroy_partitions(self, partitions):
-        """ Delete partitions """
-        for part in partitions:
-            self.wbemconnection.DeleteInstance(part)
-
     def _get_disk_size(self, diskname):
         """ Return size of given disk, in bytes."""
         disk_path = pywbem.CIMInstanceName(

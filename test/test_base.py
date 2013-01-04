@@ -165,6 +165,53 @@ class StorageTestBase(unittest.TestCase):
             if self.destroy_created():
                 self.restart_cim()
 
+    def _prepare_partitions(self, diskname, partition_count):
+        """
+            Create GPT partition table and given nr. of partitions on
+            given device.
+        """
+        part_service = self.wbemconnection.EnumerateInstanceNames(
+                "LMI_DiskPartitionConfigurationService")[0]
+        disk_path = pywbem.CIMInstanceName(
+                classname='LMI_StorageExtent',
+                keybindings={
+                    'DeviceID': self.disks[0],
+                    'SystemCreationClassName': self.SYSTEM_CLASS_NAME,
+                    'SystemName': self.SYSTEM_NAME,
+                    'CreationClassName': 'LMI_StorageExtent'})
+
+        caps = pywbem.CIMInstanceName(
+                classname="LMI_DiskPartitionConfigurationCapabilities",
+                keybindings={
+                        'InstanceID': "LMI:LMI_DiskPartitionConfigurationCapabilities:GPT"
+                })
+        (retval, outparams) = self.wbemconnection.InvokeMethod(
+                "SetPartitionStyle",
+                part_service,
+                Extent=disk_path,
+                PartitionStyle=caps)
+        self.assertEqual(retval, 0)
+        disk = self.wbemconnection.GetInstance(disk_path)
+        offset = 1024 * 1024  # first usable sector
+        size = disk['NumberOfBlocks'] * disk['BlockSize']
+        size = size - 2 * offset  # reserve also some space at the end
+        partition_size = size / partition_count
+        partitions = []
+        for i in range(partition_count):
+            (retval, outparams) = self.wbemconnection.InvokeMethod(
+                "LMI_CreateOrModifyPartition",
+                part_service,
+                extent=disk_path,
+                Size=pywbem.Uint64(partition_size))
+            self.assertEqual(retval, 0)
+            partitions.append(outparams['partition'])
+        return partitions
+
+    def _destroy_partitions(self, partition_names):
+        """ Delete partitions """
+        for part in partition_names:
+            self.wbemconnection.DeleteInstance(part)
+
 def short_test_only():
     """
         Returns True, if only short test should be executed, i.e.
