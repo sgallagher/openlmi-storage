@@ -120,7 +120,7 @@ unload: never
 [LMI_MDRAIDElementSettingData]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider
-type: instance method
+type: association instance
 namespace: root/cimv2
 unload: never
 
