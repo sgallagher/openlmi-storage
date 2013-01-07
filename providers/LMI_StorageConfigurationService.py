@@ -84,6 +84,11 @@ class LMI_StorageConfigurationService(ServiceProvider):
                     != redundancy.no_single_point_of_failure):
             return "NoSinglePointOfFailure does not match."
 
+        parity = setting.get('ParityLayout', None)
+        if (parity is not None
+                and int(parity) != redundancy.parity_layout):
+            return "ParityLayout does not match."
+
         return None
 
     @cmpi_logging.trace_method
@@ -116,6 +121,11 @@ class LMI_StorageConfigurationService(ServiceProvider):
                 and SettingProvider.string_to_bool(nspof)
                     != redundancy.no_single_point_of_failure):
             return "NoSinglePointOfFailure does not match."
+
+        parity = setting.get('ParityLayout', None)
+        if (parity is not None
+                and int(parity) != redundancy.parity_layout):
+            return "ParityLayout does not match."
 
         return self._check_redundancy_setting(redundancy, setting)
 
@@ -574,12 +584,14 @@ class LMI_StorageConfigurationService(ServiceProvider):
                         redundancies, 0),
                 1: DeviceProvider.Redundancy.get_common_redundancy_list(
                         redundancies, 1),
+                4: DeviceProvider.Redundancy.get_common_redundancy_list(
+                        redundancies, 4),
                 5: DeviceProvider.Redundancy.get_common_redundancy_list(
                         redundancies, 5),
                 6: DeviceProvider.Redundancy.get_common_redundancy_list(
                         redundancies, 6),
-                DeviceProvider.Redundancy.LINEAR : DeviceProvider.Redundancy.get_common_redundancy_list(
-                        redundancies, DeviceProvider.Redundancy.LINEAR)
+                10: DeviceProvider.Redundancy.get_common_redundancy_list(
+                        redundancies, 10),
         }
 
         # first, check the goal[*Goal] properties
@@ -593,7 +605,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
                             % (level, err))
                 return level
             else:
-                cmpi_logging.logger.trace_debug(
+                cmpi_logging.logger.trace_info(
                         "Goal check: skipping goal RAID%d: %s"
                             % (level, err))
 
@@ -606,7 +618,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
                             % (level, err))
                 return level
             else:
-                cmpi_logging.logger.trace_debug(
+                cmpi_logging.logger.trace_info(
                         "Any check: skipping RAID%d: %s"
                             % (level, err))
         return None
@@ -621,10 +633,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         args['parents'] = devices
         if name:
             args['name'] = name
-        if level in [0, 1, 5, 6]:
-            args['level'] = str(level)
-        else:
-            args['level'] = 'Linear'
+        args['level'] = str(level)
         args['memberDevices'] = len(devices)
 
         raid = self.storage.newMDArray(**args)
@@ -719,9 +728,10 @@ class LMI_StorageConfigurationService(ServiceProvider):
             if param_level not in (
                     self.Values.CreateOrModifyMDRAID.Level.RAID0,
                     self.Values.CreateOrModifyMDRAID.Level.RAID1,
+                    self.Values.CreateOrModifyMDRAID.Level.RAID4,
                     self.Values.CreateOrModifyMDRAID.Level.RAID5,
                     self.Values.CreateOrModifyMDRAID.Level.RAID6,
-                    self.Values.CreateOrModifyMDRAID.Level.Linear):
+                    self.Values.CreateOrModifyMDRAID.Level.RAID10):
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "Invalid value of parameter Level.")
         level = param_level
@@ -741,19 +751,21 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         # nr. of devices vs level
         if ((level == 0
-                or level == 1
-                or level == DeviceProvider.Redundancy.LINEAR)
+                or level == 1)
                     and len(devices) < 2):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "At least two devices are required for RAID level %d."
                     % (level))
 
-        if level == 5 and len(devices) < 3:
+        if (level == 5 or level == 4) and len(devices) < 3:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                    "At least three devices are required for RAID level 5.")
+                    "At least three devices are required for RAID level 4 or 5.")
         if level == 6 and len(devices) < 4:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "At least four devices are required for RAID level 6.")
+        if level == 10 and len(devices) < 2:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "At least two devices are required for RAID level 10.")
 
         # elementname
         name = None
@@ -878,6 +890,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             class Level(object):
                 RAID0 = pywbem.Uint16(0)
                 RAID1 = pywbem.Uint16(1)
+                RAID4 = pywbem.Uint16(4)
                 RAID5 = pywbem.Uint16(5)
                 RAID6 = pywbem.Uint16(6)
-                Linear = pywbem.Uint16(4096)
+                RAID10 = pywbem.Uint16(10)

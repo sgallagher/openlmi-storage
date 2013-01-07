@@ -154,6 +154,7 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
                 'PackageRedundancyGoal' : pywbem.Uint16,
                 'PackageRedundancyMax' : pywbem.Uint16,
                 'PackageRedundancyMin' : pywbem.Uint16,
+                'ParityLayout' : pywbem.Uint16,
         }
 
     @cmpi_logging.trace_method

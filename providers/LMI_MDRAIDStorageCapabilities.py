@@ -49,6 +49,7 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
                     'PackageRedundancyDefault': pywbem.Uint16(0),
                     'PackageRedundancyMax': pywbem.Uint16(util.units.MAXINT16),
                     'PackageRedundancyMin': pywbem.Uint16(0),
+                    'ParityLayoutDefault': LMI_MDRAIDStorageCapabilities.Values.ParityLayoutDefault.Rotated_Parity
             },
     ]
 
@@ -88,6 +89,10 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
             setting['PackageRedundancyGoal'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
             setting['PackageRedundancyMax'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
             setting['PackageRedundancyMin'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
+            if capabilities['ParityLayoutDefault']:
+                setting['ParityLayout'] = pywbem.Uint16(capabilities['ParityLayoutDefault'] - 1)
+            else:
+                setting['ParityLayout'] = None
         else:
             setting['DataRedundancyGoal'] = pywbem.Uint16(capabilities['DataRedundancyDefault'])
             setting['DataRedundancyMax'] = pywbem.Uint16(capabilities['DataRedundancyMax'])
@@ -99,6 +104,10 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
             setting['PackageRedundancyGoal'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
             setting['PackageRedundancyMax'] = pywbem.Uint16(capabilities['PackageRedundancyMax'])
             setting['PackageRedundancyMin'] = pywbem.Uint16(capabilities['PackageRedundancyMin'])
+            if capabilities['ParityLayoutDefault']:
+                setting['ParityLayout'] = pywbem.Uint16(capabilities['ParityLayoutDefault'] - 1)
+            else:
+                setting['ParityLayout'] = None
 
         setting['ElementName'] = 'CreatedFrom' + capabilities['InstanceID']
         self.setting_manager.set_setting('LMI_MDRAIDStorageSetting', setting)
@@ -163,9 +172,10 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
         if level not in (
                 self.Values.CreateMDRAIDStorageSetting.Level.RAID0,
                 self.Values.CreateMDRAIDStorageSetting.Level.RAID1,
+                self.Values.CreateMDRAIDStorageSetting.Level.RAID4,
                 self.Values.CreateMDRAIDStorageSetting.Level.RAID5,
                 self.Values.CreateMDRAIDStorageSetting.Level.RAID6,
-                self.Values.CreateMDRAIDStorageSetting.Level.Linear):
+                self.Values.CreateMDRAIDStorageSetting.Level.RAID10):
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "Invalid value of parameter Level.")
 
@@ -205,6 +215,10 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
         setting['PackageRedundancyMax'] = pywbem.Uint16(final_redundancy.package_redundancy)
         setting['PackageRedundancyMin'] = pywbem.Uint16(final_redundancy.package_redundancy)
         setting['ElementName'] = 'CreatedFrom' + object_name['InstanceID']
+        if final_redundancy.parity_layout:
+            setting['ParityLayout'] = pywbem.Uint16(final_redundancy.parity_layout)
+        else:
+            setting['ParityLayout'] = None
         self.setting_manager.set_setting('LMI_MDRAIDStorageSetting', setting)
 
         outparams = [ pywbem.CIMParameter('setting', type='reference',
@@ -235,6 +249,11 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
             class Level(object):
                 RAID0 = pywbem.Uint16(0)
                 RAID1 = pywbem.Uint16(1)
+                RAID4 = pywbem.Uint16(4)
                 RAID5 = pywbem.Uint16(5)
                 RAID6 = pywbem.Uint16(6)
-                Linear = pywbem.Uint16(4096)
+                RAID10 = pywbem.Uint16(10)
+
+        class ParityLayoutDefault(object):
+            Non_Rotated_Parity = pywbem.Uint16(2)
+            Rotated_Parity = pywbem.Uint16(3)

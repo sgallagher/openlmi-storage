@@ -51,6 +51,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
                     'PackageRedundancyMax': pywbem.Uint16(util.units.MAXINT16),
                     'PackageRedundancyMin': pywbem.Uint16(0),
                     'ExtentSizeDefault': pywbem.Uint64(DEFAULT_EXTENT_SIZE),
+                    'ParityLayoutDefault':  None,
             },
     ]
 
@@ -91,6 +92,10 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
             setting['PackageRedundancyGoal'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
             setting['PackageRedundancyMax'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
             setting['PackageRedundancyMin'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
+            if capabilities['ParityLayoutDefault']:
+                setting['ParityLayout'] = pywbem.Uint16(capabilities['ParityLayoutDefault'] - 1)
+            else:
+                setting['ParityLayout'] = None
         else:
             setting['ExtentSize'] = pywbem.Uint64(capabilities['ExtentSizeDefault'])
             setting['DataRedundancyGoal'] = pywbem.Uint16(capabilities['DataRedundancyDefault'])
@@ -103,6 +108,10 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
             setting['PackageRedundancyGoal'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
             setting['PackageRedundancyMax'] = pywbem.Uint16(capabilities['PackageRedundancyMax'])
             setting['PackageRedundancyMin'] = pywbem.Uint16(capabilities['PackageRedundancyMin'])
+            if capabilities['ParityLayoutDefault']:
+                setting['ParityLayout'] = pywbem.Uint16(capabilities['ParityLayoutDefault'] - 1)
+            else:
+                setting['ParityLayout'] = None
 
         setting['ElementName'] = 'CreatedFrom' + capabilities['InstanceID']
         self.setting_manager.set_setting('LMI_VGStorageSetting', setting)
@@ -197,6 +206,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
         setting['PackageRedundancyGoal'] = pywbem.Uint16(final_redundancy.package_redundancy)
         setting['PackageRedundancyMax'] = pywbem.Uint16(final_redundancy.package_redundancy)
         setting['PackageRedundancyMin'] = pywbem.Uint16(final_redundancy.package_redundancy)
+        setting['ParityLayout'] = pywbem.Uint16(final_redundancy.parity_layout)
         setting['ElementName'] = 'CreatedFrom' + object_name['InstanceID']
         self.setting_manager.set_setting('LMI_VGStorageSetting', setting)
 
@@ -225,3 +235,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
             Success = pywbem.Uint32(0)
             Not_Supported = pywbem.Uint32(1)
             Failed = pywbem.Uint32(4)
+
+        class ParityLayoutDefault(object):
+            Non_Rotated_Parity = pywbem.Uint16(2)
+            Rotated_Parity = pywbem.Uint16(3)

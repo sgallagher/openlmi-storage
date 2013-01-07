@@ -8,6 +8,12 @@ class LMI_MDRAIDStorageExtent : LMI_StorageExtent
 
     [Implemented(true), Description("UUID of the RAID.")]
     string UUID;
+
+    [Implemented(true), Description("RAID level."),
+        Values{"RAID0", "RAID1", "RAID4", "RAID5", "RAID6", "RAID10"},
+        ValueMap{"0", "1", "4", "5", "6", "10"}]
+    uint16 Level;
+
 };
 
 [ Experimental, Description("This class represents Logical Volume devices on the managed system.")]
@@ -458,8 +464,8 @@ class LMI_StorageConfigurationService : CIM_StorageConfigurationService
           "Size Not Supported", "Method Reserved", "Vendor Specific" }]
     uint32 CreateOrModifyMDRAID(
         [IN, Description("Requested RAID level."),
-            Values{"RAID0", "RAID1", "RAID5", "RAID6", "Linear"},
-            ValueMap{"0", "1", "5", "6", "4096"}]
+            Values{"RAID0", "RAID1", "RAID4", "RAID5", "RAID6", "RAID10"},
+            ValueMap{"0", "1", "4", "5", "6", "10"}]
         uint16 Level,
 
         [IN, Description("Requested MD RAID name, i.e. if /dev/md/my_name "
@@ -636,6 +642,7 @@ class LMI_StorageSetting : CIM_StorageSetting
     [ Implemented(true) ] uint16 PackageRedundancyGoal;
     [ Implemented(true) ] uint16 PackageRedundancyMax;
     [ Implemented(true) ] uint16 PackageRedundancyMin;
+    [ Implemented(true) ] uint16 ParityLayout;
 };
 
 [ Experimental, Description("This class defines characteristics of LMI_VGStoragePool which is created or modified by "
@@ -730,18 +737,13 @@ class LMI_MDRAIDStorageCapabilities : CIM_StorageCapabilities
         Values { "Success", "Not Supported", "Failed"}]
     uint32 CreateMDRAIDStorageSetting(
         [IN, Description("Requested level."),
-            ValueMap{"0", "1", "5", "6", "4096"},
-            Values{"RAID0", "RAID1", "RAID5", "RAID6", "Linear"}]
+            ValueMap{"0", "1", "4", "5", "6", "10"},
+            Values{"RAID0", "RAID1", "RAID5", "RAID6", "RAID10"}]
         uint16 Level,
 
         [IN, Description("List of devices, from which the new device will be created. "
             "The created LMI_MDRAIDStorageSetting will take redundancy and striping of these devices into account. "
-            "\n For example, to create Linear \"RAID\" on top of two devices, the application passes "
-            "InExtents=(FirstExtent, SecondExtent) and Level=Linear. Resulting LMI_MDRAIDStorageSetting will have "
-            "DataRedundancy, PackageRedundancy and ExtentStripeLength as minimum of both input extents, "
-            "indicating that the created Linear device does not add any additional redundancy or stripping "
-            "on top of the underlying devices and at least the lowest DataRedundancy, PackageRedundancy and ExtentStripeLength apply."
-            "\n As another example, if the application wants to create RAID0 on top of two RAID1 devices, it passes "
+            "\n For example, if the application wants to create RAID0 on top of two RAID1 devices, it passes "
             "InExtents = (FirstRAID1Extent, SecondRAID1Extent) and Level=0. Resulting LMI_MDRAIDStorageSetting will have "
             "DataRedundancy and PackageRedundancy as the minimum of "
             "the first and the second RAID1 extents and ExtentStripeLength will be 2 to indicate RAID0 with two devices."

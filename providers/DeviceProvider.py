@@ -170,19 +170,27 @@ class DeviceProvider(BaseProvider):
         # constants for RAID levels
         RAID0 = 0
         RAID1 = 1
+        RAID4 = 4
         RAID5 = 5
         RAID6 = 6
+        RAID10 = 10
         LINEAR = 4096
+
+        # ParityLayout
+        PARITY_ROTATED = 2
+        PARITY_NON_ROTATED = 1
 
         @cmpi_logging.trace_method
         def __init__(self, no_single_point_of_failure=False,
                      data_redundancy=1,
                      package_redundancy=0,
-                     stripe_length=1):
+                     stripe_length=1,
+                     parity_layout=None):
             self.no_single_point_of_failure = no_single_point_of_failure
             self.data_redundancy = data_redundancy
             self.package_redundancy = package_redundancy
             self.stripe_length = stripe_length
+            self.parity_layout = parity_layout
 
         @cmpi_logging.trace_method
         def get_redundancy_raid0(self, b):
@@ -235,7 +243,19 @@ class DeviceProvider(BaseProvider):
                     no_single_point_of_failure=no_single_point_of_failure,
                     data_redundancy=data_redundancy,
                     package_redundancy=package_redundancy,
-                    stripe_length=stripe_length)
+                    stripe_length=stripe_length,
+                    parity_layout=self.PARITY_ROTATED)
+
+        @cmpi_logging.trace_method
+        def get_redundancy_raid4(self, b):
+            """
+                Return the combined data redundancy characteristics for
+                two devices combined in RAID4.
+            """
+            redundancy = self.get_redundancy_raid5(b)
+            redundancy.parity_layout = self.PARITY_NON_ROTATED
+            return redundancy
+
 
         @cmpi_logging.trace_method
         def get_redundancy_raid6(self, b):
@@ -244,6 +264,24 @@ class DeviceProvider(BaseProvider):
                 two devices combined in RAID6.
             """
             data_redundancy = min(self.data_redundancy, b.data_redundancy)
+            package_redundancy = min(self.package_redundancy, b.package_redundancy)
+            no_single_point_of_failure = True
+            stripe_length = self.stripe_length + b.stripe_length
+
+            return DeviceProvider.Redundancy(
+                    no_single_point_of_failure=no_single_point_of_failure,
+                    data_redundancy=data_redundancy,
+                    package_redundancy=package_redundancy,
+                    stripe_length=stripe_length,
+                    parity_layout=self.PARITY_ROTATED)
+
+        @cmpi_logging.trace_method
+        def get_redundancy_raid10(self, b):
+            """
+                Return the combined data redundancy characteristics for
+                two devices combined in RAID10.
+            """
+            data_redundancy = self.data_redundancy + b.data_redundancy
             package_redundancy = min(self.package_redundancy, b.package_redundancy)
             no_single_point_of_failure = True
             stripe_length = self.stripe_length + b.stripe_length
@@ -302,6 +340,12 @@ class DeviceProvider(BaseProvider):
                         redundancy_list)
                 redundancy.package_redundancy = \
                         redundancy.package_redundancy + len(redundancy_list) - 1
+            elif raid_level == DeviceProvider.Redundancy.RAID4:
+                redundancy = reduce(
+                        lambda a, b: a.get_redundancy_raid4(b),
+                        redundancy_list)
+                redundancy.package_redundancy = \
+                    redundancy.package_redundancy + 1
             elif raid_level == DeviceProvider.Redundancy.RAID5:
                 redundancy = reduce(
                         lambda a, b: a.get_redundancy_raid5(b),
@@ -314,6 +358,31 @@ class DeviceProvider(BaseProvider):
                         redundancy_list)
                 redundancy.package_redundancy = \
                     redundancy.package_redundancy + 2
+            elif raid_level == DeviceProvider.Redundancy.RAID10:
+                redundancy = reduce(
+                        lambda a, b: a.get_redundancy_raid10(b),
+                        redundancy_list)
+
+                # stripe-length needs to be calculated separately
+                # nr. of stripes for N=2: 1, N=3: 2, N=4: 2, N=5: 3, ...
+                stripes = len(redundancy_list) // 2 + len(redundancy_list) % 2
+                stripe_lengths = [x.stripe_length for x in redundancy_list]
+                stripe_lengths.sort()
+                # final stripe_length = sum of the 'stripes' lowest stripe lengths
+                stripe_lengths = stripe_lengths[:stripes]
+                redundancy.stripe_length = reduce(
+                        lambda a, b: a + b,
+                        stripe_lengths)
+
+                # data redundancy needs to be calculated separately
+                # it's always 2 (at least for now),
+                # i.e. sum of two lowest data redundancies
+                data_redundancies = [x.data_redundancy for x in redundancy_list]
+                data_redundancies.sort()
+                redundancy.data_redundancy = data_redundancies[0] + data_redundancies[1]
+
+                redundancy.package_redundancy = \
+                    redundancy.package_redundancy + 1
             else:
                 cmpi_logging.logger.trace_warn(
                         "Unknown raid_level: " + str(raid_level))

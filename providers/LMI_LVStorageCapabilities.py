@@ -72,6 +72,10 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         caps['PackageRedundancyDefault'] = pywbem.Uint16(redundancy.package_redundancy)
         caps['PackageRedundancyMax'] = pywbem.Uint16(redundancy.package_redundancy)
         caps['PackageRedundancyMin'] = pywbem.Uint16(redundancy.package_redundancy)
+        if redundancy.parity_layout:
+            caps['ParityLayoutDefault'] = pywbem.Uint16(redundancy.parity_layout + 1)
+        else:
+            caps['ParityLayoutDefault'] = None
         return caps
 
 
@@ -112,6 +116,10 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         setting['PackageRedundancyMax'] = capabilities['PackageRedundancyDefault']
         setting['PackageRedundancyMin'] = capabilities['PackageRedundancyDefault']
         setting['ElementName'] = 'CreatedFrom' + capabilities['InstanceID']
+        if capabilities['ParityLayoutDefault']:
+            setting['ParityLayout'] = capabilities['ParityLayoutDefault'] - 1
+        else:
+            setting['ParityLayout'] = None
 
         self.setting_manager.set_setting('LMI_LVStorageSetting', setting)
         return pywbem.CIMInstanceName(

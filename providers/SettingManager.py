@@ -276,3 +276,4 @@ class StorageSetting(Setting):
         self['PackageRedundancyGoal'] = redundancy.package_redundancy
         self['PackageRedundancyMax'] = redundancy.package_redundancy
         self['PackageRedundancyMin'] = redundancy.package_redundancy
+        self['ParityLayout'] = redundancy.parity_layout

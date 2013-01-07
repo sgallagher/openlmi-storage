@@ -67,7 +67,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
         parents = self.get_base_devices(device)
         # find all parents and get their redundancy
         redundancies = map(self._find_redundancy, parents)
-        if device.level in [0, 1, 5, 6, DeviceProvider.Redundancy.LINEAR]:
+        if device.level in [0, 1, 4, 5, 6, 10]:
             final_redundancy = DeviceProvider.Redundancy.get_common_redundancy_list(redundancies, device.level)
         else:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
@@ -85,6 +85,22 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
         if not device:
             device = self._get_device(model)
         model['UUID'] = device.uuid
+
+        if device.level == 0:
+            model['Level'] = self.Values.Level.RAID0
+        elif device.level == 1:
+            model['Level'] = self.Values.Level.RAID1
+        elif device.level == 4:
+            model['Level'] = self.Values.Level.RAID4
+        elif device.level == 5:
+            model['Level'] = self.Values.Level.RAID5
+        elif device.level == 6:
+            model['Level'] = self.Values.Level.RAID6
+        elif device.level == 10:
+            model['Level'] = self.Values.Level.RAID10
+        else:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Unknown RAID level: " + device.level)
         return model
 
     @cmpi_logging.trace_method
@@ -166,6 +182,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
                 'PackageRedundancyGoal' : pywbem.Uint16,
                 'PackageRedundancyMax' : pywbem.Uint16,
                 'PackageRedundancyMin' : pywbem.Uint16,
+                'ParityLayout' : pywbem.Uint16,
         }
 
     @cmpi_logging.trace_method
@@ -183,3 +200,12 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
     def do_delete_instance(self, device):
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
         util.partitioning.do_storage_action(self.storage, action)
+
+    class Values(ExtentProvider.Values):
+        class Level(object):
+            RAID0 = pywbem.Uint16(0)
+            RAID1 = pywbem.Uint16(1)
+            RAID4 = pywbem.Uint16(4)
+            RAID5 = pywbem.Uint16(5)
+            RAID6 = pywbem.Uint16(6)
+            RAID10 = pywbem.Uint16(10)
