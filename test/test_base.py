@@ -212,6 +212,46 @@ class StorageTestBase(unittest.TestCase):
         for part in partition_names:
             self.wbemconnection.DeleteInstance(part)
 
+    def _check_redundancy(self, extent, setting,
+            data_redundancy=None,
+            stripe_legtht=None,
+            package_redundancy=None,
+            parity_layout=None,
+            check_parity_layout=False,
+            nspof=None
+            ):
+        """
+            Check if redundancy setting of StorageExtent and StorageSetting
+            match and have requested values. Assert if not.
+            If any value is None, it will not be checked, except parity_layout.
+            If check_parity_layout is True, parity_layout will be checked
+            against setting['ParityLayout'] even if it is None 
+            Both extent and setting must be CIMInstance.
+        """
+        self.assertEqual(setting['DataRedundancyGoal'], extent['DataRedundancy'])
+        self.assertEqual(setting['DataRedundancyMin'], extent['DataRedundancy'])
+        self.assertEqual(setting['DataRedundancyMax'], extent['DataRedundancy'])
+        self.assertEqual(setting['ExtentStripeLength'], extent['ExtentStripeLength'])
+        self.assertEqual(setting['ExtentStripeLengthMin'], extent['ExtentStripeLength'])
+        self.assertEqual(setting['ExtentStripeLengthMax'], extent['ExtentStripeLength'])
+        self.assertEqual(setting['NoSinglePointOfFailure'], extent['NoSinglePointOfFailure'])
+        self.assertEqual(setting['PackageRedundancyGoal'], extent['PackageRedundancy'])
+        self.assertEqual(setting['PackageRedundancyMin'], extent['PackageRedundancy'])
+        self.assertEqual(setting['PackageRedundancyMax'], extent['PackageRedundancy'])
+
+        if data_redundancy:
+            self.assertEqual(extent['DataRedundancy'], data_redundancy)
+        if stripe_legtht:
+            self.assertEqual(extent['ExtentStripeLength'], stripe_legtht)
+        if package_redundancy:
+            self.assertEqual(extent['PackageRedundancy'], package_redundancy)
+        if check_parity_layout or parity_layout:
+            self.assertEqual(setting['ParityLayout'], parity_layout)
+        if nspof is not None:
+            self.assertEqual(setting['NoSinglePointOfFailure'], nspof)
+
+
+
 def short_test_only():
     """
         Returns True, if only short test should be executed, i.e.
