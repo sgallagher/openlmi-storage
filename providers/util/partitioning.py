@@ -14,8 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import time
 import subprocess
+import os
 """
     Support functions for partitioning.
 """
@@ -142,7 +142,6 @@ def do_storage_action(storage, action):
             cmpi_logging.logger.trace_verbose("Result: " + repr(action.device))
         if do_raid:
             # work around mdadm not waiting for device to appear/disappear
-            time.sleep(2)
             if isinstance(action, pyanaconda.storage.deviceaction.ActionDestroyDevice):
                 # remove the metadata, otherwise reset() still recognizes
                 # the array
@@ -154,4 +153,9 @@ def do_storage_action(storage, action):
                             'bs=1024',
                             'count=1024'])
     finally:
+        # workaround for bug #891971
+        open("/dev/.in_sysinit", "w")
+        os.system('udevadm control --env=ANACONDA=1')
+        os.system('udevadm trigger --subsystem-match block')
+        os.system('udevadm settle')
         storage.reset()
