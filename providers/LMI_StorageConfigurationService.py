@@ -147,7 +147,6 @@ class LMI_StorageConfigurationService(ServiceProvider):
             # check PE size
             newsize = device.vg.align(float(size) / util.units.MEGABYTE, True)
             oldsize = device.vg.align(device.size, False)
-            print "oldszie", oldsize, "newsize", newsize
             if newsize != oldsize:
                 action = pyanaconda.storage.deviceaction.ActionResizeDevice(
                         device, newsize)
@@ -177,9 +176,11 @@ class LMI_StorageConfigurationService(ServiceProvider):
         args = {}
         args['parents'] = [pool]
         args['size'] = pool.align(float(size) / util.units.MEGABYTE, True)
-        print "size:", args['size']
         if name:
             args['name'] = name
+
+        cmpi_logging.log_storage_call("CREATE LV", args)
+
         lv = self.storage.newLV(**args)
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(lv)
         util.partitioning.do_storage_action(self.storage, action)
@@ -401,6 +402,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
             args['peSize'] = float(goal['ExtentSize']) / util.units.MEGABYTE
         if name:
             args['name'] = name
+
+        cmpi_logging.log_storage_call("CREATE VG", args)
 
         vg = self.storage.newVG(**args)
         action = pyanaconda.storage.ActionCreateDevice(vg)
@@ -659,6 +662,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
             args['name'] = name
         args['level'] = str(level)
         args['memberDevices'] = len(devices)
+
+        cmpi_logging.log_storage_call("CREATE MDRAID", args)
 
         raid = self.storage.newMDArray(**args)
         action = pyanaconda.storage.ActionCreateDevice(raid)

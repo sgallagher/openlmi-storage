@@ -348,6 +348,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
                 'UseReplicationBuffer': 0,
         }
 
+    @cmpi_logging.trace_method
     def _check_extent_size(self, value):
         """
             Check if the given value is acceptable as
@@ -365,7 +366,10 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         return True
 
 
+    @cmpi_logging.trace_method
     def do_delete_instance(self, device):
+        cmpi_logging.log_storage_call("DELETE VG",
+                {'device': device})
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
         util.partitioning.do_storage_action(self.storage, action)
 
