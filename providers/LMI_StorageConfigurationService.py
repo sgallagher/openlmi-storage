@@ -45,6 +45,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         drmax = setting.get('DataRedundancyMax', None)
         drmin = setting.get('DataRedundancyMin', None)
         drgoal = setting.get('DataRedundancyGoal', None)
+
         if drmax is not None and int(drmax) < redundancy.data_redundancy:
             return "DataRedundancyMax is too low."
         if drmin is not None and int(drmin) > redundancy.data_redundancy:
@@ -73,7 +74,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             return "PackageRedundancyMax is too low."
         if prmin is not None and int(prmin) > redundancy.package_redundancy:
             return "PackageRedundancyMin is too high."
-        if (prmax is None and int(prmin) is None and prgoal is not None
+        if (prmax is None and prmin is None and prgoal is not None
                 and prgoal != redundancy.package_redundancy):
             # only goal is set - it must match
             return "PackageRedundancyGoal does not match."
@@ -594,34 +595,57 @@ class LMI_StorageConfigurationService(ServiceProvider):
                         redundancies, 10),
         }
 
+        # hash RAID level number -> priority of the level
+        # if more RAID levels matches the goal, the lowest priority is selected
+        level_priorities = {
+                1: 1,
+                5: 2,
+                6: 3,
+                4: 4,
+                10: 5,
+                0: 6
+        }
+
         # first, check the goal[*Goal] properties
+        best_level = None
         for (level, redundancy) in levels.iteritems():
             err = self._check_redundancy_goal_setting(redundancy, goal)
             if err is None:
                 # we have match which either completely satisfied goal[*Goal]
                 # or the redundancy matches goal[*Min/Max] properties
+                if not best_level:
+                    best_level = level
+                else:
+                    if level_priorities[level] < level_priorities[best_level]:
+                        best_level = level
                 cmpi_logging.logger.trace_info(
-                        "Goal check: selected RAID%d: %s"
-                            % (level, err))
-                return level
+                        "Goal check: matching RAID%d, best level so far: %d"
+                        % (level, best_level))
             else:
                 cmpi_logging.logger.trace_info(
                         "Goal check: skipping goal RAID%d: %s"
                             % (level, err))
 
+        if best_level is not None:
+            return best_level
+
         # then, find any that matches
         for (level, redundancy) in levels.iteritems():
             err = self._check_redundancy_setting(redundancy, goal)
             if err is None:
+                if not best_level:
+                    best_level = level
+                else:
+                    if level_priorities[level] < level_priorities[best_level]:
+                        best_level = level
                 cmpi_logging.logger.trace_info(
-                        "Any check: selected RAID%d: %s"
-                            % (level, err))
-                return level
+                        "Any check: matching RAID%d, best level so far: %d"
+                        % (level, best_level))
             else:
                 cmpi_logging.logger.trace_info(
                         "Any check: skipping RAID%d: %s"
                             % (level, err))
-        return None
+        return best_level
 
     @cmpi_logging.trace_method
     def _create_mdraid(self, level, goal, devices, name):
