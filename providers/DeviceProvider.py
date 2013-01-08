@@ -135,8 +135,12 @@ class DeviceProvider(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find the device.")
         if self.storage.deviceDeps(device):
+            deps = self.storage.deviceDeps(device)
+            depnames = [device.path for device in deps]
+            cmpi_logging.logger.info("Cannot remove %s, it's used by %s"
+                    % (device.path, str(depnames)))
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                    "The device is in use.")
+                    "The device is in use by %s" % str(depnames))
 
         self.do_delete_instance(device)
 
