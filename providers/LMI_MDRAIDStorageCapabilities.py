@@ -120,7 +120,7 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
     def cim_method_createsetting(self, env, object_name,
                                  param_settingtype=None):
         """
-            Implements LMI_VGStorageCapabilities.CreateSetting()
+            Implements LMI_MDRAIDStorageCapabilities.CreateSetting()
 
             Method to create and populate a StorageSetting instance from a
             StorageCapability instance. This removes the need to populate
@@ -226,7 +226,7 @@ class LMI_MDRAIDStorageCapabilities(CapabilitiesProvider):
                                    classname='LMI_MDRAIDStorageSetting',
                                    namespace=self.config.namespace,
                                    keybindings={'InstanceID': setting_id}))]
-        return (self.Values.CreateVGStorageSetting.Success, outparams)
+        return (self.Values.CreateMDRAIDStorageSetting.Success, outparams)
 
     class Values(CapabilitiesProvider.Values):
         class CreateSetting(object):
