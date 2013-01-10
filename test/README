@@ -1,0 +1,90 @@
+OpenLMI-Storage test suite
+==========================
+
+This directory contains various test of OpenLMI-Storage.
+Standard Python unittest framework is used to run the tests.
+
+Unittests
+---------
+Unit tests, i.e. tests which simulate the surrounding, are located in
+'test/unittest' directory. These test can be run anywhere.
+
+System tests
+------------
+Tests directly in 'test' directory communicate with a CIMOM and tests CIMOM and
+OpenLMI-Storage provider registered to it.
+
+Usage
+^^^^^
+Just install openlmi-storage as usual and start your CIMOM.
+
+The tests must run on the same machine as the CIMOM!
+
+Set following environment variables:
+LMI_CIMOM_URL - URL to the CIMOM, e.g. 'https://localhost:5989'.
+LMI_CIMOM_USERNAME - Name of the user on CIMOM the test will use, e.g. 'root'.
+LMI_CIMOM_PASSWORD - Password of the user, e.g. 'opensesame'.
+LMI_STORAGE_DISKS - Disks available for testing. At least one disk must be
+                    available. The disks must be empty, i.e. there must be
+                    no partitions on it. The first disk must have at least
+                    one gigabyte of space.
+                    The tests will partition the disks, add them to RAID,
+                    format the disks etc. Do not use system disk in this
+                    variable!
+                    For example: '/dev/sda /dev/sdb'.
+LMI_CIMOM_BROKER - Name of the CIMOM service, e.g. 'tog-pegasus'. Several tests
+                   need to restart the CIMOM and they will invoke.
+                   'service $LMI_CIMOM_BROKER restart'.
+
+These environment variables are optional:
+LMI_STORAGE_CLEAN - If a test fails and the test created some storage devices,
+                    the test suite will automatically clean all these new
+                    devices, so other tests can continue with clean system.
+                    If this variable is set to empty string, the test suite
+                    will not clean the devices, so the user can examine created
+                    devices and see, why the test failed.
+LMI_STORAGE_VERBOSE - If this variable is set to nonempty value, the test suite
+                      will print extra debugging information, for example
+                      all udev events.
+
+Running single test:
+    LMI_CIMOM_PASSWORD=opensesame \
+    LMI_STORAGE_DISKS="/dev/sda /dev/sdb /dev/sdc" \
+    LMI_CIMOM_BROKER="tog-pegasus" \
+    python test/test_create_mdraid.py
+
+Running all tests:
+    LMI_CIMOM_PASSWORD=opensesame \
+    LMI_STORAGE_DISKS="/dev/sda /dev/sdb /dev/sdc" \
+    LMI_CIMOM_BROKER="tog-pegasus" \
+    python -m unittest discover -s test/
+
+Beware, all tests can take lot of time! Lot of partitions/RAIDs/volume groups
+are created and deleted!
+
+
+Code coverage
+^^^^^^^^^^^^^
+To calculate test coverage during tests, install python coverage module
+and use coverage_wrapper.py instead of cimom_entry.py when registering the
+providers:
+
+sed <LMI_Storage.reg > /tmp/LMI_Storage.reg -e 's/cimom_entry/coverage_wrapper/g'
+
+Register the new LMI_Storage.reg to your CIMOM and start the tests. Coverage
+statistics are saved always to new file in /var/lib/openlmi-storage/coverage
+directory, i.e. you tests can safely restart the CIMOM without loosing the
+coverage.
+
+To export HTML report, use:
+COVERAGE_FILE=/var/lib/openlmi-storage/coverage/coverage coverage combile
+COVERAGE_FILE=/var/lib/openlmi-storage/coverage/coverage coverage html -d report/
+
+Development
+^^^^^^^^^^^
+To create new test, just subclass StorageTestBase, which has useful
+setUp / tearDown methods to monitor created devices and remove them when the
+test fails. All test start with empty disks, i.e. there are no partitions on the
+test disks. The test must clean all devices (including partitions) it creates.
+
+
