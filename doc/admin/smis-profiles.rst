@@ -19,13 +19,14 @@ The CIM API follows following principles:
  - No LogicalDisk is created for devices consumed by the OS, i.e. when there
    is filesystem on them.
   - Actually, all block devices can be used by the OS and it might be useful
-    to have LMI_StorageExtent as subclass of CIM_LogicalDisk. .. warning:: This
-    violates SMI-S, each block device should have a StorageExtent + LogicalDisk
-    associated from it to be usable by the OS.
+    to have LMI_StorageExtent as subclass of CIM_LogicalDisk.
+
+.. warning:: This violates SMI-S, each block device should have a StorageExtent
++ LogicalDisk associated from it to be usable by the OS.
+
 - StoragePool is used for real pool objects - volume groups.
-- PrimordialPool is created, it contains unpartitioned disks and disk
-  partitions.
- - Nothing can be allocated from it, it just shows unused space.
+- PrimordialPool is not present. It might be added in future to track unused
+  disk drives and partitions.
 
 The implementation is not complete, e.g. mandatory Server Profile is not
 implemented at all. The list will get updated.
