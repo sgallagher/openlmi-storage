@@ -738,7 +738,7 @@ class LMI_MDRAIDStorageCapabilities : CIM_StorageCapabilities
     uint32 CreateMDRAIDStorageSetting(
         [IN, Description("Requested level."),
             ValueMap{"0", "1", "4", "5", "6", "10"},
-            Values{"RAID0", "RAID1", "RAID5", "RAID6", "RAID10"}]
+            Values{"RAID0", "RAID1", "RAID4", "RAID5", "RAID6", "RAID10"}]
         uint16 Level,
 
         [IN, Description("List of devices, from which the new device will be created. "
