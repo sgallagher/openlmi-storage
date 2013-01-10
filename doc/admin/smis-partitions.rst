@@ -20,12 +20,13 @@ The Disk Partition Subprofile does not reflect real-world MBR partition tables:
 
 As result of this deficiency, some adjustments were necessary:
 
-* The ``LMI_DiskPartition`` representing a logical partition *includes* the
-  metadata sector and any alignment sectors.
+* The :ref:`LMI_DiskPartition <CIM-LMI_DiskPartition>` representing a logical
+  partition *includes* the metadata sector and any alignment sectors.
 
- * ``NumberOfBlocks`` property *includes* the metadata and any alignment
-   sectors.
- * ``ConsumableBlocks`` includes only the real usable data on partition.
+ * :ref:`NumberOfBlocks <CIM-StorageExtent-NumberOfBlocks>` property
+   *includes* the metadata and any alignment sectors.
+ * :ref:`ConsumableBlocks <CIM-StorageExtent-ConsumableBlocks>` includes only
+   the real usable data on partition.
 
 .. figure:: pic/partitions.png
 
@@ -36,11 +37,68 @@ MBR ones.
 
 Implementation
 --------------
-All mandatory classes and methods are implemented.
+All mandatory classes are implemented. However,
+:ref:`CreateOrModifyPartition <LMI-DiskPartitionConfigurationService-CreateOrModifyPartition>`
+method is *not* implemented. This function might be added in future.
 
-TODO
+The only way, how to create partitions is proprietary
+:ref:`LMI_CreateOrModifyPartition <LMI-DiskPartitionConfigurationService-LMI-CreateOrModifyPartition>`,
+which fits actual partitioning better.
 
-.. warning:: Mandatory indications are not implemented.
+Classes
+^^^^^^^
+
+Implemented SMI-S classes:
+
+* :ref:`LMI_PartitionBasedOn <LMI-PartitionBasedOn>`
+
+* :ref:`LMI_DiskPartition <LMI-DiskPartition>`
+
+* :ref:`LMI_DiskPartitionConfigurationCapabilities <LMI-DiskPartitionConfigurationCapabilities>`
+
+* :ref:`LMI_DiskPartitionConfigurationService <LMI-DiskPartitionConfigurationService>`
+
+* :ref:`LMI_DiskPartitionElementCapabilities <LMI-DiskPartitionElementCapabilities>`
+
+* :ref:`LMI_GenericDiskPartition <LMI-GenericDiskPartition>`
+
+* :ref:`LMI_InstalledPartitionTable <LMI-InstalledPartitionTable>`
+
+* :ref:`LMI_StorageExtent <LMI-StorageExtent>`
+
+Additional implemented classes:
+
+* :ref:`LMI_DiskPartitionConfigurationSetting <LMI-DiskPartitionConfigurationSetting>`
+
+* :ref:`LMI_DiskPartitionElementSettingData <LMI-DiskPartitionElementSettingData>`
+
+Not implemented classes:
+
+* :ref:`CIM_GPTDiskPartition <CIM-GPTDiskPartition>`
+
+* :ref:`CIM_LogicalDisk <CIM-LogicalDisk>`
+
+* :ref:`CIM_VTOCDiskPartition <CIM-VTOCDiskPartition>`
+
+* :ref:`CIM_SystemDevice <CIM-SystemDevice>`
+
+* :ref:`CIM_HostedService <CIM-HostedService>`
+
+Methods
+^^^^^^^
+
+Implemented:
+
+* :ref:`SetPartitionStyle <CIM-DiskPartitionConfigurationService-SetPartitionStyle>`
+
+* :ref:`LMI_CreateOrModifyPartition <LMI-DiskPartitionConfigurationService-LMI-CreateOrModifyPartition>`
+
+Not implemented:
+
+* :ref:`CreateOrModifyPartition <LMI-DiskPartitionConfigurationService-CreateOrModifyPartition>`
+
+.. warning:: Mandatory indications are not
+  implemented.
 
    Anaconda does not provide such functionality and it would be very CPU-intensive
    to periodically scan for new/deleted partitions.
