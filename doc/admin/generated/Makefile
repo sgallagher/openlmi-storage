@@ -4,7 +4,6 @@ FILES=extent-inherit.svg \
 HOST="https://localhost:5989"
 TOPDIR=../../..
 MOFS=$(TOPDIR)/mof/base.mof \
-    $(TOPDIR)/mof/filesystems.mof \
     $(TOPDIR)/mof/luks.mof \
     $(TOPDIR)/mof/partitions.mof \
     $(TOPDIR)/mof/storage.mof
