@@ -51,7 +51,8 @@ figures: pic/partitions.png \
     pic/primordial.png \
     pic/raid-lvm-simple.svg \
     pic/intro-setting.svg \
-    pic/intro-service.svg
+    pic/intro-service.svg \
+    pic/partition-instance.svg
 
 mof:
 	make -C mof

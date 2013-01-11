@@ -31,6 +31,9 @@ class LMI_StorageExtent : CIM_StorageExtent
     [ Implemented(true) ] boolean Primordial;
     [ Implemented(true) ] string ExtentDiscriminator[];
     [ Implemented(true) ] boolean IsComposite;
+    [ Implemented(true) ] uint64 BlockSize;
+    [ Implemented(true) ] uint64 NumberOfBlocks;
+    [ Implemented(true) ] uint64 ConsumableBlocks;
 };
 
 [ Experimental ]
