@@ -703,7 +703,7 @@ class LMI_VGStorageCapabilities : CIM_StorageCapabilities
         InExtents REF CIM_StorageExtent[],
 
         [IN(False), OUT, Description("Created LMI_StorageSetting.")]
-        LMI_StorageSetting REF NewSetting);
+        LMI_StorageSetting REF Setting);
 
     [Implemented(true),
         Description("Default size of Volume Group physical extents."),
