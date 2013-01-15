@@ -14,8 +14,9 @@ A MS-DOS partition present on a block device are represented as
 
 Both MS-DOS and GPT partitions are associated to the parent device using
 :ref:`LMI_PartitionBasedOn <LMI-PartitionBasedOn>`. This BasedOn association
-contains also start and end sectors of the partitions.
-
+contains also start and end sectors of the partitions. Note that logical
+partitions are associated with the extended partition where they are located,
+see the diagram below.
 
 .. _diagram:
 
@@ -51,7 +52,7 @@ Useful methods
   extended and logical partitions when the primary partition table is getting
   full.
 
-:ref:`SetPartitionStyle <CIM-DiskPartitionConfigurationService-SetPartitionStyle>`
+:ref:`SetPartitionStyle <LMI-DiskPartitionConfigurationService-SetPartitionStyle>`
   Creates partition table on a device of requested size. If the size is not
   specified, the largest possible partition is created.
 
@@ -84,13 +85,32 @@ partitions:
 * If there is extended partition present on the device and there are 4 primary
   partitions, a *logical* partition is created.
 
-Examples
---------
+Use cases
+---------
+
+
+List supported partition table types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Currently GPT and MS-DOS partition tables are supported. More types can be added
+later. Enumerate instances of
+:ref:`LMI_DiskPartitionConfigurationCapabilities <LMI-DiskPartitionConfigurationCapabilities>`
+class to get list of all of them, together with their basic properties like
+partition table size and maximum number of partitions::
+    
+    part_styles = root.LMI_DiskPartitionConfigurationCapabilities.instances()
+    for style in part_styles:
+        print style.Caption
+        print "Partition table size:", style.PartitionTableSize, "block(s)"
 
 Create partition table
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Following code creates GPT partition table on ``/dev/sda``::
+Use
+:ref:`SetPartitionStyle <LMI-DiskPartitionConfigurationService-SetPartitionStyle>`
+method.
+
+Sample code to create GPT partition table on ``/dev/sda``::
 
     # Find the disk
     sda = root.LMI_StorageExtent.first_instance(
@@ -109,8 +129,12 @@ MS-DOS partition tables are created with the same code, just using different
 :ref:`LMI_DiskPartitionConfigurationCapabilities <LMI-DiskPartitionConfigurationCapabilities>`
 instance.
 
-Create partitions
-^^^^^^^^^^^^^^^^^
+Create partition
+^^^^^^^^^^^^^^^^
+
+Use
+:ref:`LMI_CreateOrModifyPartition <LMI-DiskPartitionConfigurationService-LMI-CreateOrModifyPartition>`
+method.
 
 Following code creates several partitions on ``/dev/sda``. The code is the same
 for GPT and MS-DOS partitions:: 
@@ -159,6 +183,9 @@ The resulting partitions can be seen in the diagram_ above.
 
 List all partitions on a disk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Enumerate :ref:`LMI_PartitionBasedOn <LMI-PartitionBasedOn>` associations of the
+disk.
 
 Following code lists all partitions on ``/dev/sda``, together with their
 location::
@@ -211,7 +238,7 @@ Future direction
 
 In future, we might implement:
 
-* :ref:`CreateOrModifyPartition <CIM-DiskPartitionConfigurationService-CreateOrModifyPartition>`
+* :ref:`CreateOrModifyPartition <LMI-DiskPartitionConfigurationService-CreateOrModifyPartition>`
   method to meet SMI-S requirements. Then it will be possible to set partition
   exact start/end address.
 

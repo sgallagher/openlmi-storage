@@ -7,4 +7,5 @@ Usage
    usage-generic
    usage-devices
    usage-partitioning
+   usage-raid
 
