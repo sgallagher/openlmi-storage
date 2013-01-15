@@ -8,4 +8,6 @@ Usage
    usage-devices
    usage-partitioning
    usage-raid
+   usage-lvm
+
 
