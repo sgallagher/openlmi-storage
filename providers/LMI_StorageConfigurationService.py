@@ -549,6 +549,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         return self.cim_method_createormodifyvg(env, object_name,
                 param_elementname, param_goal, param_inextents, param_pool)
 
+    @cmpi_logging.trace_method
     def cim_method_createormodifyelementfromelements(self, env, object_name,
                                                      param_inelements,
                                                      param_elementtype,
@@ -572,7 +573,24 @@ class LMI_StorageConfigurationService(ServiceProvider):
             reference will be returned in the output parameter Job.\n This
             method does not support MD RAID modification for now.
         """
-        pass
+        # check parameters
+        if param_size is not None:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Parameter Size is not supported.")
+
+        if param_elementtype is not None:
+            if param_elementtype != self.Values.CreateOrModifyElementFromElements.ElementType.Storage_Extent:
+                    raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                            "Parameter ElementType must have value '3 - StorageExtent'.")
+
+        return self.cim_method_createormodifymdraid(env, object_name,
+                param_elementname=param_elementname,
+                param_theelement=param_theelement,
+                param_goal=param_goal,
+                param_level=None,
+                param_inextents=param_inelements)
+
+
 
     @cmpi_logging.trace_method
     def _find_raid_level(self, redundancies, goal):
