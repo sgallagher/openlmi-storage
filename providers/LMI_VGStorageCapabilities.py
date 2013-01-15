@@ -23,6 +23,7 @@ import pywbem
 import cmpi_logging
 
 import util.units
+from DeviceProvider import DeviceProvider
 DEFAULT_EXTENT_SIZE = 4 * util.units.MEGABYTE
 
 class LMI_VGStorageCapabilities(CapabilitiesProvider):
@@ -51,7 +52,10 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
                     'PackageRedundancyMax': pywbem.Uint16(util.units.MAXINT16),
                     'PackageRedundancyMin': pywbem.Uint16(0),
                     'ExtentSizeDefault': pywbem.Uint64(DEFAULT_EXTENT_SIZE),
-                    'ParityLayoutDefault':  None,
+                    'ParityLayoutDefault':  pywbem.CIMProperty(
+                            name='ParityLayoutDefault',
+                            value=None,
+                            type='uint16')
             },
     ]
 
@@ -156,7 +160,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
         return (rval, outparams)
 
     def cim_method_createvgstoragesetting(self, env, object_name,
-                                          param_cim_storageextents=None):
+                                          param_inextents=None):
         """
             Implements LMI_VGStorageCapabilities.CreateVGStorageSetting()
 
@@ -164,7 +168,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
             Applications then do not need to calculate DataRedundancy,
             PackageRedundancy and ExtentStripeLength.
         """
-        if not param_cim_storageextents:
+        if not param_inextents:
             # just return default setting
             return self.cim_method_createsetting(env, object_name)
 
@@ -173,7 +177,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
         # create list of redundancies of all input devices
         # (assuming 'linear' composition)
         redundancies = []
-        for device_name in param_cim_storageextents:
+        for device_name in param_inextents:
             provider = self.provider_manager.get_device_provider_for_name(
                     device_name)
             if not provider:
@@ -186,7 +190,8 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
             redundancy = provider.get_redundancy(device)
             redundancies.append(redundancy)
 
-        final_redundancy = reduce(provider.get_common_redundancy, redundancies)
+        final_redundancy = DeviceProvider.Redundancy.get_common_redundancy_list(
+                redundancies)
 
         setting_id = self.setting_manager.allocate_id(
                 'LMI_VGStorageSetting')
@@ -206,7 +211,11 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
         setting['PackageRedundancyGoal'] = pywbem.Uint16(final_redundancy.package_redundancy)
         setting['PackageRedundancyMax'] = pywbem.Uint16(final_redundancy.package_redundancy)
         setting['PackageRedundancyMin'] = pywbem.Uint16(final_redundancy.package_redundancy)
-        setting['ParityLayout'] = pywbem.Uint16(final_redundancy.parity_layout)
+        if final_redundancy.parity_layout is not None:
+            setting['ParityLayout'] = pywbem.Uint16(final_redundancy.parity_layout)
+        else:
+            setting['ParityLayout'] = None
+
         setting['ElementName'] = 'CreatedFrom' + object_name['InstanceID']
         self.setting_manager.set_setting('LMI_VGStorageSetting', setting)
 
