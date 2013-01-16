@@ -60,7 +60,73 @@ therefore it would make sense to make ``LMI_StorageExtent`` as subclass of
 
 Implementation
 --------------
-TODO
+
+Classes
+^^^^^^^
+
+Implemented SMI-S classes:
+
+* :ref:`LMI_VGAssociatedComponentExtent <LMI-VGAssociatedComponentExtent>`
+
+* :ref:`LMI_MDRAIDBasedOn <LMI-MDRAIDBasedOn>`
+
+* :ref:`LMI_LVBasedOn <LMI-LVBasedOn>`
+
+* :ref:`LMI_LVAllocatedFromStoragePool <LMI-LVAllocatedFromStoragePool>`
+
+* :ref:`LMI_LVElementCapabilities <LMI-LVElementCapabilities>`
+
+* :ref:`LMI_VGElementCapabilities <LMI-VGElementCapabilities>`
+
+* :ref:`LMI_MDRAIDElementCapabilities <LMI-MDRAIDElementCapabilities>`
+
+* :ref:`LMI_MDRAIDElementSettingData <LMI-MDRAIDElementSettingData>`
+
+* :ref:`LMI_LVElementSettingData <LMI-LVElementSettingData>`
+
+* :ref:`LMI_VGElementSettingData <LMI-VGElementSettingData>`
+
+* :ref:`LMI_StorageExtent <LMI-StorageExtent>`
+
+* :ref:`LMI_LVStorageExtent <LMI-LVStorageExtent>`
+
+* :ref:`LMI_MDRAIDStorageExtent <LMI-MDRAIDStorageExtent>`
+
+* :ref:`LMI_StorageConfigurationService <LMI-StorageConfigurationService>`
+
+* :ref:`LMI_VGStoragePool <LMI-VGStoragePool>`
+
+* :ref:`LMI_VGStorageCapabilities <LMI-VGStorageCapabilities>`
+
+* :ref:`LMI_LVStorageCapabilities <LMI-LVStorageCapabilities>`
+
+* :ref:`LMI_MDRAIDStorageCapabilities <LMI-MDRAIDStorageCapabilities>`
+
+* :ref:`LMI_VGStorageSetting <LMI-VGStorageSetting>`
+
+* :ref:`LMI_MDRAIDStorageSetting <LMI-MDRAIDStorageSetting>`
+
+* :ref:`LMI_LVStorageSetting <LMI-LVStorageSetting>`
+
+Methods
+^^^^^^^
+
+Implemented:
+
+* :ref:`CreateOrModifyStoragePool <LMI-StorageConfigurationService-CreateOrModifyStoragePool>`
+  (creates Volume Group from list of block devices).
+
+* :ref:`CreateOrModifyElementFromElements <LMI-StorageConfigurationService-CreateOrModifyElementFromElements>`
+  (creates MD RAID from list of block devices).
+
+* :ref:`CreateOrModifyElementFromStoragePool <LMI-StorageConfigurationService-CreateOrModifyElementFromStoragePool>`
+  (creates logical Volumes from a Volume Group).
+
+* :ref:`CreateOrModifyMDRAID <LMI-StorageConfigurationService-CreateOrModifyMDRAID>`
+
+* :ref:`CreateOrModifyVG <LMI-StorageConfigurationService-CreateOrModifyVG>`
+
+* :ref:`CreateOrModifyLV <LMI-StorageConfigurationService-CreateOrModifyLV>`
 
 .. warning:: Mandatory indications are **not** implemented.
 
