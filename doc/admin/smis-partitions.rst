@@ -100,5 +100,5 @@ Not implemented:
 .. warning:: Mandatory indications are not
   implemented.
 
-   Anaconda does not provide such functionality and it would be very CPU-intensive
-   to periodically scan for new/deleted partitions.
+   Anaconda does not provide such functionality and it would be very
+   CPU-intensive to periodically scan for new/deleted partitions.

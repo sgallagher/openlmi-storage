@@ -2,20 +2,20 @@ SMI-S Block Services Package
 ============================
 
 This package is core of SMI-S. It describes how devices (disks) are grouped
-together into pools with different capabilities and even hierarchy of pools
-can be built.
+together into pools with different capabilities and even hierarchy of pools can
+be built.
 
     A StoragePool is a storage element; its storage capacity has a given set
     of capabilities. Those ‘StorageCapabilities’ indicate the 'Quality of
     Service' requirements that can be applied to objects created from the
     StoragePool.
 
-Storage on Linux does not use pool concept except Volume Groups, therefore
-we allow to create storage devices directly from other storage devices,
-e.g. create MD RAID from partitions.
+Storage on Linux does not use pool concept except Volume Groups, therefore we
+allow to create storage devices directly from other storage devices, e.g.
+create MD RAID from partitions.
 
 Primordial pool
-----------------
+---------------
 At the lowest level of hierarchy of SMI-S storage pools are primordial devices
 and pools.
 
@@ -26,15 +26,16 @@ and pools.
     concrete StoragePool. StorageVolumes and LogicalDisks are allocated from
     concrete StoragePools.
 
-    At least one primordial StoragePool shall always exists on the block storage
-    system to represent the unallocated storage on the storage device.
+    At least one primordial StoragePool shall always exists on the block
+    storage system to represent the unallocated storage on the storage device.
 
 In SMI-S world, a storage system consists of *raw disks* or similar block
-devices. These are put into the primordial pool and further allocated as needed. 
+devices. These are put into the primordial pool and further allocated as
+needed.
 
 On Linux, we have disks and partitions. If *disks* were primordial, we would not
-have any possibility to partition them. Therefore it seems it's the best to have
-**disk partitions and  unpartitioned disks as primordial**.
+have any possibility to partition them. Therefore it seems it's the best to
+have **disk partitions and  unpartitioned disks as primordial**.
 
 .. note:: Anaconda does not support unpartitioned disks, therefore only
    partitions are primordial for now.
@@ -48,9 +49,9 @@ have any possibility to partition them. Therefore it seems it's the best to have
 
 Logical disks
 -------------
-In SMI-S, only LogicalDisks instances can be used by the OS. I.e. if an
-admin wants to build a filesystem e.g. on RAIDCompositeExtent, in
-SMI-S it's necessary to allocate a LogicalDisk from it.
+In SMI-S, only LogicalDisks instances can be used by the OS. I.e. if an admin
+wants to build a filesystem e.g. on RAIDCompositeExtent, in SMI-S it's
+necessary to allocate a LogicalDisk from it.
 
 We find this approach useless and we don't allocate LogicalDisks for devices,
 which can be used by the OS. In fact, any block device can be used by the OS,
@@ -62,10 +63,4 @@ Implementation
 TODO
 
 .. warning:: Mandatory indications are **not** implemented.
-
-Usage
------
-TODO
-
-
 
