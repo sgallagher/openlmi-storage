@@ -52,10 +52,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
                     'PackageRedundancyMax': pywbem.Uint16(util.units.MAXINT16),
                     'PackageRedundancyMin': pywbem.Uint16(0),
                     'ExtentSizeDefault': pywbem.Uint64(DEFAULT_EXTENT_SIZE),
-                    'ParityLayoutDefault':  pywbem.CIMProperty(
-                            name='ParityLayoutDefault',
-                            value=None,
-                            type='uint16')
+                    'ParityLayoutDefault':  0
             },
     ]
 

@@ -75,10 +75,7 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         if redundancy.parity_layout:
             caps['ParityLayoutDefault'] = pywbem.Uint16(redundancy.parity_layout + 1)
         else:
-            caps['ParityLayoutDefault'] = pywbem.CIMProperty(
-                            name='ParityLayoutDefault',
-                            value=None,
-                            type='uint16')
+            caps['ParityLayoutDefault'] = None
         return caps
 
 
