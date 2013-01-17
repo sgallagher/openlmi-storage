@@ -32,7 +32,6 @@ class LMI_HostedStorageService(BaseProvider):
 
 
     @cmpi_logging.trace_method
-
     def get_instance(self, env, model):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -61,11 +60,7 @@ class LMI_HostedStorageService(BaseProvider):
 
         return model
 
-
-
     @cmpi_logging.trace_method
-
-
     def enum_instances(self, env, model, keys_only):
         """
             Provider implementation of EnumerateInstances intrinsic method.
@@ -88,7 +83,7 @@ class LMI_HostedStorageService(BaseProvider):
                             'SystemName': self.config.system_name,
                             'SystemCreationClassName' : self.config.system_class_name
                     })
-        yield model
+            yield model
 
     @cmpi_logging.trace_method
     def references(self, env, object_name, model, result_class_name, role,
@@ -96,7 +91,7 @@ class LMI_HostedStorageService(BaseProvider):
         """Instrument Associations."""
         ch = env.get_cimom_handle()
 
-        # If you want to get references for free, implemented in terms 
+        # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace,
                           sub=object_name.classname,
