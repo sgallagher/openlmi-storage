@@ -195,10 +195,9 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid0_level(self):
         """ Test CreateOrModifyMDRAID level 0."""
-        partitions = self._prepare_partitions(self.disk_name, 3)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
         # two devices
-        self._test_raid_n(partitions[:2], level=0,
+        self._test_raid_n(self.partition_names[:2], level=0,
                 data_redundancy=1,
                 stripe_length=2,
                 package_redundancy=0,
@@ -206,22 +205,20 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=False,
                 expected_size=partition_size * 2)
         # three devices
-        self._test_raid_n(partitions, level=0,
+        self._test_raid_n(self.partition_names[:3], level=0,
                 data_redundancy=1,
                 stripe_length=3,
                 package_redundancy=0,
                 parity_layout=None,
                 nspof=False,
-                expected_size=partition_size * len(partitions))
-        self._destroy_partitions(partitions)
+                expected_size=partition_size * 3)
 
     def test_create_raid0_goal(self):
         """ Test CreateOrModifyMDRAID level 0 with Goal."""
-        partitions = self._prepare_partitions(self.disk_name, 3)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
         # two devices
-        setting = self._create_setting(0, partitions[:2])
-        self._test_raid_n(partitions[:2], level=0,
+        setting = self._create_setting(0, self.partition_names[:2])
+        self._test_raid_n(self.partition_names[:2], level=0,
                 data_redundancy=1,
                 stripe_length=2,
                 package_redundancy=0,
@@ -231,25 +228,23 @@ class TestCreateMDRAID(StorageTestBase):
                 goal=setting.path)
         self._delete_setting(setting.path)
         # three devices
-        setting = self._create_setting(0, partitions)
-        self._test_raid_n(partitions, level=0,
+        setting = self._create_setting(0, self.partition_names[:3])
+        self._test_raid_n(self.partition_names[:3], level=0,
                 data_redundancy=1,
                 stripe_length=3,
                 package_redundancy=0,
                 parity_layout=None,
                 nspof=False,
-                expected_size=partition_size * len(partitions),
+                expected_size=partition_size * 3,
                 goal=setting.path)
         self._delete_setting(setting.path)
-        self._destroy_partitions(partitions)
 
     def test_create_raid1_level(self):
         """ Test CreateOrModifyMDRAID level 1."""
-        partitions = self._prepare_partitions(self.disk_name, 4)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # two devices
-        self._test_raid_n(partitions[:2], level=1,
+        self._test_raid_n(self.partition_names[:2], level=1,
                 data_redundancy=2,
                 stripe_length=1,
                 package_redundancy=1,
@@ -257,23 +252,21 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size)
         # three devices
-        self._test_raid_n(partitions, level=1,
+        self._test_raid_n(self.partition_names[:4], level=1,
                 data_redundancy=4,
                 stripe_length=1,
                 package_redundancy=3,
                 parity_layout=None,
                 nspof=True,
                 expected_size=partition_size)
-        self._destroy_partitions(partitions)
 
     def test_create_raid1_goal(self):
         """ Test CreateOrModifyMDRAID level 1 with Goal."""
-        partitions = self._prepare_partitions(self.disk_name, 4)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # two devices
-        setting = self._create_setting(1, partitions[:2])
-        self._test_raid_n(partitions[:2], level=1,
+        setting = self._create_setting(1, self.partition_names[:2])
+        self._test_raid_n(self.partition_names[:2], level=1,
                 data_redundancy=2,
                 stripe_length=1,
                 package_redundancy=1,
@@ -283,8 +276,8 @@ class TestCreateMDRAID(StorageTestBase):
                 goal=setting.path)
         self._delete_setting(setting.path)
         # three devices
-        setting = self._create_setting(1, partitions)
-        self._test_raid_n(partitions, level=1,
+        setting = self._create_setting(1, self.partition_names[:4])
+        self._test_raid_n(self.partition_names[:4], level=1,
                 data_redundancy=4,
                 stripe_length=1,
                 package_redundancy=3,
@@ -293,15 +286,13 @@ class TestCreateMDRAID(StorageTestBase):
                 expected_size=partition_size,
                 goal=setting.path)
         self._delete_setting(setting.path)
-        self._destroy_partitions(partitions)
 
     def test_create_raid4_level(self):
         """ Test CreateOrModifyMDRAID level 4."""
-        partitions = self._prepare_partitions(self.disk_name, 4)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # 3 devices
-        self._test_raid_n(partitions[:3], level=4,
+        self._test_raid_n(self.partition_names[:3], level=4,
                 data_redundancy=1,
                 stripe_length=3,
                 package_redundancy=1,
@@ -309,23 +300,21 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size * 2)
         # 4 devices
-        self._test_raid_n(partitions, level=4,
+        self._test_raid_n(self.partition_names[:4], level=4,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=1,
                 parity_layout=1,  # non-rotated parity
                 nspof=True,
                 expected_size=partition_size * 3)
-        self._destroy_partitions(partitions)
 
     def test_create_raid4_goal(self):
         """ Test CreateOrModifyMDRAID level 4 with Goal."""
-        partitions = self._prepare_partitions(self.disk_name, 4)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # 3 devices
-        setting = self._create_setting(4, partitions[:3])
-        self._test_raid_n(partitions[:3], level=4,
+        setting = self._create_setting(4, self.partition_names[:3])
+        self._test_raid_n(self.partition_names[:3], level=4,
                 data_redundancy=1,
                 stripe_length=3,
                 package_redundancy=1,
@@ -335,8 +324,8 @@ class TestCreateMDRAID(StorageTestBase):
                 goal=setting.path)
         self._delete_setting(setting.path)
         # 4 devices
-        setting = self._create_setting(4, partitions)
-        self._test_raid_n(partitions, level=4,
+        setting = self._create_setting(4, self.partition_names[:4])
+        self._test_raid_n(self.partition_names[:4], level=4,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=1,
@@ -345,15 +334,13 @@ class TestCreateMDRAID(StorageTestBase):
                 expected_size=partition_size * 3,
                 goal=setting.path)
         self._delete_setting(setting.path)
-        self._destroy_partitions(partitions)
 
     def test_create_raid5_level(self):
         """ Test CreateOrModifyMDRAID level 5."""
-        partitions = self._prepare_partitions(self.disk_name, 5)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # 3 devices
-        self._test_raid_n(partitions[:3], level=5,
+        self._test_raid_n(self.partition_names[:3], level=5,
                 data_redundancy=1,
                 stripe_length=3,
                 package_redundancy=1,
@@ -361,23 +348,21 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size * 2)
         # 5 devices
-        self._test_raid_n(partitions, level=5,
+        self._test_raid_n(self.partition_names[:5], level=5,
                 data_redundancy=1,
                 stripe_length=5,
                 package_redundancy=1,
                 parity_layout=2,  # rotated parity
                 nspof=True,
                 expected_size=partition_size * 4)
-        self._destroy_partitions(partitions)
 
     def test_create_raid5_goal(self):
         """ Test CreateOrModifyMDRAID level 5 with Goal."""
-        partitions = self._prepare_partitions(self.disk_name, 5)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # 3 devices
-        setting = self._create_setting(5, partitions[:3])
-        self._test_raid_n(partitions[:3], level=5,
+        setting = self._create_setting(5, self.partition_names[:3])
+        self._test_raid_n(self.partition_names[:3], level=5,
                 data_redundancy=1,
                 stripe_length=3,
                 package_redundancy=1,
@@ -387,8 +372,8 @@ class TestCreateMDRAID(StorageTestBase):
                 goal=setting.path)
         self._delete_setting(setting.path)
         # 5 devices
-        setting = self._create_setting(5, partitions)
-        self._test_raid_n(partitions, level=5,
+        setting = self._create_setting(5, self.partition_names[:5])
+        self._test_raid_n(self.partition_names[:5], level=5,
                 data_redundancy=1,
                 stripe_length=5,
                 package_redundancy=1,
@@ -397,15 +382,13 @@ class TestCreateMDRAID(StorageTestBase):
                 expected_size=partition_size * 4,
                 goal=setting.path)
         self._delete_setting(setting.path)
-        self._destroy_partitions(partitions)
 
     def test_create_raid6_level(self):
         """ Test CreateOrModifyMDRAID level 6."""
-        partitions = self._prepare_partitions(self.disk_name, 5)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # 4 devices
-        self._test_raid_n(partitions[:4], level=6,
+        self._test_raid_n(self.partition_names[:4], level=6,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=2,
@@ -413,23 +396,21 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size * 2)
         # 5 devices
-        self._test_raid_n(partitions, level=6,
+        self._test_raid_n(self.partition_names[:5], level=6,
                 data_redundancy=1,
                 stripe_length=5,
                 package_redundancy=2,
                 parity_layout=2,  # rotated parity
                 nspof=True,
                 expected_size=partition_size * 3)
-        self._destroy_partitions(partitions)
 
     def test_create_raid6_goal(self):
         """ Test CreateOrModifyMDRAID level 6 with Goal."""
-        partitions = self._prepare_partitions(self.disk_name, 5)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # 4 devices
-        setting = self._create_setting(6, partitions[:4])
-        self._test_raid_n(partitions[:4], level=6,
+        setting = self._create_setting(6, self.partition_names[:4])
+        self._test_raid_n(self.partition_names[:4], level=6,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=2,
@@ -440,8 +421,8 @@ class TestCreateMDRAID(StorageTestBase):
         self._delete_setting(setting.path)
 
         # 5 devices
-        setting = self._create_setting(6, partitions)
-        self._test_raid_n(partitions, level=6,
+        setting = self._create_setting(6, self.partition_names[:5])
+        self._test_raid_n(self.partition_names[:5], level=6,
                 data_redundancy=1,
                 stripe_length=5,
                 package_redundancy=2,
@@ -449,16 +430,14 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size * 3,
                 goal=setting.path)
-        self._destroy_partitions(partitions)
         self._delete_setting(setting.path)
 
     def test_create_raid10_level(self):
         """ Test CreateOrModifyMDRAID level 10."""
-        partitions = self._prepare_partitions(self.disk_name, 6)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # two devices
-        self._test_raid_n(partitions[:2], level=10,
+        self._test_raid_n(self.partition_names[:2], level=10,
                 data_redundancy=2,
                 stripe_length=1,
                 package_redundancy=1,
@@ -466,7 +445,7 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size)
         # 3 devices
-        self._test_raid_n(partitions[:3], level=10,
+        self._test_raid_n(self.partition_names[:3], level=10,
                 data_redundancy=2,
                 stripe_length=2,
                 package_redundancy=1,
@@ -474,7 +453,7 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size * 1.5)
         # 4 devices
-        self._test_raid_n(partitions[:4], level=10,
+        self._test_raid_n(self.partition_names[:4], level=10,
                 data_redundancy=2,
                 stripe_length=2,
                 package_redundancy=1,
@@ -482,7 +461,7 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size * 2)
         # 5 devices
-        self._test_raid_n(partitions[:5], level=10,
+        self._test_raid_n(self.partition_names[:5], level=10,
                 data_redundancy=2,
                 stripe_length=3,
                 package_redundancy=1,
@@ -490,25 +469,23 @@ class TestCreateMDRAID(StorageTestBase):
                 nspof=True,
                 expected_size=partition_size * 2.5)
         # 6 devices
-        self._test_raid_n(partitions, level=10,
+        self._test_raid_n(self.partition_names[:6], level=10,
                 data_redundancy=2,
                 stripe_length=3,
                 package_redundancy=1,
                 parity_layout=None,
                 nspof=True,
                 expected_size=partition_size * 3)
-        self._destroy_partitions(partitions)
 
     def test_create_raid10_goal(self):
         """ Test CreateOrModifyMDRAID level 10 with a valid Goal."""
-        partitions = self._prepare_partitions(self.disk_name, 6)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # don't test two devices - that's RAID1
 
         # 3 devices
-        setting = self._create_setting(10, partitions[:3])
-        self._test_raid_n(partitions[:3], level=10,
+        setting = self._create_setting(10, self.partition_names[:3])
+        self._test_raid_n(self.partition_names[:3], level=10,
                 data_redundancy=2,
                 stripe_length=2,
                 package_redundancy=1,
@@ -519,8 +496,8 @@ class TestCreateMDRAID(StorageTestBase):
         self._delete_setting(setting.path)
 
         # 4 devices
-        setting = self._create_setting(10, partitions[:4])
-        self._test_raid_n(partitions[:4], level=10,
+        setting = self._create_setting(10, self.partition_names[:4])
+        self._test_raid_n(self.partition_names[:4], level=10,
                 data_redundancy=2,
                 stripe_length=2,
                 package_redundancy=1,
@@ -531,8 +508,8 @@ class TestCreateMDRAID(StorageTestBase):
         self._delete_setting(setting.path)
 
         # 5 devices
-        setting = self._create_setting(10, partitions[:5])
-        self._test_raid_n(partitions[:5], level=10,
+        setting = self._create_setting(10, self.partition_names[:5])
+        self._test_raid_n(self.partition_names[:5], level=10,
                 data_redundancy=2,
                 stripe_length=3,
                 package_redundancy=1,
@@ -543,8 +520,8 @@ class TestCreateMDRAID(StorageTestBase):
         self._delete_setting(setting.path)
 
         # 6 devices
-        setting = self._create_setting(10, partitions)
-        self._test_raid_n(partitions, level=10,
+        setting = self._create_setting(10, self.partition_names[:6])
+        self._test_raid_n(self.partition_names[:6], level=10,
                 data_redundancy=2,
                 stripe_length=3,
                 package_redundancy=1,
@@ -553,93 +530,88 @@ class TestCreateMDRAID(StorageTestBase):
                 expected_size=partition_size * 3,
                 goal=setting.path)
         self._delete_setting(setting.path)
-        self._destroy_partitions(partitions)
 
     def test_create_wrong_device_numbers(self):
         """
             Test CreateOrModifyMDRAID with various levels and bad nr. of
             devices.
         """
-        partitions = self._prepare_partitions(self.disk_name, 3)
         # raid 0 with 1 device
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:1],
+                InExtents=self.partition_names[:1],
                 Level=pywbem.Uint16(0))
 
         # raid 1 with 1 device
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:1],
+                InExtents=self.partition_names[:1],
                 Level=pywbem.Uint16(1))
 
         # raid 4 with 1 device
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:1],
+                InExtents=self.partition_names[:1],
                 Level=pywbem.Uint16(4))
 
         # raid 4 with 2 devices
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:2],
+                InExtents=self.partition_names[:2],
                 Level=pywbem.Uint16(4))
 
         # raid 5 with 1 device
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:1],
+                InExtents=self.partition_names[:1],
                 Level=pywbem.Uint16(5))
 
         # raid 5 with 2 devices
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:2],
+                InExtents=self.partition_names[:2],
                 Level=pywbem.Uint16(5))
 
         # raid 6 with 1 device
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:1],
+                InExtents=self.partition_names[:1],
                 Level=pywbem.Uint16(6))
 
         # raid 6 with 2 devices
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:2],
+                InExtents=self.partition_names[:2],
                 Level=pywbem.Uint16(6))
 
         # raid 6 with 3 devices
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:3],
+                InExtents=self.partition_names[:3],
                 Level=pywbem.Uint16(6))
 
         # raid 10 with 1 device
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions[:1],
+                InExtents=self.partition_names[:1],
                 Level=pywbem.Uint16(10))
 
-        self._destroy_partitions(partitions)
 
 
     def test_create_wrong_goals(self):
         """
             Test CreateOrModifyMDRAID with various wrong goals.
         """
-        partitions = self._prepare_partitions(self.disk_name, 2)
-
         # unknown goal
         goal = pywbem.CIMInstanceName(
                 classname=" LMI_MDRAIDStorageSetting",
@@ -649,12 +621,12 @@ class TestCreateMDRAID(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions,
+                InExtents=self.partition_names[:2],
                 Level=pywbem.Uint16(0),
                 Goal=goal)
 
         # raid1 with wrong data redundancy
-        setting = self._create_setting(1, partitions)
+        setting = self._create_setting(1, self.partition_names[:2])
         setting['DataRedundancyGoal'] = pywbem.Uint16(3)
         setting['DataRedundancyMin'] = pywbem.Uint16(3)
         setting['DataRedundancyMax'] = pywbem.Uint16(3)
@@ -662,12 +634,12 @@ class TestCreateMDRAID(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions,
+                InExtents=self.partition_names[:2],
                 Goal=setting.path)
         self._delete_setting(setting.path)
 
         # raid1 with wrong package redundancy
-        setting = self._create_setting(1, partitions)
+        setting = self._create_setting(1, self.partition_names[:2])
         setting['PackageRedundancyGoal'] = pywbem.Uint16(2)
         setting['PackageRedundancyMin'] = pywbem.Uint16(2)
         setting['PackageRedundancyMax'] = pywbem.Uint16(2)
@@ -675,11 +647,9 @@ class TestCreateMDRAID(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
                 self.service,
-                InExtents=partitions,
+                InExtents=self.partition_names[:2],
                 Goal=setting.path)
         self._delete_setting(setting.path)
-
-        self._destroy_partitions(partitions)
 
     def test_create_calculate_goals(self):
         """
@@ -687,12 +657,11 @@ class TestCreateMDRAID(StorageTestBase):
             properties are set and the implementation must choose the
             best RAID level.
         """
-        partitions = self._prepare_partitions(self.disk_name, 4)
-        partition_size = self._get_extent_size(partitions[0])
+        partition_size = self._get_extent_size(self.partition_names[0])
 
         # raid1 is selected as default if no properties are set
         setting = self._create_empty_setting()
-        self._test_raid_n(partitions, level=1,
+        self._test_raid_n(self.partition_names[:4], level=1,
                 data_redundancy=4,
                 stripe_length=1,
                 package_redundancy=3,
@@ -706,7 +675,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting = self._create_empty_setting()
         setting['ParityLayout'] = pywbem.Uint16(2)  # Rotated parity
         self.wbemconnection.ModifyInstance(setting)
-        self._test_raid_n(partitions, level=5,
+        self._test_raid_n(self.partition_names[:4], level=5,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=1,
@@ -721,7 +690,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting['ParityLayout'] = pywbem.Uint16(2)  # Rotated parity
         setting['PackageRedundancyMin'] = pywbem.Uint16(2)
         self.wbemconnection.ModifyInstance(setting)
-        self._test_raid_n(partitions, level=6,
+        self._test_raid_n(self.partition_names[:4], level=6,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=2,
@@ -735,7 +704,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting = self._create_empty_setting()
         setting['ParityLayout'] = pywbem.Uint16(1)  # Non-Rotated parity
         self.wbemconnection.ModifyInstance(setting)
-        self._test_raid_n(partitions, level=4,
+        self._test_raid_n(self.partition_names[:4], level=4,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=1,
@@ -749,7 +718,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting = self._create_empty_setting()
         setting['PackageRedundancyMin'] = pywbem.Uint16(1)
         self.wbemconnection.ModifyInstance(setting)
-        self._test_raid_n(partitions, level=1,
+        self._test_raid_n(self.partition_names[:4], level=1,
                 data_redundancy=4,
                 stripe_length=1,
                 package_redundancy=3,
@@ -764,7 +733,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting['PackageRedundancyMin'] = pywbem.Uint16(1)
         setting['DataRedundancyMin'] = pywbem.Uint16(2)
         self.wbemconnection.ModifyInstance(setting)
-        self._test_raid_n(partitions, level=1,
+        self._test_raid_n(self.partition_names[:4], level=1,
                 data_redundancy=4,
                 stripe_length=1,
                 package_redundancy=3,
@@ -780,7 +749,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting['DataRedundancyMin'] = pywbem.Uint16(2)
         setting['DataRedundancyMax'] = pywbem.Uint16(3)
         self.wbemconnection.ModifyInstance(setting)
-        self._test_raid_n(partitions, level=10,
+        self._test_raid_n(self.partition_names[:4], level=10,
                 data_redundancy=2,
                 stripe_length=2,
                 package_redundancy=1,
@@ -795,7 +764,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting['PackageRedundancyMin'] = pywbem.Uint16(1)
         setting['PackageRedundancyMax'] = pywbem.Uint16(2)
         self.wbemconnection.ModifyInstance(setting)
-        self._test_raid_n(partitions, level=5,
+        self._test_raid_n(self.partition_names[:4], level=5,
                 data_redundancy=1,
                 stripe_length=4,
                 package_redundancy=1,
@@ -804,8 +773,6 @@ class TestCreateMDRAID(StorageTestBase):
                 expected_size=partition_size * 3,
                 goal=setting.path)
         self._delete_setting(setting.path)
-
-        self._destroy_partitions(partitions)
 
 
 if __name__ == '__main__':

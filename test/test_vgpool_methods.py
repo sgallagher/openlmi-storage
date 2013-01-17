@@ -59,22 +59,17 @@ class TestVGPoolMethods(StorageTestBase):
             Create a partition and Volume Group on it and return its
             CIMInstanceName.
         """
-        partitions = self._prepare_partitions(self.disk_name, 1)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,
-                InExtents=partitions,
+                InExtents=self.partition_names[:1],
                 ElementName='myCRAZYname')
         self.assertEqual(ret, 0)
         return outparams['pool']
 
     def _destroy_vg(self, vgname):
         """ Destroy VG and its partition. """
-        partitions = self.wbemconnection.AssociatorNames(
-                vgname,
-                AssocClass="LMI_VGAssociatedComponentExtent")
         self.wbemconnection.DeleteInstance(vgname)
-        self._destroy_partitions(partitions)
 
     def test_supported_sizes(self):
         """ Test GetSupportedSizes() """

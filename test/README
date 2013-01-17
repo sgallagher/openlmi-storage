@@ -31,6 +31,13 @@ LMI_STORAGE_DISK - Disks available for testing. The disks must be empty, i.e.
                    format the disks etc. Do not use system disk in this
                    variable!
                    For example: '/dev/sda'.
+LMI_STORAGE_PARTITIONS - Space-separated list of partitions or other block
+                         devices, which will be used for testing. The partitions
+                         must be empty and must have the same size.
+                         The tests will destroy all data on these partitions,
+                         do not use the system ones!
+                         At lest 10 partitions must be provided!
+                         For example: LMI_STORAGE_PARTITIONS=/dev/sdb?*
 LMI_CIMOM_BROKER - Name of the CIMOM service, e.g. 'tog-pegasus'. Several tests
                    need to restart the CIMOM and they will invoke.
                    'service $LMI_CIMOM_BROKER restart'.
@@ -49,12 +56,14 @@ LMI_STORAGE_VERBOSE - If this variable is set to nonempty value, the test suite
 Running single test:
     LMI_CIMOM_PASSWORD=opensesame \
     LMI_STORAGE_DISK="/dev/sda" \
+    LMI_STORAGE_PARTITIONS=/dev/sdb?* \
     LMI_CIMOM_BROKER="tog-pegasus" \
     python test/test_create_mdraid.py
 
 Running all tests:
     LMI_CIMOM_PASSWORD=opensesame \
     LMI_STORAGE_DISK="/dev/sda" \
+    LMI_STORAGE_PARTITIONS=/dev/sdb?* \
     LMI_CIMOM_BROKER="tog-pegasus" \
     python -m unittest discover -s test/
 
@@ -76,14 +85,13 @@ directory, i.e. you tests can safely restart the CIMOM without loosing the
 coverage.
 
 To export HTML report, use:
-COVERAGE_FILE=/var/lib/openlmi-storage/coverage/coverage coverage combile
+COVERAGE_FILE=/var/lib/openlmi-storage/coverage/coverage coverage combine
 COVERAGE_FILE=/var/lib/openlmi-storage/coverage/coverage coverage html -d report/
 
 Development
 ^^^^^^^^^^^
 To create new test, just subclass StorageTestBase, which has useful
 setUp / tearDown methods to monitor created devices and remove them when the
-test fails. All test start with empty disks, i.e. there are no partitions on the
-test disks. The test must clean all devices (including partitions) it creates.
-
-
+test fails. All test start with empty disk, i.e. there is no partition on the
+LMI_STORAGE_DISK and no data on LMI_STORAGE_PARTITIONS. The test must clean
+all devices (including partitions) it creates.

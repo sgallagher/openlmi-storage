@@ -49,32 +49,24 @@ class TestCreateVG(StorageTestBase):
         self.capabilities = self.wbemconnection.EnumerateInstanceNames(
                 "LMI_VGStorageCapabilities")[0]
 
-    def _get_disk_size(self, diskname):
-        """ Return size of given disk, in bytes."""
-        disk_path = pywbem.CIMInstanceName(
-                classname=self.DISK_CLASS,
-                keybindings={
-                    'DeviceID': diskname,
-                    'SystemCreationClassName': self.SYSTEM_CLASS_NAME,
-                    'SystemName': self.SYSTEM_NAME,
-                    'CreationClassName': self.DISK_CLASS})
-        disk = self.wbemconnection.GetInstance(disk_path)
+    def _get_disk_size(self, devicename):
+        """ Return size of given device, in bytes."""
+        disk = self.wbemconnection.GetInstance(devicename)
         return disk['NumberOfBlocks'] * disk['BlockSize']
 
     def test_create_1pv(self):
         """ Test CreateOrModifyVG with one PV."""
-        partitions = self._prepare_partitions(self.disk_name, 1)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,
-                InExtents=partitions,
+                InExtents=self.partition_names[:1],
                 ElementName='myCRAZYname')
         self.assertEqual(ret, 0)
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disk),
-                delta=50 * MEGABYTE)
+                self._get_disk_size(self.partition_names[0]),
+                delta=4 * MEGABYTE)
         vgname = outparams['pool']
         vg = self.wbemconnection.GetInstance(vgname)
         self.assertEqual(vg['TotalManagedSpace'], outparams['size'])
@@ -91,33 +83,29 @@ class TestCreateVG(StorageTestBase):
                 vg['RemainingManagedSpace'])
 
         self.wbemconnection.DeleteInstance(vgname)
-        self._destroy_partitions(partitions)
 
     @unittest.skipIf(short_test_only(), "Running short tests only.")
     def test_create_10pv(self):
         """ Test CreateOrModifyVG with 10 PVs."""
-        partitions = self._prepare_partitions(self.disk_name, 10)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,
-                InExtents=partitions)
+                InExtents=self.partition_names[:10])
         self.assertEqual(ret, 0)
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disk),
-                delta=50 * MEGABYTE)
+                self._get_disk_size(self.partition_names[0]) * 10,
+                delta=30 * MEGABYTE)
         vg = outparams['pool']
 
         self.wbemconnection.DeleteInstance(vg)
-        self._destroy_partitions(partitions)
 
     @unittest.skipIf(short_test_only(), "Running short tests only.")
     def test_create_10vg(self):
         """ Test CreateOrModifyVG with 10 VGs."""
-        partitions = self._prepare_partitions(self.disk_name, 10)
         vgs = []
-        for part in partitions:
+        for part in self.partition_names[:10]:
             (ret, outparams) = self.wbemconnection.InvokeMethod(
                     "CreateOrModifyVG",
                     self.service,
@@ -129,12 +117,9 @@ class TestCreateVG(StorageTestBase):
 
         for vg in vgs:
             self.wbemconnection.DeleteInstance(vg)
-        self._destroy_partitions(partitions)
 
     def test_create_unknown_setting(self):
         """ Test CreateOrModifyVG with non-existing setting."""
-        partitions = self._prepare_partitions(self.disk_name, 1)
-
         goal = pywbem.CIMInstanceName(
                 classname=" LMI_VGStorageSetting",
                 keybindings={
@@ -143,15 +128,12 @@ class TestCreateVG(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                     "CreateOrModifyVG",
                     self.service,
-                    InExtents=partitions,
+                    InExtents=self.partition_names[:1],
                     Goal=goal
                     )
-        self._destroy_partitions(partitions)
 
     def test_create_wrong_setting_class(self):
         """ Test CreateOrModifyVG with non-existing setting."""
-        partitions = self._prepare_partitions(self.disk_name, 1)
-
         goal = pywbem.CIMInstanceName(
                 classname=" LMI_LVStorageSetting",
                 keybindings={
@@ -160,10 +142,9 @@ class TestCreateVG(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                     "CreateOrModifyVG",
                     self.service,
-                    InExtents=partitions,
+                    InExtents=self.partition_names[:1],
                     Goal=goal
                     )
-        self._destroy_partitions(partitions)
 
     def _create_setting(self):
         """ Create a VGStorageSetting and return CIMInstance of it."""
@@ -186,13 +167,12 @@ class TestCreateVG(StorageTestBase):
             Test CreateOrModifyVG with default setting from 
             VGStroageCapabilities.CreateSetting.
         """
-        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
 
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                     "CreateOrModifyVG",
                     self.service,
-                    InExtents=partitions,
+                    InExtents=self.partition_names[:1],
                     Goal=goal.path
                     )
 
@@ -200,8 +180,8 @@ class TestCreateVG(StorageTestBase):
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disk),
-                delta=50 * MEGABYTE)
+                self._get_disk_size(self.partition_names[0]),
+                delta=4 * MEGABYTE)
         vgname = outparams['pool']
         vg = self.wbemconnection.GetInstance(vgname)
         self.assertEqual(vg['TotalManagedSpace'], outparams['size'])
@@ -237,13 +217,11 @@ class TestCreateVG(StorageTestBase):
 
         self.wbemconnection.DeleteInstance(vgname)
         self._delete_setting(goal.path)
-        self._destroy_partitions(partitions)
 
     def test_create_setting_1m(self):
         """
             Test CreateOrModifyVG with 2MiB ExtentSize.
         """
-        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
         goal['ExtentSize'] = pywbem.Uint64(MEGABYTE)
         self.wbemconnection.ModifyInstance(goal)
@@ -251,15 +229,15 @@ class TestCreateVG(StorageTestBase):
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                     "CreateOrModifyVG",
                     self.service,
-                    InExtents=partitions,
+                    InExtents=self.partition_names[:1],
                     Goal=goal.path
                     )
         self.assertEqual(ret, 0)
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disk),
-                delta=50 * MEGABYTE)
+                self._get_disk_size(self.partition_names[0]),
+                delta=4 * MEGABYTE)
         vgname = outparams['pool']
         vg = self.wbemconnection.GetInstance(vgname)
         self.assertEqual(vg['TotalManagedSpace'], outparams['size'])
@@ -295,19 +273,16 @@ class TestCreateVG(StorageTestBase):
 
         self.wbemconnection.DeleteInstance(vgname)
         self._delete_setting(goal.path)
-        self._destroy_partitions(partitions)
 
     def test_create_setting_64k(self):
         """
             Test CreateOrModifyVG with 64k ExtentSize.
         """
-        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
         goal['ExtentSize'] = pywbem.Uint64(64 * 1024)
         self.assertRaises(pywbem.CIMError, self.wbemconnection.ModifyInstance,
                 goal)
         self._delete_setting(goal.path)
-        self._destroy_partitions(partitions)
 
 if __name__ == '__main__':
     unittest.main()

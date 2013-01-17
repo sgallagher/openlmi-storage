@@ -57,22 +57,17 @@ class TestCreateLV(StorageTestBase):
             Create a partition and Volume Group on it and return its
             CIMInstanceName.
         """
-        partitions = self._prepare_partitions(self.disk_name, 1)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,
-                InExtents=partitions,
+                InExtents=self.partition_names[:1],
                 ElementName='myCRAZYname')
         self.assertEqual(ret, 0)
         return outparams['pool']
 
     def _destroy_vg(self, vgname):
         """ Destroy VG and its partition. """
-        partitions = self.wbemconnection.AssociatorNames(
-                vgname,
-                AssocClass="LMI_VGAssociatedComponentExtent")
         self.wbemconnection.DeleteInstance(vgname)
-        self._destroy_partitions(partitions)
 
     def test_create_no_pool(self):
         """ Test CreateOrModifyLV without InPool."""
@@ -270,11 +265,11 @@ class TestCreateLV(StorageTestBase):
                     "CreateOrModifyLV",
                     self.service,
                     InPool=self.vg.path,
-                    Size=pywbem.Uint64(10 * self.vg['ExtentSize']),
+                    Size=pywbem.Uint64(2 * self.vg['ExtentSize']),
                     )
             self.assertEqual(retval, 0)
             self.assertEqual(len(outparams), 2)
-            self.assertEqual(outparams['Size'], 10 * self.vg['ExtentSize'])
+            self.assertEqual(outparams['Size'], 2 * self.vg['ExtentSize'])
 
             lv_name = outparams['theelement']
             lv = self.wbemconnection.GetInstance(lv_name)
@@ -284,7 +279,7 @@ class TestCreateLV(StorageTestBase):
 
             self.assertEqual(
                     lv['BlockSize'] * lv['NumberOfBlocks'],
-                    10 * self.vg['ExtentSize'])
+                    2 * self.vg['ExtentSize'])
             self.assertEqual(
                     lv['NoSinglePointOfFailure'],
                     lv_setting['NoSinglePointOfFailure'])
@@ -302,10 +297,10 @@ class TestCreateLV(StorageTestBase):
             new_vg = self.wbemconnection.GetInstance(self.vg.path)
             self.assertEqual(
                     new_vg['RemainingExtents'],
-                    self.vg['RemainingExtents'] - (i + 1) * 10)
+                    self.vg['RemainingExtents'] - (i + 1) * 2)
             self.assertEqual(
                     new_vg['RemainingManagedSpace'],
-                    self.vg['RemainingManagedSpace'] - (i + 1) * 10 * self.vg['ExtentSize'])
+                    self.vg['RemainingManagedSpace'] - (i + 1) * 2 * self.vg['ExtentSize'])
 
         for lv in lvs:
             self.wbemconnection.DeleteInstance(lv.path)

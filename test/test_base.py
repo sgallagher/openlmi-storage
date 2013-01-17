@@ -46,6 +46,7 @@ class StorageTestBase(unittest.TestCase):
         cls.username = os.environ.get("LMI_CIMOM_USERNAME", "root")
         cls.password = os.environ.get("LMI_CIMOM_PASSWORD", "")
         cls.disk = os.environ.get("LMI_STORAGE_DISK", "")
+        cls.partitions = os.environ.get("LMI_STORAGE_PARTITIONS", "").split()
         cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
         cls.clean = os.environ.get("LMI_STORAGE_CLEAN", "Yes")
         cls.verbose = os.environ.get("LMI_STORAGE_VERBOSE", None)
@@ -57,8 +58,19 @@ class StorageTestBase(unittest.TestCase):
                         'SystemCreationClassName': cls.SYSTEM_CLASS_NAME,
                         'SystemName': cls.SYSTEM_NAME,
                         'CreationClassName': cls.DISK_CLASS})
-
         cls.wbemconnection = pywbem.WBEMConnection(cls.url, (cls.username, cls.password))
+
+        # Get the first partition and copy its name for all other partitions
+        part = cls.wbemconnection.ExecQuery(
+                "WQL", 'select * from CIM_StorageExtent where Name="' + cls.partitions[0] + '"')[0]
+        template = part.path
+        cls.partition_names = []
+        for device_id in cls.partitions:
+            name = pywbem.CIMInstanceName(classname=template.classname,
+                    namespace=template.namespace,
+                    keybindings=template.keybindings)
+            name['DeviceID'] = device_id
+            cls.partition_names.append(name)
 
     def setUp(self):
         self.start_udev_monitor()
@@ -173,47 +185,6 @@ class StorageTestBase(unittest.TestCase):
         if self.clean:
             if self.destroy_created():
                 self.restart_cim()
-
-    def _prepare_partitions(self, diskname, partition_count):
-        """
-            Create GPT partition table and given nr. of partitions on
-            given device.
-        """
-        part_service = self.wbemconnection.EnumerateInstanceNames(
-                "LMI_DiskPartitionConfigurationService")[0]
-        disk_path = diskname
-
-        caps = pywbem.CIMInstanceName(
-                classname="LMI_DiskPartitionConfigurationCapabilities",
-                keybindings={
-                        'InstanceID': "LMI:LMI_DiskPartitionConfigurationCapabilities:GPT"
-                })
-        (retval, outparams) = self.wbemconnection.InvokeMethod(
-                "SetPartitionStyle",
-                part_service,
-                Extent=disk_path,
-                PartitionStyle=caps)
-        self.assertEqual(retval, 0)
-        disk = self.wbemconnection.GetInstance(disk_path)
-        offset = 1024 * 1024  # first usable sector
-        size = disk['NumberOfBlocks'] * disk['BlockSize']
-        size = size - 2 * offset  # reserve also some space at the end
-        partition_size = size / partition_count
-        partitions = []
-        for i in range(partition_count):
-            (retval, outparams) = self.wbemconnection.InvokeMethod(
-                "LMI_CreateOrModifyPartition",
-                part_service,
-                extent=disk_path,
-                Size=pywbem.Uint64(partition_size))
-            self.assertEqual(retval, 0)
-            partitions.append(outparams['partition'])
-        return partitions
-
-    def _destroy_partitions(self, partition_names):
-        """ Delete partitions """
-        for part in partition_names:
-            self.wbemconnection.DeleteInstance(part)
 
     def _check_redundancy(self, extent, setting,
             data_redundancy=None,
