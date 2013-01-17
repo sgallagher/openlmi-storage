@@ -896,3 +896,8 @@ class LMI_PVFormatResidesOnExtent : LMI_ResidesOnExtent
 {
 };
 
+[ Experimental, Description("This association connects CIM_System with all"
+    " storage devices available on it.")]
+class LMI_SystemStorageDevice : CIM_SystemDevice
+{
+};

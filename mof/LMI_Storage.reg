@@ -210,6 +210,13 @@ type: instance association
 namespace: root/cimv2
 unload: never
 
+[LMI_SystemStorageDevice]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance association
+namespace: root/cimv2
+unload: never
+
 [LMI_InstalledPartitionTable]
 provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
 location: pyCmpiProvider

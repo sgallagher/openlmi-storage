@@ -54,6 +54,7 @@ from LMI_LVStorageCapabilities import LMI_LVStorageCapabilities, \
 from LMI_StorageConfigurationService import LMI_StorageConfigurationService
 from LMI_VGStorageCapabilities import LMI_VGStorageCapabilities
 from LMI_MDRAIDStorageCapabilities import LMI_MDRAIDStorageCapabilities
+from LMI_SystemStorageDevice import LMI_SystemStorageDevice
 
 import cmpi_logging
 import pyanaconda.storage
@@ -239,6 +240,9 @@ def get_providers(env):
 
     provider = LMI_HostedStorageService(**opts)  # IGNORE:W0142
     providers['LMI_HostedStorageService'] = provider
+
+    provider = LMI_SystemStorageDevice(**opts)  # IGNORE:W0142
+    providers['LMI_SystemStorageDevice'] = provider
 
     provider = LMI_InstalledPartitionTable(**opts)  # IGNORE:W0142
     providers['LMI_InstalledPartitionTable'] = provider
