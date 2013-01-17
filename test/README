@@ -24,14 +24,13 @@ Set following environment variables:
 LMI_CIMOM_URL - URL to the CIMOM, e.g. 'https://localhost:5989'.
 LMI_CIMOM_USERNAME - Name of the user on CIMOM the test will use, e.g. 'root'.
 LMI_CIMOM_PASSWORD - Password of the user, e.g. 'opensesame'.
-LMI_STORAGE_DISKS - Disks available for testing. At least one disk must be
-                    available. The disks must be empty, i.e. there must be
-                    no partitions on it. The first disk must have at least
-                    one gigabyte of space.
-                    The tests will partition the disks, add them to RAID,
-                    format the disks etc. Do not use system disk in this
-                    variable!
-                    For example: '/dev/sda /dev/sdb'.
+LMI_STORAGE_DISK - Disks available for testing. The disks must be empty, i.e.
+                   there must be no partitions on it. The first disk must have
+                   at least one gigabyte of space.
+                   The tests will partition the disk, add it to RAID,
+                   format the disks etc. Do not use system disk in this
+                   variable!
+                   For example: '/dev/sda'.
 LMI_CIMOM_BROKER - Name of the CIMOM service, e.g. 'tog-pegasus'. Several tests
                    need to restart the CIMOM and they will invoke.
                    'service $LMI_CIMOM_BROKER restart'.
@@ -49,13 +48,13 @@ LMI_STORAGE_VERBOSE - If this variable is set to nonempty value, the test suite
 
 Running single test:
     LMI_CIMOM_PASSWORD=opensesame \
-    LMI_STORAGE_DISKS="/dev/sda /dev/sdb /dev/sdc" \
+    LMI_STORAGE_DISK="/dev/sda" \
     LMI_CIMOM_BROKER="tog-pegasus" \
     python test/test_create_mdraid.py
 
 Running all tests:
     LMI_CIMOM_PASSWORD=opensesame \
-    LMI_STORAGE_DISKS="/dev/sda /dev/sdb /dev/sdc" \
+    LMI_STORAGE_DISK="/dev/sda" \
     LMI_CIMOM_BROKER="tog-pegasus" \
     python -m unittest discover -s test/
 

@@ -45,7 +45,7 @@ class StorageTestBase(unittest.TestCase):
         cls.url = os.environ.get("LMI_CIMOM_URL", "https://localhost:5989")
         cls.username = os.environ.get("LMI_CIMOM_USERNAME", "root")
         cls.password = os.environ.get("LMI_CIMOM_PASSWORD", "")
-        cls.disks = os.environ.get("LMI_STORAGE_DISKS", "").split()
+        cls.disk = os.environ.get("LMI_STORAGE_DISK", "")
         cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
         cls.clean = os.environ.get("LMI_STORAGE_CLEAN", "Yes")
         cls.verbose = os.environ.get("LMI_STORAGE_VERBOSE", None)
@@ -53,7 +53,7 @@ class StorageTestBase(unittest.TestCase):
                 classname=cls.DISK_CLASS,
                 namespace="root/cimv2",
                 keybindings={
-                        'DeviceID': cls.disks[0],
+                        'DeviceID': cls.disk,
                         'SystemCreationClassName': cls.SYSTEM_CLASS_NAME,
                         'SystemName': cls.SYSTEM_NAME,
                         'CreationClassName': cls.DISK_CLASS})

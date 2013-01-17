@@ -74,7 +74,7 @@ class TestCreatePool(StorageTestBase):
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disks[0]),
+                self._get_disk_size(self.disk),
                 delta=50 * MEGABYTE)
         vgname = outparams['pool']
         vg = self.wbemconnection.GetInstance(vgname)
@@ -106,7 +106,7 @@ class TestCreatePool(StorageTestBase):
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disks[0]),
+                self._get_disk_size(self.disk),
                 delta=50 * MEGABYTE)
         vg = outparams['pool']
 
@@ -225,7 +225,7 @@ class TestCreatePool(StorageTestBase):
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disks[0]),
+                self._get_disk_size(self.disk),
                 delta=50 * MEGABYTE)
         vgname = outparams['pool']
         vg = self.wbemconnection.GetInstance(vgname)
@@ -283,7 +283,7 @@ class TestCreatePool(StorageTestBase):
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
                 outparams['size'],
-                self._get_disk_size(self.disks[0]),
+                self._get_disk_size(self.disk),
                 delta=50 * MEGABYTE)
         vgname = outparams['pool']
         vg = self.wbemconnection.GetInstance(vgname)
