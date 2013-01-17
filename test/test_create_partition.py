@@ -35,7 +35,6 @@ class TestCreatePartition(StorageTestBase):
         - SetPartitionStyle.
     """
 
-    DISK_CLASS = "LMI_StorageExtent"
     MBR_CLASS = "LMI_DiskPartition"
     GPT_CLASS = "LMI_GenericDiskPartition"
 
@@ -48,15 +47,6 @@ class TestCreatePartition(StorageTestBase):
         super(TestCreatePartition, self).setUp()
         self.service = self.wbemconnection.EnumerateInstanceNames(
                 "LMI_DiskPartitionConfigurationService")[0]
-        self.diskname = pywbem.CIMInstanceName(
-                classname=self.DISK_CLASS,
-                namespace="root/cimv2",
-                keybindings={
-                        'DeviceID': self.disks[0],
-                        'SystemCreationClassName': self.SYSTEM_CLASS_NAME,
-                        'SystemName': self.SYSTEM_NAME,
-                        'CreationClassName': self.DISK_CLASS})
-
 
     def _check_name(self, partname, classname):
         """ Check that CIMInstanceName represents a partition. """
@@ -102,12 +92,12 @@ class TestCreatePartition(StorageTestBase):
 
 
     def _set_partition_style(self, style):
-        """ Create partition table on self.diskname with given style."""
+        """ Create partition table on self.disk_name with given style."""
         caps = self._get_capabilities_name(style)
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "SetPartitionStyle",
                 self.service,
-                Extent=self.diskname,
+                Extent=self.disk_name,
                 PartitionStyle=caps)
         self.assertEqual(retval, 0)
         self.assertDictEqual(outparams, {})
@@ -139,12 +129,12 @@ class TestCreatePartition(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 Goal=goal)
 
     def test_err_wrong_extent(self):
         """ Try LMI_CreateOrModifyPartition with unknown extent DeviceID -> error."""
-        diskname = pywbem.CIMInstanceName(
+        disk_name = pywbem.CIMInstanceName(
                 classname=self.DISK_CLASS,
                 keybindings={
                         'DeviceID': '/dev/does/not/exist',
@@ -154,7 +144,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=diskname)
+                extent=disk_name)
 
     def test_err_wrong_goal_style_gpt(self):
         """
@@ -171,7 +161,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 Goal=goal.path)
         self._delete_setting(goal.path)
 
@@ -182,7 +172,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 Goal=goal.path)
 
         # try logical partition
@@ -191,7 +181,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 Goal=goal.path)
 
         self._delete_setting(goal.path)
@@ -207,7 +197,7 @@ class TestCreatePartition(StorageTestBase):
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 # TODO: uncomment when #891861 is fixed
                 # Goal=goal.path,
                 )
@@ -215,7 +205,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertIn("partition", outparams)
 
         partition = outparams['partition']
-        disk_instance = self.wbemconnection.GetInstance(self.diskname)
+        disk_instance = self.wbemconnection.GetInstance(self.disk_name)
         partition_instance = self.wbemconnection.GetInstance(partition)
 
         self.assertAlmostEqual(
@@ -227,7 +217,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 # TODO: uncomment when #891861 is fixed
                 # Goal=goal.path,
                 )
@@ -238,7 +228,7 @@ class TestCreatePartition(StorageTestBase):
                 ResultClass="LMI_PartitionBasedOn")
         self.assertEqual(len(basedons), 1)
         basedon = basedons[0]
-        self.assertEqual(basedon['Antecedent'], self.diskname)
+        self.assertEqual(basedon['Antecedent'], self.disk_name)
         self.assertEqual(basedon['Dependent'], partition)
         self.assertAlmostEqual(
                 basedon['StartingAddress'], 0, delta=2 * 1024 * 2)  # 2 megabytes
@@ -261,7 +251,7 @@ class TestCreatePartition(StorageTestBase):
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 # TODO: uncomment when #891861 is fixed
                 # Goal=goal.path,
                 )
@@ -269,7 +259,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertIn("partition", outparams)
 
         partition = outparams['partition']
-        disk_instance = self.wbemconnection.GetInstance(self.diskname)
+        disk_instance = self.wbemconnection.GetInstance(self.disk_name)
         partition_instance = self.wbemconnection.GetInstance(partition)
 
         self.assertAlmostEqual(
@@ -283,7 +273,7 @@ class TestCreatePartition(StorageTestBase):
                 ResultClass="LMI_PartitionBasedOn")
         self.assertEqual(len(basedons), 1)
         basedon = basedons[0]
-        self.assertEqual(basedon['Antecedent'], self.diskname)
+        self.assertEqual(basedon['Antecedent'], self.disk_name)
         self.assertEqual(basedon['Dependent'], partition)
         self.assertAlmostEqual(
                 basedon['StartingAddress'], 0, delta=2 * 1024 * 2)  # 2 megabytes
@@ -296,7 +286,7 @@ class TestCreatePartition(StorageTestBase):
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 # TODO: uncomment when #891861 is fixed
                 # Goal=goal.path,
                 )
@@ -320,7 +310,7 @@ class TestCreatePartition(StorageTestBase):
             (retval, outparams) = self.wbemconnection.InvokeMethod(
                     "LMI_CreateOrModifyPartition",
                     self.service,
-                    extent=self.diskname,
+                    extent=self.disk_name,
                     size=pywbem.Uint64(partition_size),
                     # TODO: uncomment when #891861 is fixed
                     # Goal=goal.path,
@@ -342,7 +332,7 @@ class TestCreatePartition(StorageTestBase):
                     ResultClass="LMI_PartitionBasedOn")
             self.assertEqual(len(basedons), 1)
             basedon = basedons[0]
-            self.assertEqual(basedon['Antecedent'], self.diskname)
+            self.assertEqual(basedon['Antecedent'], self.disk_name)
             self.assertEqual(basedon['Dependent'], partition)
 
         self._delete_setting(goal.path)
@@ -365,7 +355,7 @@ class TestCreatePartition(StorageTestBase):
             (retval, outparams) = self.wbemconnection.InvokeMethod(
                     "LMI_CreateOrModifyPartition",
                     self.service,
-                    extent=self.diskname,
+                    extent=self.disk_name,
                     size=pywbem.Uint64(partition_size),
                     )
             self.assertEqual(retval, 0)
@@ -386,11 +376,11 @@ class TestCreatePartition(StorageTestBase):
             self.assertEqual(len(basedons), 1)
             basedon = basedons[0]
             if i < 3:
-                self.assertEqual(basedon['Antecedent'], self.diskname)
+                self.assertEqual(basedon['Antecedent'], self.disk_name)
             else:
                 if i == 3:
                     # find the extended partition
-                    extended_partition = self._find_extended_partition(self.diskname)
+                    extended_partition = self._find_extended_partition(self.disk_name)
                 # it's based on the extended partition!
                 self.assertNotEqual(basedon['Antecedent'], extended_partition)
             self.assertEqual(basedon['Dependent'], partition)
@@ -421,7 +411,7 @@ class TestCreatePartition(StorageTestBase):
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=self.diskname,
+                extent=self.disk_name,
                 Goal=goal.path)
         self.assertEqual(retval, 0)
         self.assertIn("partition", outparams)

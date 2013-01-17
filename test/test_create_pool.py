@@ -64,7 +64,7 @@ class TestCreatePool(StorageTestBase):
 
     def test_create_1pv(self):
         """ Test CreateOrModifyStoragePool with one PV."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyStoragePool",
                 self.service,
@@ -97,7 +97,7 @@ class TestCreatePool(StorageTestBase):
     @unittest.skipIf(short_test_only(), "Running short tests only.")
     def test_create_10pv(self):
         """ Test CreateOrModifyStoragePool with 10 PVs."""
-        partitions = self._prepare_partitions(self.disks[0], 10)
+        partitions = self._prepare_partitions(self.disk_name, 10)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyStoragePool",
                 self.service,
@@ -116,7 +116,7 @@ class TestCreatePool(StorageTestBase):
     @unittest.skipIf(short_test_only(), "Running short tests only.")
     def test_create_10vg(self):
         """ Test CreateOrModifyStoragePool with 10 VGs."""
-        partitions = self._prepare_partitions(self.disks[0], 10)
+        partitions = self._prepare_partitions(self.disk_name, 10)
         vgs = []
         for part in partitions:
             (ret, outparams) = self.wbemconnection.InvokeMethod(
@@ -134,7 +134,7 @@ class TestCreatePool(StorageTestBase):
 
     def test_create_unknown_setting(self):
         """ Test CreateOrModifyStoragePool with non-existing setting."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
 
         goal = pywbem.CIMInstanceName(
                 classname=" LMI_VGStorageSetting",
@@ -151,7 +151,7 @@ class TestCreatePool(StorageTestBase):
 
     def test_create_wrong_setting_class(self):
         """ Test CreateOrModifyStoragePool with non-existing setting."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
 
         goal = pywbem.CIMInstanceName(
                 classname=" LMI_LVStorageSetting",
@@ -168,7 +168,7 @@ class TestCreatePool(StorageTestBase):
 
     def test_create_wrong_inpools(self):
         """ Test CreateOrModifyStoragePool with InPools param."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
 
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                     "CreateOrModifyStoragePool",
@@ -180,7 +180,7 @@ class TestCreatePool(StorageTestBase):
 
     def test_create_wrong_size(self):
         """ Test CreateOrModifyStoragePool with Size param."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
 
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                     "CreateOrModifyStoragePool",
@@ -211,7 +211,7 @@ class TestCreatePool(StorageTestBase):
             Test CreateOrModifyStoragePool with default setting from 
             VGStroageCapabilities.CreateSetting.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
 
         (ret, outparams) = self.wbemconnection.InvokeMethod(
@@ -268,7 +268,7 @@ class TestCreatePool(StorageTestBase):
         """
             Test CreateOrModifyStoragePool with 2MiB ExtentSize.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
         goal['ExtentSize'] = pywbem.Uint64(MEGABYTE)
         self.wbemconnection.ModifyInstance(goal)
@@ -326,7 +326,7 @@ class TestCreatePool(StorageTestBase):
         """
             Test CreateOrModifyStoragePool with 64k ExtentSize.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
         goal['ExtentSize'] = pywbem.Uint64(64 * 1024)
         self.assertRaises(pywbem.CIMError, self.wbemconnection.ModifyInstance,

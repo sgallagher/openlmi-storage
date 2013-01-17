@@ -29,7 +29,6 @@ class TestSetPartitionStyle(StorageTestBase):
         with different parameters.
     """
 
-    DISK_CLASS = "LMI_StorageExtent"
     MBR_CLASS = "LMI_DiskPartition"
     GPT_CLASS = "LMI_GenericDiskPartition"
 
@@ -48,17 +47,6 @@ class TestSetPartitionStyle(StorageTestBase):
         self.assertEqual(partname['SystemName'], self.SYSTEM_NAME)
         self.assertEqual(partname['SystemCreationClassName'], self.SYSTEM_CLASS_NAME)
         self.assertEqual(partname['CreationClassName'], classname)
-
-    def _create_disk_name(self, device_id):
-        """ Return CIMInstanceName for given DeviceID."""
-        name = pywbem.CIMInstanceName(
-                classname=self.DISK_CLASS,
-                keybindings={
-                        'DeviceID': device_id,
-                        'SystemCreationClassName': self.SYSTEM_CLASS_NAME,
-                        'SystemName': self.SYSTEM_NAME,
-                        'CreationClassName': self.DISK_CLASS})
-        return name
 
     def _check_capabilities_name(self, capabilities_name, partition_style):
         """
@@ -108,75 +96,70 @@ class TestSetPartitionStyle(StorageTestBase):
 
     def test_no_partition_style(self):
         """ Test SetPartitionStyle with no PartitionStyle parameter."""
-        diskname = self._create_disk_name(self.disks[0])
         # Extent = sda -> success, with default capabilities (GPT)
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "SetPartitionStyle",
                 self.service,
-                Extent=diskname)
+                Extent=self.disk_name)
         self.assertEqual(retval, 0)
-        self._check_partition_table_type(diskname, self.STYLE_GPT)
+        self._check_partition_table_type(self.disk_name, self.STYLE_GPT)
         self.assertDictEqual(outparams, {})
 
     def test_gpt(self):
         """ Test SetPartitionStyle with GPT capabilities."""
-        diskname = self._create_disk_name(self.disks[0])
         part_style = self._get_capabilities_name(self.STYLE_GPT)
         # Extent = sda, partStyle = MBR -> success
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "SetPartitionStyle",
                 self.service,
-                Extent=diskname,
+                Extent=self.disk_name,
                 PartitionStyle=part_style)
         self.assertEqual(retval, 0)
-        self._check_partition_table_type(diskname, self.STYLE_GPT)
+        self._check_partition_table_type(self.disk_name, self.STYLE_GPT)
         self.assertDictEqual(outparams, {})
 
     def test_mbr(self):
         """ Test SetPartitionStyle with MBR capabilities."""
-        diskname = self._create_disk_name(self.disks[0])
         part_style = self._get_capabilities_name(self.STYLE_MBR)
         # Extent = sda, partStyle = MBR -> success
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "SetPartitionStyle",
                 self.service,
-                Extent=diskname,
+                Extent=self.disk_name,
                 PartitionStyle=part_style)
         self.assertEqual(retval, 0)
-        self._check_partition_table_type(diskname, self.STYLE_MBR)
+        self._check_partition_table_type(self.disk_name, self.STYLE_MBR)
         self.assertDictEqual(outparams, {})
 
     def test_embr(self):
         """ Test SetPartitionStyle with EMBR capabilities."""
-        diskname = self._create_disk_name(self.disks[0])
         part_style = self._get_capabilities_name(self.STYLE_EMBR)
         # Extent = sda, partStyle = MBR -> success
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "SetPartitionStyle",
                 self.service,
-                Extent=diskname,
+                Extent=self.disk_name,
                 PartitionStyle=part_style)
 
     def test_on_partition(self):
         """ Test SetPartitionStyle on a partition."""
-        diskname = self._create_disk_name(self.disks[0])
         # create a partition table on disk
         part_style = self._get_capabilities_name(self.STYLE_MBR)
         # Extent = sda, partStyle = MBR -> success
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "SetPartitionStyle",
                 self.service,
-                Extent=diskname,
+                Extent=self.disk_name,
                 PartitionStyle=part_style)
         self.assertEqual(retval, 0)
-        self._check_partition_table_type(diskname, self.STYLE_MBR)
+        self._check_partition_table_type(self.disk_name, self.STYLE_MBR)
         self.assertDictEqual(outparams, {})
 
         # create partition on the disk
         (retval, outparams) = self.wbemconnection.InvokeMethod(
                 "LMI_CreateOrModifyPartition",
                 self.service,
-                extent=diskname)
+                extent=self.disk_name)
         self.assertEqual(retval, 0)
         partition = outparams['partition']
 
@@ -189,10 +172,6 @@ class TestSetPartitionStyle(StorageTestBase):
 
         # remove the partition
         self.wbemconnection.DeleteInstance(partition)
-
-
-
-
 
 
     # TODO: add SetPartitionStyle on RAID, LVM etc.

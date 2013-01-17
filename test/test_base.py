@@ -38,6 +38,7 @@ class StorageTestBase(unittest.TestCase):
 
     SYSTEM_CLASS_NAME = "Linux_ComputerSystem"
     SYSTEM_NAME = socket.getfqdn()
+    DISK_CLASS = "LMI_StorageExtent"
 
     @classmethod
     def setUpClass(cls):
@@ -48,6 +49,14 @@ class StorageTestBase(unittest.TestCase):
         cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
         cls.clean = os.environ.get("LMI_STORAGE_CLEAN", "Yes")
         cls.verbose = os.environ.get("LMI_STORAGE_VERBOSE", None)
+        cls.disk_name = pywbem.CIMInstanceName(
+                classname=cls.DISK_CLASS,
+                namespace="root/cimv2",
+                keybindings={
+                        'DeviceID': cls.disks[0],
+                        'SystemCreationClassName': cls.SYSTEM_CLASS_NAME,
+                        'SystemName': cls.SYSTEM_NAME,
+                        'CreationClassName': cls.DISK_CLASS})
 
         cls.wbemconnection = pywbem.WBEMConnection(cls.url, (cls.username, cls.password))
 
@@ -172,13 +181,7 @@ class StorageTestBase(unittest.TestCase):
         """
         part_service = self.wbemconnection.EnumerateInstanceNames(
                 "LMI_DiskPartitionConfigurationService")[0]
-        disk_path = pywbem.CIMInstanceName(
-                classname='LMI_StorageExtent',
-                keybindings={
-                    'DeviceID': self.disks[0],
-                    'SystemCreationClassName': self.SYSTEM_CLASS_NAME,
-                    'SystemName': self.SYSTEM_NAME,
-                    'CreationClassName': 'LMI_StorageExtent'})
+        disk_path = diskname
 
         caps = pywbem.CIMInstanceName(
                 classname="LMI_DiskPartitionConfigurationCapabilities",

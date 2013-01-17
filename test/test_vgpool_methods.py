@@ -30,7 +30,6 @@ class TestVGPoolMethods(StorageTestBase):
         Test TestVGPoolMethods methods.
     """
 
-    DISK_CLASS = "LMI_StorageExtent"
     VG_CLASS = "LMI_VGStoragePool"
     STYLE_EMBR = 4100
     STYLE_MBR = 2
@@ -60,7 +59,7 @@ class TestVGPoolMethods(StorageTestBase):
             Create a partition and Volume Group on it and return its
             CIMInstanceName.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,

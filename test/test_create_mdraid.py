@@ -195,7 +195,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid0_level(self):
         """ Test CreateOrModifyMDRAID level 0."""
-        partitions = self._prepare_partitions(self.disks[0], 3)
+        partitions = self._prepare_partitions(self.disk_name, 3)
         partition_size = self._get_extent_size(partitions[0])
         # two devices
         self._test_raid_n(partitions[:2], level=0,
@@ -217,7 +217,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid0_goal(self):
         """ Test CreateOrModifyMDRAID level 0 with Goal."""
-        partitions = self._prepare_partitions(self.disks[0], 3)
+        partitions = self._prepare_partitions(self.disk_name, 3)
         partition_size = self._get_extent_size(partitions[0])
         # two devices
         setting = self._create_setting(0, partitions[:2])
@@ -245,7 +245,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid1_level(self):
         """ Test CreateOrModifyMDRAID level 1."""
-        partitions = self._prepare_partitions(self.disks[0], 4)
+        partitions = self._prepare_partitions(self.disk_name, 4)
         partition_size = self._get_extent_size(partitions[0])
 
         # two devices
@@ -268,7 +268,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid1_goal(self):
         """ Test CreateOrModifyMDRAID level 1 with Goal."""
-        partitions = self._prepare_partitions(self.disks[0], 4)
+        partitions = self._prepare_partitions(self.disk_name, 4)
         partition_size = self._get_extent_size(partitions[0])
 
         # two devices
@@ -297,7 +297,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid4_level(self):
         """ Test CreateOrModifyMDRAID level 4."""
-        partitions = self._prepare_partitions(self.disks[0], 4)
+        partitions = self._prepare_partitions(self.disk_name, 4)
         partition_size = self._get_extent_size(partitions[0])
 
         # 3 devices
@@ -320,7 +320,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid4_goal(self):
         """ Test CreateOrModifyMDRAID level 4 with Goal."""
-        partitions = self._prepare_partitions(self.disks[0], 4)
+        partitions = self._prepare_partitions(self.disk_name, 4)
         partition_size = self._get_extent_size(partitions[0])
 
         # 3 devices
@@ -349,7 +349,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid5_level(self):
         """ Test CreateOrModifyMDRAID level 5."""
-        partitions = self._prepare_partitions(self.disks[0], 5)
+        partitions = self._prepare_partitions(self.disk_name, 5)
         partition_size = self._get_extent_size(partitions[0])
 
         # 3 devices
@@ -372,7 +372,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid5_goal(self):
         """ Test CreateOrModifyMDRAID level 5 with Goal."""
-        partitions = self._prepare_partitions(self.disks[0], 5)
+        partitions = self._prepare_partitions(self.disk_name, 5)
         partition_size = self._get_extent_size(partitions[0])
 
         # 3 devices
@@ -401,7 +401,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid6_level(self):
         """ Test CreateOrModifyMDRAID level 6."""
-        partitions = self._prepare_partitions(self.disks[0], 5)
+        partitions = self._prepare_partitions(self.disk_name, 5)
         partition_size = self._get_extent_size(partitions[0])
 
         # 4 devices
@@ -424,7 +424,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid6_goal(self):
         """ Test CreateOrModifyMDRAID level 6 with Goal."""
-        partitions = self._prepare_partitions(self.disks[0], 5)
+        partitions = self._prepare_partitions(self.disk_name, 5)
         partition_size = self._get_extent_size(partitions[0])
 
         # 4 devices
@@ -454,7 +454,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid10_level(self):
         """ Test CreateOrModifyMDRAID level 10."""
-        partitions = self._prepare_partitions(self.disks[0], 6)
+        partitions = self._prepare_partitions(self.disk_name, 6)
         partition_size = self._get_extent_size(partitions[0])
 
         # two devices
@@ -501,7 +501,7 @@ class TestCreateMDRAID(StorageTestBase):
 
     def test_create_raid10_goal(self):
         """ Test CreateOrModifyMDRAID level 10 with a valid Goal."""
-        partitions = self._prepare_partitions(self.disks[0], 6)
+        partitions = self._prepare_partitions(self.disk_name, 6)
         partition_size = self._get_extent_size(partitions[0])
 
         # don't test two devices - that's RAID1
@@ -560,7 +560,7 @@ class TestCreateMDRAID(StorageTestBase):
             Test CreateOrModifyMDRAID with various levels and bad nr. of
             devices.
         """
-        partitions = self._prepare_partitions(self.disks[0], 3)
+        partitions = self._prepare_partitions(self.disk_name, 3)
         # raid 0 with 1 device
         self.assertRaises(pywbem.CIMError, self.wbemconnection.InvokeMethod,
                 "CreateOrModifyMDRAID",
@@ -638,7 +638,7 @@ class TestCreateMDRAID(StorageTestBase):
         """
             Test CreateOrModifyMDRAID with various wrong goals.
         """
-        partitions = self._prepare_partitions(self.disks[0], 2)
+        partitions = self._prepare_partitions(self.disk_name, 2)
 
         # unknown goal
         goal = pywbem.CIMInstanceName(
@@ -687,7 +687,7 @@ class TestCreateMDRAID(StorageTestBase):
             properties are set and the implementation must choose the
             best RAID level.
         """
-        partitions = self._prepare_partitions(self.disks[0], 4)
+        partitions = self._prepare_partitions(self.disk_name, 4)
         partition_size = self._get_extent_size(partitions[0])
 
         # raid1 is selected as default if no properties are set

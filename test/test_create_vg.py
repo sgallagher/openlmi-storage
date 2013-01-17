@@ -32,7 +32,6 @@ class TestCreateVG(StorageTestBase):
         (create only).
     """
 
-    DISK_CLASS = "LMI_StorageExtent"
     VG_CLASS = "LMI_VGStoragePool"
     STYLE_EMBR = 4100
     STYLE_MBR = 2
@@ -64,7 +63,7 @@ class TestCreateVG(StorageTestBase):
 
     def test_create_1pv(self):
         """ Test CreateOrModifyVG with one PV."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,
@@ -97,7 +96,7 @@ class TestCreateVG(StorageTestBase):
     @unittest.skipIf(short_test_only(), "Running short tests only.")
     def test_create_10pv(self):
         """ Test CreateOrModifyVG with 10 PVs."""
-        partitions = self._prepare_partitions(self.disks[0], 10)
+        partitions = self._prepare_partitions(self.disk_name, 10)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,
@@ -116,7 +115,7 @@ class TestCreateVG(StorageTestBase):
     @unittest.skipIf(short_test_only(), "Running short tests only.")
     def test_create_10vg(self):
         """ Test CreateOrModifyVG with 10 VGs."""
-        partitions = self._prepare_partitions(self.disks[0], 10)
+        partitions = self._prepare_partitions(self.disk_name, 10)
         vgs = []
         for part in partitions:
             (ret, outparams) = self.wbemconnection.InvokeMethod(
@@ -134,7 +133,7 @@ class TestCreateVG(StorageTestBase):
 
     def test_create_unknown_setting(self):
         """ Test CreateOrModifyVG with non-existing setting."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
 
         goal = pywbem.CIMInstanceName(
                 classname=" LMI_VGStorageSetting",
@@ -151,7 +150,7 @@ class TestCreateVG(StorageTestBase):
 
     def test_create_wrong_setting_class(self):
         """ Test CreateOrModifyVG with non-existing setting."""
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
 
         goal = pywbem.CIMInstanceName(
                 classname=" LMI_LVStorageSetting",
@@ -187,7 +186,7 @@ class TestCreateVG(StorageTestBase):
             Test CreateOrModifyVG with default setting from 
             VGStroageCapabilities.CreateSetting.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
 
         (ret, outparams) = self.wbemconnection.InvokeMethod(
@@ -244,7 +243,7 @@ class TestCreateVG(StorageTestBase):
         """
             Test CreateOrModifyVG with 2MiB ExtentSize.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
         goal['ExtentSize'] = pywbem.Uint64(MEGABYTE)
         self.wbemconnection.ModifyInstance(goal)
@@ -302,7 +301,7 @@ class TestCreateVG(StorageTestBase):
         """
             Test CreateOrModifyVG with 64k ExtentSize.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         goal = self._create_setting()
         goal['ExtentSize'] = pywbem.Uint64(64 * 1024)
         self.assertRaises(pywbem.CIMError, self.wbemconnection.ModifyInstance,

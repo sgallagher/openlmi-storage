@@ -30,7 +30,6 @@ class TestCreateLV(StorageTestBase):
         Test CreateOrModifyLV method.
     """
 
-    DISK_CLASS = "LMI_StorageExtent"
     VG_CLASS = "LMI_VGStoragePool"
     STYLE_GPT = 3
     PARTITION_CLASS = "LMI_GenericDiskPartition"
@@ -49,8 +48,6 @@ class TestCreateLV(StorageTestBase):
         self.lvcaps_name = self.wbemconnection.AssociatorNames(vgname,
                 AssocClass="LMI_LVElementCapabilities")[0]
 
-
-
     def tearDown(self):
         self._destroy_vg(self.vg.path)
         super(TestCreateLV, self).tearDown()
@@ -60,7 +57,7 @@ class TestCreateLV(StorageTestBase):
             Create a partition and Volume Group on it and return its
             CIMInstanceName.
         """
-        partitions = self._prepare_partitions(self.disks[0], 1)
+        partitions = self._prepare_partitions(self.disk_name, 1)
         (ret, outparams) = self.wbemconnection.InvokeMethod(
                 "CreateOrModifyVG",
                 self.service,
