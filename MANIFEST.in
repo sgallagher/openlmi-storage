@@ -3,7 +3,6 @@ include doc/admin/Makefile doc/admin/conf.py doc/admin/*.rst doc/admin/pic/*.uml
 include doc/admin/_static/* doc/admin/pic/*.dia doc/admin/openlmitheme/theme.conf
 include doc/admin/generated/Makefile doc/admin/mof/Makefile doc/admin/mof/header.txt
 include mof/*.mof mof/LMI_Storage.reg
-include client/client-highlevel.py
 include test/tools/*
 recursive-include test/unit *.py
 recursive-include test/unit/config/configs *
