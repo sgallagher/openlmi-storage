@@ -9,9 +9,6 @@ The provider is written in Python and based on Anaconda installer storage
 module. Therefore it is probably usable only on Red Hat based distros,
 like Fedora.
 
-BEWARE! The CIM API is not stable at all! SMI-S is still being evaluated.
-
-
 Installation
 ============
 Prepare software (using sblim here, might be different for Pegasus):
@@ -29,10 +26,11 @@ Register python providers and MOF file:
 Documentation
 =============
 
-CIM API is fully documented in mof/LMI_Storage.mof and in doc/ subdirectory.
-To compile the documentation to readable format install Dia and python-sphinx.
+CIM API is fully documented in mof/LMI_Storage.mof and in doc/admin subdirectory.
+To compile the documentation to readable format install PlantUML, Dia and
+python-sphinx.
 
-  $ cd doc
+  $ cd doc/admin
   $ make html
 
 
