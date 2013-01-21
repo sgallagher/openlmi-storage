@@ -19,7 +19,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 
-from test_base import StorageTestBase, short_test_only
+from test_base import StorageTestBase, short_tests_only
 import unittest
 import pywbem
 import time

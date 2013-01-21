@@ -19,7 +19,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 
-from test_base import StorageTestBase, short_test_only
+from test_base import StorageTestBase, short_tests_only
 import unittest
 import pywbem
 
@@ -84,7 +84,7 @@ class TestCreateVG(StorageTestBase):
 
         self.wbemconnection.DeleteInstance(vgname)
 
-    @unittest.skipIf(short_test_only(), "Running short tests only.")
+    @unittest.skipIf(short_tests_only(), "Running short tests only.")
     def test_create_10pv(self):
         """ Test CreateOrModifyVG with 10 PVs."""
         (ret, outparams) = self.wbemconnection.InvokeMethod(
@@ -101,7 +101,7 @@ class TestCreateVG(StorageTestBase):
 
         self.wbemconnection.DeleteInstance(vg)
 
-    @unittest.skipIf(short_test_only(), "Running short tests only.")
+    @unittest.skipIf(short_tests_only(), "Running short tests only.")
     def test_create_10vg(self):
         """ Test CreateOrModifyVG with 10 VGs."""
         vgs = []

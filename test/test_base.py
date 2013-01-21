@@ -226,7 +226,7 @@ class StorageTestBase(unittest.TestCase):
 
 
 
-def short_test_only():
+def short_tests_only():
     """
         Returns True, if only short test should be executed, i.e.
         LMI_STORAGE_SHORT_ONLY is set.

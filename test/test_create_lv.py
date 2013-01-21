@@ -19,7 +19,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 
-from test_base import StorageTestBase, short_test_only
+from test_base import StorageTestBase, short_tests_only
 import unittest
 import pywbem
 
@@ -256,7 +256,7 @@ class TestCreateLV(StorageTestBase):
         self.wbemconnection.DeleteInstance(goal.path)
         self.wbemconnection.DeleteInstance(lv_name)
 
-    @unittest.skipIf(short_test_only(), reason="Skipping long tests.")
+    @unittest.skipIf(short_tests_only(), reason="Skipping long tests.")
     def test_create_10(self):
         """ Test CreateOrModifyLV 10x."""
         lvs = []
