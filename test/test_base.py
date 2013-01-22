@@ -50,6 +50,7 @@ class StorageTestBase(unittest.TestCase):
         cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
         cls.clean = os.environ.get("LMI_STORAGE_CLEAN", "Yes")
         cls.verbose = os.environ.get("LMI_STORAGE_VERBOSE", None)
+        cls.mydir = os.path.dirname(os.path.dirname(__file__))
         cls.disk_name = pywbem.CIMInstanceName(
                 classname=cls.DISK_CLASS,
                 namespace="root/cimv2",
@@ -143,7 +144,7 @@ class StorageTestBase(unittest.TestCase):
             This method should be called when a test fails and wants to clean
             up its mess.
         """
-        return self.log_run(["test/tools/mdremove", md_device_id])
+        return self.log_run([self.mydir + "/tools/mdremove", md_device_id])
 
     def destroy_mbr(self, disk_device_id):
         """
@@ -151,7 +152,7 @@ class StorageTestBase(unittest.TestCase):
             This method should be called when a test fails and wants to clean
             up its mess.
         """
-        return self.log_run(["test/tools/mbrremove", disk_device_id])
+        return self.log_run([self.mydir + "/tools/mbrremove", disk_device_id])
 
     def restart_cim(self):
         """
