@@ -182,6 +182,7 @@ class StorageTestBase(unittest.TestCase):
             Each test should clean after itself!
         """
         # try to destroy everything and restart CIMOM
+        self.stop_udev_monitor()
         if self.clean:
             if self.destroy_created():
                 self.restart_cim()
