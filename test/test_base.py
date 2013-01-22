@@ -50,7 +50,8 @@ class StorageTestBase(unittest.TestCase):
         cls.cimom = os.environ.get("LMI_CIMOM_BROKER", "sblim-sfcb")
         cls.clean = os.environ.get("LMI_STORAGE_CLEAN", "Yes")
         cls.verbose = os.environ.get("LMI_STORAGE_VERBOSE", None)
-        cls.mydir = os.path.dirname(os.path.dirname(__file__))
+        cls.mydir = os.path.dirname(__file__)
+        print cls.mydir
         cls.disk_name = pywbem.CIMInstanceName(
                 classname=cls.DISK_CLASS,
                 namespace="root/cimv2",
