@@ -61,7 +61,7 @@ class TestCreateLV(StorageTestBase):
                 "CreateOrModifyVG",
                 self.service,
                 InExtents=self.partition_names[:1],
-                ElementName='myCRAZYname')
+                ElementName='tstName')
         self.assertEqual(ret, 0)
         return outparams['pool']
 
@@ -205,7 +205,7 @@ class TestCreateLV(StorageTestBase):
                 InPool=self.vg.path,
                 Size=pywbem.Uint64(10 * self.vg['ExtentSize']),
                 Goal=goal.path,
-                ElementName="myNAME")
+                ElementName="tstNAME")
         self.assertEqual(retval, 0)
         self.assertEqual(len(outparams), 2)
         self.assertEqual(outparams['Size'], 10 * self.vg['ExtentSize'])
@@ -215,7 +215,7 @@ class TestCreateLV(StorageTestBase):
         lv_setting = self.wbemconnection.Associators(lv_name,
                 AssocClass="LMI_LVElementSettingData")[0]
 
-        self.assertEqual(lv['ElementName'], "myNAME")
+        self.assertEqual(lv['ElementName'], "tstNAME")
         self.assertEqual(
                 lv['BlockSize'] * lv['NumberOfBlocks'],
                 10 * self.vg['ExtentSize'])

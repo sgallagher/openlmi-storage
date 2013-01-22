@@ -60,7 +60,7 @@ class TestCreateVG(StorageTestBase):
                 "CreateOrModifyVG",
                 self.service,
                 InExtents=self.partition_names[:1],
-                ElementName='myCRAZYname')
+                ElementName='tstName')
         self.assertEqual(ret, 0)
         self.assertEqual(len(outparams), 2)
         self.assertAlmostEqual(
@@ -70,8 +70,8 @@ class TestCreateVG(StorageTestBase):
         vgname = outparams['pool']
         vg = self.wbemconnection.GetInstance(vgname)
         self.assertEqual(vg['TotalManagedSpace'], outparams['size'])
-        self.assertEqual(vg['PoolID'], 'myCRAZYname')
-        self.assertEqual(vg['ElementName'], 'myCRAZYname')
+        self.assertEqual(vg['PoolID'], 'tstName')
+        self.assertEqual(vg['ElementName'], 'tstName')
         self.assertNotEqual(vg['UUID'], '')
         self.assertNotEqual(vg['UUID'], None)
         self.assertEqual(vg['ExtentSize'], 4 * MEGABYTE)

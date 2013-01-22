@@ -63,7 +63,7 @@ class TestVGPoolMethods(StorageTestBase):
                 "CreateOrModifyVG",
                 self.service,
                 InExtents=self.partition_names[:1],
-                ElementName='myCRAZYname')
+                ElementName='tstName')
         self.assertEqual(ret, 0)
         return outparams['pool']
 
