@@ -14,12 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import subprocess
-import os
 """
     Support functions for partitioning.
 """
 
+import subprocess
+import os
 import parted
 import pywbem
 import pyanaconda.storage
@@ -130,7 +130,7 @@ def do_storage_action(storage, action):
 
     do_raid = False
     if isinstance(action.device, pyanaconda.storage.devices.MDRaidArrayDevice):
-            do_raid = True
+        do_raid = True
     try:
         if do_partitioning:
             # this must be called when creating a partition

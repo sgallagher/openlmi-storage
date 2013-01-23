@@ -62,7 +62,7 @@ class BasedOnProvider(BaseProvider):
 
 
     @cmpi_logging.trace_method
-    def get_instance(self, env, model, device=None, base=None):
+    def get_instance(self, env, model, device=None, base=None):  # IGNORE:W0221
         """
             Provider implementation of GetInstance intrinsic method.
             It just checks if Dependent and Antecedent are related.
@@ -147,7 +147,7 @@ class BasedOnProvider(BaseProvider):
         """
         ch = env.get_cimom_handle()
 
-        # If you want to get references for free, implemented in terms 
+        # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
         if ch.is_subclass(object_name.namespace,
                           sub=object_name.classname,

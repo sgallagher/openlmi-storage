@@ -19,11 +19,9 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 
-from test_base import StorageTestBase, short_tests_only
+from test_base import StorageTestBase
 import unittest
 import pywbem
-import time
-
 
 MEGABYTE = 1024 * 1024
 
@@ -73,7 +71,7 @@ class TestCreateMDRAID(StorageTestBase):
         setting = self.wbemconnection.GetInstance(setting_name)
         return setting
 
-    def _create_empty_setting(self, level=None, devices=None):
+    def _create_empty_setting(self):
         """ Create a MDRAIDStorageSetting, remove all redundancy properties
             from it and return it
         ."""

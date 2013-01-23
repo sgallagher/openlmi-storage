@@ -69,25 +69,25 @@ def shutdown(env):
         cov.stop()
         cov.save()
     if hasattr(cimom_entry, 'shutdown'):
-        return cimom_entry.shutdown(env)
+        return cimom_entry.shutdown(env)  # IGNORE:E1101
 
 # forward all other provider module methods to cmpi_bindings
 if hasattr(cimom_entry, 'init'):
-    init = cimom_entry.init(env)
+    init = cimom_entry.init  # IGNORE:E1101
 if hasattr(cimom_entry, 'get_providers'):
-    get_providers = cimom_entry.get_providers
+    get_providers = cimom_entry.get_providers  # IGNORE:E1101
 if hasattr(cimom_entry, 'can_unload'):
-    can_unload = cimom_entry.can_unload
+    can_unload = cimom_entry.can_unload  # IGNORE:E1101
 if hasattr(cimom_entry, 'handle_indication'):
-    handle_indication = cimom_entry.handle_indication
+    handle_indication = cimom_entry.handle_indication  # IGNORE:E1101
 if hasattr(cimom_entry, 'authorize_filter'):
-    authorize_filter = cimom_entry.authorize_filter
+    authorize_filter = cimom_entry.authorize_filter  # IGNORE:E1101
 if hasattr(cimom_entry, 'activate_filter'):
-    activate_filter = cimom_entry.activate_filter
+    activate_filter = cimom_entry.activate_filter  # IGNORE:E1101
 if hasattr(cimom_entry, 'deactivate_filter'):
-    deactivate_filter = cimom_entry.deactivate_filter
+    deactivate_filter = cimom_entry.deactivate_filter  # IGNORE:E1101
 if hasattr(cimom_entry, 'enable_indications'):
-    enable_indications = cimom_entry.enable_indications
+    enable_indications = cimom_entry.enable_indications  # IGNORE:E1101
 if hasattr(cimom_entry, 'disable_indications'):
-    disable_indications = cimom_entry.disable_indications
+    disable_indications = cimom_entry.disable_indications  # IGNORE:E1101
 

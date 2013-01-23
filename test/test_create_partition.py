@@ -306,7 +306,7 @@ class TestCreatePartition(StorageTestBase):
         self._set_partition_style(self.STYLE_GPT)
         goal = self._create_setting(self.STYLE_GPT)
 
-        for i in xrange(partition_count):
+        for _ in xrange(partition_count):
             (retval, outparams) = self.wbemconnection.InvokeMethod(
                     "LMI_CreateOrModifyPartition",
                     self.service,
@@ -420,7 +420,7 @@ class TestCreatePartition(StorageTestBase):
         # create partition_count logical partitions on it
         goal['PartitionType'] = pywbem.Uint16(3)  # Logical
         self.wbemconnection.ModifyInstance(goal)
-        for i in xrange(partition_count):
+        for _ in xrange(partition_count):
             (retval, outparams) = self.wbemconnection.InvokeMethod(
                     "LMI_CreateOrModifyPartition",
                     self.service,

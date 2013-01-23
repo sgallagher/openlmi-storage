@@ -75,7 +75,7 @@ def init_anaconda():
     # set up storage class instance
     # ugly hack to make it working on both F17 and F18
     try:
-        platform = pyanaconda.platform.getPlatform(None)
+        platform = pyanaconda.platform.getPlatform(None)  # IGNORE:E1121
     except TypeError:
         platform = pyanaconda.platform.getPlatform()  # IGNORE:E1120
     storage = pyanaconda.storage.Storage(platform=platform)

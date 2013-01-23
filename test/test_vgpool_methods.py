@@ -73,7 +73,7 @@ class TestVGPoolMethods(StorageTestBase):
 
     def test_supported_sizes(self):
         """ Test GetSupportedSizes() """
-        (retval, outparams) = self.wbemconnection.InvokeMethod(
+        (retval, _) = self.wbemconnection.InvokeMethod(
                 "GetSupportedSizes",
                 self.vg.path)
         self.assertEqual(retval, 2)

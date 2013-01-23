@@ -181,7 +181,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         cmpi_logging.log_storage_call("CREATE LV", args)
 
-        lv = self.storage.newLV(**args)
+        lv = self.storage.newLV(**args)  # IGNORE:W0142
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(lv)
         util.partitioning.do_storage_action(self.storage, action)
 
@@ -293,8 +293,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
                         "InPool does not match TheElement's pool, modification of a pool is not supported.")
 
         if not device and not pool:
-                raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
-                        "Either InPool or TheElement must be specified.")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Either InPool or TheElement must be specified.")
 
         if not device and not newsize:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
@@ -405,7 +405,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         cmpi_logging.log_storage_call("CREATE VG", args)
 
-        vg = self.storage.newVG(**args)
+        vg = self.storage.newVG(**args)  # IGNORE:W0142
         action = pyanaconda.storage.ActionCreateDevice(vg)
         util.partitioning.do_storage_action(self.storage, action)
 
@@ -580,8 +580,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         if param_elementtype is not None:
             if param_elementtype != self.Values.CreateOrModifyElementFromElements.ElementType.Storage_Extent:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
-                            "Parameter ElementType must have value '3 - StorageExtent'.")
+                raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                        "Parameter ElementType must have value '3 - StorageExtent'.")
 
         return self.cim_method_createormodifymdraid(env, object_name,
                 param_elementname=param_elementname,
@@ -683,7 +683,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         cmpi_logging.log_storage_call("CREATE MDRAID", args)
 
-        raid = self.storage.newMDArray(**args)
+        raid = self.storage.newMDArray(**args)  # IGNORE:W0142
         action = pyanaconda.storage.ActionCreateDevice(raid)
         util.partitioning.do_storage_action(self.storage, action)
 
