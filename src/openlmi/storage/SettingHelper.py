@@ -16,6 +16,8 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for SettingHelper class."""
+
 import openlmi.storage.cmpi_logging as cmpi_logging
 
 class SettingHelper(object):
@@ -34,6 +36,7 @@ class SettingHelper(object):
         super(SettingHelper, self).__init__(*args, **kwargs)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def enumerate_settings(self, setting_provider):
         """
             This method returns iterable with all instances of LMI_*Setting
@@ -42,6 +45,7 @@ class SettingHelper(object):
         return []
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_setting_for_id(self, setting_provider, instance_id):
         """
             Return Setting instance, which corresponds to LMI_*Setting with
@@ -53,6 +57,7 @@ class SettingHelper(object):
         return None
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_associated_element_name(self, setting_provider, instance_id):
         """
             Return CIMInstanceName of ManagedElement for ElementSettingData
@@ -62,6 +67,7 @@ class SettingHelper(object):
         return None
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_supported_setting_properties(self, setting_provider):
         """
             Return hash property_name -> constructor.
@@ -73,6 +79,7 @@ class SettingHelper(object):
         return {}
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_setting_ignore(self, setting_provider):
         """
             Return hash property_name -> default value.
@@ -84,6 +91,7 @@ class SettingHelper(object):
         return None
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_setting_validators(self, setting_provider):
         """
             Return hash property_name -> validator

@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for ExtentProvider class. """
 
 from openlmi.storage.DeviceProvider import DeviceProvider
 import pywbem
@@ -55,7 +56,8 @@ class ExtentProvider(DeviceProvider):
         if object_name['SystemName'] != self.config.system_name:
             return False
 
-        if object_name['SystemCreationClassName'] != self.config.system_class_name:
+        if object_name['SystemCreationClassName'] != \
+                self.config.system_class_name:
             return False
 
         if object_name['CreationClassName'] != self.classname:
@@ -98,6 +100,7 @@ class ExtentProvider(DeviceProvider):
         return device.name
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_extent_status(self, device):
         """
             Return ExtentStatus property value for given StorageDevice.
@@ -120,7 +123,8 @@ class ExtentProvider(DeviceProvider):
             if (device.format and isinstance(device.format,
                     pyanaconda.storage.formats.disklabel.DiskLabel)):
                 # reduce by partition table size
-                consumable_blocks -= partitioning.get_partition_table_size(device)
+                consumable_blocks -= partitioning.get_partition_table_size(
+                        device)
         else:
             block_size = None
             total_blocks = None
@@ -128,6 +132,7 @@ class ExtentProvider(DeviceProvider):
         return (block_size, total_blocks, consumable_blocks)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_primordial(self, device):
         """
             Returns True, if given StorageDevice is primordial.
@@ -140,13 +145,14 @@ class ExtentProvider(DeviceProvider):
             Returns ExtentDiscriminator property value for given StorageDevice.
             It must return array of strings.
         """
-        d = []
+        discriminator = []
         if device.format and isinstance(device.format,
                     pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
-            d.append(self.Values.Discriminator.Pool_Component)
-        return d
+            discriminator.append(self.Values.Discriminator.Pool_Component)
+        return discriminator
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def get_instance(self, env, model, device=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -192,7 +198,8 @@ class ExtentProvider(DeviceProvider):
         redundancy = self.get_redundancy(device)
         model['NoSinglePointOfFailure'] = redundancy.no_single_point_of_failure
         model['DataRedundancy'] = pywbem.Uint16(redundancy.data_redundancy)
-        model['PackageRedundancy'] = pywbem.Uint16(redundancy.package_redundancy)
+        model['PackageRedundancy'] = pywbem.Uint16(
+                redundancy.package_redundancy)
         model['ExtentStripeLength'] = pywbem.Uint64(redundancy.stripe_length)
         model['IsComposite'] = (len(device.parents) > 1)
 

@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_GenericDiskPartition class."""
 
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
@@ -81,7 +82,8 @@ class LMI_HostedStorageService(BaseProvider):
                             'CreationClassName': provider.classname,
                             'Name' : provider.classname,
                             'SystemName': self.config.system_name,
-                            'SystemCreationClassName' : self.config.system_class_name
+                            'SystemCreationClassName' :
+                                    self.config.system_class_name
                     })
             yield model
 
@@ -89,14 +91,14 @@ class LMI_HostedStorageService(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""
-        ch = env.get_cimom_handle()
+        cimom = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace,
+        if cimom.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_Service') or \
-                ch.is_subclass(object_name.namespace,
+                cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super='CIM_System'):
             return self.simple_refs(env, object_name, model,

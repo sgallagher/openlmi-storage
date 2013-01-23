@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_VGAssociatedComponentExtent class."""
 
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
@@ -56,19 +57,22 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
                     yield self.get_instance(env, model, vg, pv)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def get_instance(self, env, model, vg=None, pv=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It just checks if GroupComponent and PartComponent are related.
         """
         if not vg:
-            vg = self.provider_manager.get_device_for_name(model['GroupComponent'])
+            vg = self.provider_manager.get_device_for_name(
+                    model['GroupComponent'])
         if not vg:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find GroupComponent device")
 
         if not pv:
-            pv = self.provider_manager.get_device_for_name(model['PartComponent'])
+            pv = self.provider_manager.get_device_for_name(
+                    model['PartComponent'])
         if not pv:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find PartComponent device")
@@ -142,14 +146,14 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
 
         """
 
-        ch = env.get_cimom_handle()
+        cimom = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace,
+        if cimom.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_StorageExtent') or \
-                ch.is_subclass(object_name.namespace,
+                cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super='CIM_StoragePool'):
             return self.simple_refs(env, object_name, model,

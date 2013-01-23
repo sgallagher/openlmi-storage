@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_DiskPartitionConfigurationCapabilities class. """
 
 from openlmi.storage.CapabilitiesProvider import CapabilitiesProvider
 from openlmi.storage.LMI_DiskPartitionConfigurationSetting \
@@ -41,6 +42,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         super(LMI_DiskPartitionConfigurationCapabilities, self).__init__(
                 "LMI_DiskPartitionConfigurationCapabilities", *args, **kwargs)
 
+        sync_actions = self.Values.SupportedSynchronousActions
         self.instances = [
             {
                     'InstanceID': self.INSTANCE_ID_MBR,
@@ -49,16 +51,19 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                             self.Values.SupportedSettings.Bootable],
                     'PartitionTableSize': pywbem.Uint32(1),
                     'PartitionStyle': self.Values.PartitionStyle.MBR,
-                    'ValidSubPartitionStyles': [self.Values.ValidSubPartitionStyles.EMBR],
+                    'ValidSubPartitionStyles': [
+                            self.Values.ValidSubPartitionStyles.EMBR],
                     'MaxNumberOfPartitions': pywbem.Uint16(4),
                     'SupportedSynchronousActions': [
-                            self.Values.SupportedSynchronousActions.CreateOrModifyPartition,
-                            self.Values.SupportedSynchronousActions.SetPartitionStyle],
-                    'Caption': "Capabilities of MS-DOS style primary partitions.",
+                            sync_actions.CreateOrModifyPartition,
+                            sync_actions.SetPartitionStyle],
+                    'Caption': "Capabilities of MSDOS style primary " \
+                                "partitions.",
                     'MaxCapacity': pywbem.Uint64(units.MAXINT64),
                     'ElementName': 'MBRCapabilities',
                     'OverlapAllowed' : False,
-                    # TODO: add Hidden flag? It seems it does not work on MBR partitions
+                    # TODO: add Hidden flag? It seems it does not work
+                    # on MBR partitions
             },
             {
                     'InstanceID': self.INSTANCE_ID_EMBR,
@@ -74,9 +79,10 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                             is_array=True),
                     'MaxNumberOfPartitions': pywbem.Uint16(2 << 15 - 1),
                     'SupportedSynchronousActions': [
-                            self.Values.SupportedSynchronousActions.CreateOrModifyPartition,
-                            self.Values.SupportedSynchronousActions.SetPartitionStyle],
-                    'Caption': "Capabilities of MS-DOS style logical partitions.",
+                            sync_actions.CreateOrModifyPartition,
+                            sync_actions.SetPartitionStyle],
+                    'Caption':
+                            "Capabilities of MS-DOS style logical partitions.",
                     'MaxCapacity': pywbem.Uint64(units.MAXINT64),
                     'ElementName': 'EMBRCapabilities',
                     'OverlapAllowed' : False,
@@ -95,8 +101,8 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                             is_array=True),
                     'MaxNumberOfPartitions': pywbem.Uint16(128),
                     'SupportedSynchronousActions': [
-                            self.Values.SupportedSynchronousActions.CreateOrModifyPartition,
-                            self.Values.SupportedSynchronousActions.SetPartitionStyle],
+                            sync_actions.CreateOrModifyPartition,
+                            sync_actions.SetPartitionStyle],
                     'Caption': "Capabilities of GPT partitions.",
                     'MaxCapacity': pywbem.Uint64(units.MAXINT64),
                     'ElementName': 'GPTCapabilities',
@@ -129,17 +135,20 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Failed to allocate setting InstanceID")
 
+        values = LMI_DiskPartitionConfigurationSetting.Values
         setting = Setting(Setting.TYPE_TRANSIENT, setting_id)
         setting['Bootable'] = False
         setting['ElementName'] = 'CreatedFrom' + capabilities['InstanceID']
         setting['Hidden'] = None
         if (capabilities['PartitionStyle'] == self.Values.PartitionStyle.GPT
-                or capabilities['PartitionStyle'] == self.Values.PartitionStyle.MBR):
-            setting['PartitionType'] = LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Primary
+                or capabilities['PartitionStyle'] ==
+                        self.Values.PartitionStyle.MBR):
+            setting['PartitionType'] = values.PartitionType.Primary
         else:
-            setting['PartitionType'] = LMI_DiskPartitionConfigurationSetting.Values.PartitionType.Logical
+            setting['PartitionType'] = values.PartitionType.Logical
 
-        self.setting_manager.set_setting('LMI_DiskPartitionConfigurationSetting', setting)
+        self.setting_manager.set_setting(
+                'LMI_DiskPartitionConfigurationSetting', setting)
 
         return pywbem.CIMInstanceName(
                 classname='LMI_DiskPartitionConfigurationSetting',
@@ -228,7 +237,8 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
 
         else:
             # the device must be extended partition, find its disk
-            if not isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+            if not isinstance(
+                    device, pyanaconda.storage.devices.PartitionDevice):
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "The extent is not an partition.")
             if not device.isExtended:
@@ -242,7 +252,8 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                                          param_extent=None,
                                          param_size=None):
         """
-        Implements LMI_DiskPartitionConfigurationCapabilities.FindPartitionLocation()
+        Implements LMI_DiskPartitionConfigurationCapabilities
+        .FindPartitionLocation()
 
         This method finds the best place for partition of given size.
         """

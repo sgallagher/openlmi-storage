@@ -19,7 +19,8 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 #
-# Base class for all storage tests
+
+""" Base module for all storage tests. """
 
 import os
 import unittest
@@ -78,11 +79,13 @@ class StorageTestBase(unittest.TestCase):
         self.start_udev_monitor()
 
     def start_udev_monitor(self):
-        self.udev_context = pyudev.Context()  # IGNORE:W0201
-        self.udev_monitor = pyudev.Monitor.from_netlink(self.udev_context)  # IGNORE:W0201
+        # pylint: disable-msg=W0201
+        self.udev_context = pyudev.Context()
+        self.udev_monitor = pyudev.Monitor.from_netlink(self.udev_context)
         self.udev_monitor.filter_by('block')
-        self.udev_observer = pyudev.MonitorObserver(self.udev_monitor, self.udev_event)  # IGNORE:W0201
-        self.devices = []  # IGNORE:W0201
+        self.udev_observer = pyudev.MonitorObserver(
+                self.udev_monitor, self.udev_event)
+        self.devices = []
         self.udev_observer.start()
 
     def stop_udev_monitor(self):
@@ -162,7 +165,8 @@ class StorageTestBase(unittest.TestCase):
         ret = self.log_run(["systemctl", "restart", self.cimom])
         time.sleep(1)
         if ret == 0:
-            self.wbemconnection = pywbem.WBEMConnection(self.url, (self.username, self.password))
+            self.wbemconnection = pywbem.WBEMConnection(
+                    self.url, (self.username, self.password))
         return ret
 
 
@@ -205,16 +209,27 @@ class StorageTestBase(unittest.TestCase):
             against setting['ParityLayout'] even if it is None 
             Both extent and setting must be CIMInstance.
         """
-        self.assertEqual(setting['DataRedundancyGoal'], extent['DataRedundancy'])
-        self.assertEqual(setting['DataRedundancyMin'], extent['DataRedundancy'])
-        self.assertEqual(setting['DataRedundancyMax'], extent['DataRedundancy'])
-        self.assertEqual(setting['ExtentStripeLength'], extent['ExtentStripeLength'])
-        self.assertEqual(setting['ExtentStripeLengthMin'], extent['ExtentStripeLength'])
-        self.assertEqual(setting['ExtentStripeLengthMax'], extent['ExtentStripeLength'])
-        self.assertEqual(setting['NoSinglePointOfFailure'], extent['NoSinglePointOfFailure'])
-        self.assertEqual(setting['PackageRedundancyGoal'], extent['PackageRedundancy'])
-        self.assertEqual(setting['PackageRedundancyMin'], extent['PackageRedundancy'])
-        self.assertEqual(setting['PackageRedundancyMax'], extent['PackageRedundancy'])
+        self.assertEqual(
+                setting['DataRedundancyGoal'], extent['DataRedundancy'])
+        self.assertEqual(
+                setting['DataRedundancyMin'], extent['DataRedundancy'])
+        self.assertEqual(
+                setting['DataRedundancyMax'], extent['DataRedundancy'])
+        self.assertEqual(
+                setting['ExtentStripeLength'], extent['ExtentStripeLength'])
+        self.assertEqual(
+                setting['ExtentStripeLengthMin'], extent['ExtentStripeLength'])
+        self.assertEqual(
+                setting['ExtentStripeLengthMax'], extent['ExtentStripeLength'])
+        self.assertEqual(
+                setting['NoSinglePointOfFailure'],
+                extent['NoSinglePointOfFailure'])
+        self.assertEqual(
+                setting['PackageRedundancyGoal'], extent['PackageRedundancy'])
+        self.assertEqual(
+                setting['PackageRedundancyMin'], extent['PackageRedundancy'])
+        self.assertEqual(
+                setting['PackageRedundancyMax'], extent['PackageRedundancy'])
 
         if data_redundancy:
             self.assertEqual(extent['DataRedundancy'], data_redundancy)

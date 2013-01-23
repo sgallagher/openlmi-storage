@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for DeviceProvider class. """
 
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
@@ -42,6 +43,7 @@ class DeviceProvider(BaseProvider):
         self.provider_manager.add_device_provider(self)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def provides_name(self, object_name):
         """
             Returns True, if this class is provider for given CIM InstanceName.
@@ -49,6 +51,7 @@ class DeviceProvider(BaseProvider):
         return False
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def provides_device(self, device):
         """
             Returns True, if this class is provider for given Anaconda
@@ -57,6 +60,7 @@ class DeviceProvider(BaseProvider):
         return False
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_device_for_name(self, object_name):
         """
             Returns Anaconda StorageDevice for given CIM InstanceName or
@@ -65,6 +69,7 @@ class DeviceProvider(BaseProvider):
         return None
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_name_for_device(self, device):
         """
             Returns CIM InstanceName for given Anaconda StorageDevice.
@@ -84,7 +89,8 @@ class DeviceProvider(BaseProvider):
         parents = self.get_base_devices(device)
         if len(parents) > 0:
             for parent in parents:
-                parent_provider = self.provider_manager.get_provider_for_device(parent)
+                parent_provider = self.provider_manager.get_provider_for_device(
+                        parent)
                 parent_status = parent_provider.get_status(parent)
                 status.update(parent_status)
         else:
@@ -116,6 +122,7 @@ class DeviceProvider(BaseProvider):
         return provider.get_redundancy(device)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def do_delete_instance(self, device):
         """
             Really delete given Anaconda StorageDevice.
@@ -152,7 +159,7 @@ class DeviceProvider(BaseProvider):
         parents = self.get_base_devices(device)
         if len(parents) > 0:
             # find all parents and get their redundancy
-            redundancies = map(self._find_redundancy, parents)
+            redundancies = [self._find_redundancy(device) for device in parents]
             # iteratively call self.get_common_redundancy(r1, r2), ...
             final_redundancy = self.Redundancy.get_common_redundancy_list(
                     redundancies)
@@ -197,17 +204,20 @@ class DeviceProvider(BaseProvider):
             self.parity_layout = parity_layout
 
         @cmpi_logging.trace_method
-        def get_redundancy_raid0(self, b):
+        def get_redundancy_raid0(self, second):
             """
                 Return the combined data redundancy characteristics for
                 two devices combined in RAID0.
             """
-            # data is spread on all devices -> DataRedundancy is sum of base DataRedundancies
+            # data is spread on all devices -> DataRedundancy is sum of base
+            # DataRedundancies
             # PackageRedundancy is the minimum of PackageRedundancies
-            data_redundancy = min(self.data_redundancy, b.data_redundancy)
-            package_redundancy = min(self.package_redundancy, b.package_redundancy)
-            no_single_point_of_failure = self.no_single_point_of_failure and b.no_single_point_of_failure
-            stripe_length = self.stripe_length + b.stripe_length
+            data_redundancy = min(self.data_redundancy, second.data_redundancy)
+            package_redundancy = min(self.package_redundancy,
+                    second.package_redundancy)
+            no_single_point_of_failure = (self.no_single_point_of_failure
+                    and second.no_single_point_of_failure)
+            stripe_length = self.stripe_length + second.stripe_length
 
             return DeviceProvider.Redundancy(
                     no_single_point_of_failure=no_single_point_of_failure,
@@ -216,15 +226,16 @@ class DeviceProvider(BaseProvider):
                     stripe_length=stripe_length)
 
         @cmpi_logging.trace_method
-        def get_redundancy_raid1(self, b):
+        def get_redundancy_raid1(self, second):
             """
                 Return the combined data redundancy characteristics for
                 two devices combined in RAID1.
             """
-            data_redundancy = self.data_redundancy + b.data_redundancy
-            package_redundancy = self.package_redundancy + b.package_redundancy
+            data_redundancy = self.data_redundancy + second.data_redundancy
+            package_redundancy = (self.package_redundancy
+                    + second.package_redundancy)
             no_single_point_of_failure = True
-            stripe_length = min(self.stripe_length, b.stripe_length)
+            stripe_length = min(self.stripe_length, second.stripe_length)
 
             return DeviceProvider.Redundancy(
                     no_single_point_of_failure=no_single_point_of_failure,
@@ -233,15 +244,16 @@ class DeviceProvider(BaseProvider):
                     stripe_length=stripe_length)
 
         @cmpi_logging.trace_method
-        def get_redundancy_raid5(self, b):
+        def get_redundancy_raid5(self, second):
             """
                 Return the combined data redundancy characteristics for
                 two devices combined in RAID5.
             """
-            data_redundancy = min(self.data_redundancy, b.data_redundancy)
-            package_redundancy = min(self.package_redundancy, b.package_redundancy)
+            data_redundancy = min(self.data_redundancy, second.data_redundancy)
+            package_redundancy = min(self.package_redundancy,
+                    second.package_redundancy)
             no_single_point_of_failure = True
-            stripe_length = self.stripe_length + b.stripe_length
+            stripe_length = self.stripe_length + second.stripe_length
 
             return DeviceProvider.Redundancy(
                     no_single_point_of_failure=no_single_point_of_failure,
@@ -251,26 +263,27 @@ class DeviceProvider(BaseProvider):
                     parity_layout=self.PARITY_ROTATED)
 
         @cmpi_logging.trace_method
-        def get_redundancy_raid4(self, b):
+        def get_redundancy_raid4(self, second):
             """
                 Return the combined data redundancy characteristics for
                 two devices combined in RAID4.
             """
-            redundancy = self.get_redundancy_raid5(b)
+            redundancy = self.get_redundancy_raid5(second)
             redundancy.parity_layout = self.PARITY_NON_ROTATED
             return redundancy
 
 
         @cmpi_logging.trace_method
-        def get_redundancy_raid6(self, b):
+        def get_redundancy_raid6(self, second):
             """
                 Return the combined data redundancy characteristics for
                 two devices combined in RAID6.
             """
-            data_redundancy = min(self.data_redundancy, b.data_redundancy)
-            package_redundancy = min(self.package_redundancy, b.package_redundancy)
+            data_redundancy = min(self.data_redundancy, second.data_redundancy)
+            package_redundancy = min(self.package_redundancy,
+                    second.package_redundancy)
             no_single_point_of_failure = True
-            stripe_length = self.stripe_length + b.stripe_length
+            stripe_length = self.stripe_length + second.stripe_length
 
             return DeviceProvider.Redundancy(
                     no_single_point_of_failure=no_single_point_of_failure,
@@ -280,15 +293,16 @@ class DeviceProvider(BaseProvider):
                     parity_layout=self.PARITY_ROTATED)
 
         @cmpi_logging.trace_method
-        def get_redundancy_raid10(self, b):
+        def get_redundancy_raid10(self, second):
             """
                 Return the combined data redundancy characteristics for
                 two devices combined in RAID10.
             """
-            data_redundancy = self.data_redundancy + b.data_redundancy
-            package_redundancy = min(self.package_redundancy, b.package_redundancy)
+            data_redundancy = self.data_redundancy + second.data_redundancy
+            package_redundancy = min(self.package_redundancy,
+                    second.package_redundancy)
             no_single_point_of_failure = True
-            stripe_length = self.stripe_length + b.stripe_length
+            stripe_length = self.stripe_length + second.stripe_length
 
             return DeviceProvider.Redundancy(
                     no_single_point_of_failure=no_single_point_of_failure,
@@ -298,22 +312,24 @@ class DeviceProvider(BaseProvider):
 
 
         @cmpi_logging.trace_method
-        def get_redundancy_linear(self, b):
+        def get_redundancy_linear(self, second):
             """
                 Return the combined data redundancy characteristics for
                 two devices.
-                Linear device is assumed, i.e. the data are either on self or on B.
+                Linear device is assumed, i.e. the data are either on self or
+                on B.
             """
             # assume linear device, i.e. a data is either on A or on B
             # hence data_redundancy is the minimum of both
-            data_redundancy = min(self.data_redundancy, b.data_redundancy)
+            data_redundancy = min(self.data_redundancy, second.data_redundancy)
             # assume the worst
-            package_redundancy = min(self.package_redundancy, b.package_redundancy)
+            package_redundancy = min(self.package_redundancy,
+                    second.package_redundancy)
             # both NoSinglePointOfFailure must be true to be the result true
-            no_single_point_of_failure = (
-                    self.no_single_point_of_failure and b.no_single_point_of_failure)
+            no_single_point_of_failure = (self.no_single_point_of_failure
+                    and second.no_single_point_of_failure)
             #  we don't know if the data are on A or B, so assume the worst
-            stripe_length = min(self.stripe_length, b.stripe_length)
+            stripe_length = min(self.stripe_length, second.stripe_length)
             return DeviceProvider.Redundancy(
                     no_single_point_of_failure=no_single_point_of_failure,
                     data_redundancy=data_redundancy,
@@ -326,7 +342,8 @@ class DeviceProvider(BaseProvider):
                  raid_level=LINEAR):
             """
                 Return common redundancy characteristics for list of devices.
-                Linear device is assumed, i.e. the data are either on self or on B.
+                Linear device is assumed, i.e. the data are either on self or
+                on B.
                 
                 raid_level: LINEAR = Linear, 0,1,5,6 - raidX
             """
@@ -372,7 +389,8 @@ class DeviceProvider(BaseProvider):
                 stripes = len(redundancy_list) // 2 + len(redundancy_list) % 2
                 stripe_lengths = [x.stripe_length for x in redundancy_list]
                 stripe_lengths.sort()
-                # final stripe_length = sum of the 'stripes' lowest stripe lengths
+                # final stripe_length = sum of the 'stripes' lowest stripe
+                # lengths
                 stripe_lengths = stripe_lengths[:stripes]
                 redundancy.stripe_length = reduce(
                         lambda a, b: a + b,
@@ -383,7 +401,8 @@ class DeviceProvider(BaseProvider):
                 # i.e. sum of two lowest data redundancies
                 data_redundancies = [x.data_redundancy for x in redundancy_list]
                 data_redundancies.sort()
-                redundancy.data_redundancy = data_redundancies[0] + data_redundancies[1]
+                redundancy.data_redundancy = (data_redundancies[0]
+                        + data_redundancies[1])
 
                 redundancy.package_redundancy = \
                     redundancy.package_redundancy + 1

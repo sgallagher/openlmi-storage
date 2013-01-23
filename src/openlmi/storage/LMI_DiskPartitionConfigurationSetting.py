@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_DiskPartitionConfigurationSetting class."""
 
 import pywbem
 from openlmi.storage.SettingProvider import SettingProvider
@@ -44,6 +45,9 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
 
     @cmpi_logging.trace_method
     def get_configuration(self, device):
+        """
+            Return Setting with configuration of given device.
+        """
         setting = Setting(Setting.TYPE_CONFIGURATION,
                 self.create_setting_id(device.path))
         setting['Bootable'] = str(device.bootable)

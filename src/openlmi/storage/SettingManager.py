@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for SettingManager and Setting classes."""
 
 import os
 import ConfigParser
@@ -71,11 +72,11 @@ class SettingManager(object):
             Remove all persistent and preconfigured settings, leaving
             only transient ones.
         """
-        for c in self.classes.values():
-            for setting in c.values():
+        for cls in self.classes.values():
+            for setting in cls.values():
                 if (setting.type == Setting.TYPE_PERSISTENT
                         or setting.type == Setting.TYPE_PRECONFIGURED):
-                    del(c[setting.id])
+                    del(cls[setting.id])
 
     @cmpi_logging.trace_method
     def load(self):
@@ -86,13 +87,14 @@ class SettingManager(object):
         self.clean()
 
         # open all preconfigured config files
-        self._loadDirectory(self.config.CONFIG_PATH
+        self._load_directory(self.config.CONFIG_PATH
                     + self.config.SETTINGS_DIR, Setting.TYPE_PRECONFIGURED)
-        self._loadDirectory(self.config.PERSISTENT_PATH
+        self._load_directory(self.config.PERSISTENT_PATH
                     + self.config.SETTINGS_DIR, Setting.TYPE_PERSISTENT)
 
     @cmpi_logging.trace_method
-    def _loadDirectory(self, directory, setting_type):
+    def _load_directory(self, directory, setting_type):
+        """ Load all ini files from given directory. """
         if not os.path.isdir(directory):
             return
 
@@ -103,13 +105,14 @@ class SettingManager(object):
             for sid in ini.sections():
                 setting = Setting(setting_type, sid)
                 setting.load(ini)
-                self._setSetting(classname, setting)
+                self._set_setting(classname, setting)
 
     @cmpi_logging.trace_method
-    def _setSetting(self, classname, setting):
+    def _set_setting(self, classname, setting):
+        """ Set given setting. """
         if self.classes.has_key(classname):
-            s = self.classes[classname]
-            s[setting.id] = setting
+            stg = self.classes[classname]
+            stg[setting.id] = setting
         else:
             self.classes[classname] = { setting.id : setting}
 
@@ -126,9 +129,9 @@ class SettingManager(object):
             if old_setting and old_setting.type == Setting.TYPE_PERSISTENT:
                 was_persistent = True
 
-        self._setSetting(classname, setting)
+        self._set_setting(classname, setting)
         if setting.type == Setting.TYPE_PERSISTENT or was_persistent:
-            self._saveClass(classname)
+            self._save_class(classname)
 
     @cmpi_logging.trace_method
     def delete_setting(self, classname, setting):
@@ -142,7 +145,7 @@ class SettingManager(object):
             if old_setting:
                 del(settings[setting.id])
                 if old_setting.type == Setting.TYPE_PERSISTENT:
-                    self._saveClass(classname)
+                    self._save_class(classname)
 
     @cmpi_logging.trace_method
     def save(self):
@@ -151,10 +154,11 @@ class SettingManager(object):
             Create the persistent directory if it does not exist.
         """
         for classname in self.classes.keys():
-            self._saveClass(classname)
+            self._save_class(classname)
 
     @cmpi_logging.trace_method
-    def _saveClass(self, classname):
+    def _save_class(self, classname):
+        """ Save all settings of given class to persistent ini file."""
         ini = ConfigParser.SafeConfigParser()
         ini.optionxform = str  # don't convert to lowercase
         for setting in self.classes[classname].values():
@@ -239,6 +243,14 @@ class Setting(object):
     @cmpi_logging.trace_method
     def __setitem__(self, key, value):
         self.properties[key] = value
+
+    @cmpi_logging.trace_method
+    def __delitem__(self, key):
+        del self.properties[key]
+
+    @cmpi_logging.trace_method
+    def __len__(self):
+        return len(self.properties)
 
     @cmpi_logging.trace_method
     def has_key(self, key):

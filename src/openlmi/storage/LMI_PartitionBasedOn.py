@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_PartitionBasedOn class."""
 
 from openlmi.storage.BasedOnProvider import BasedOnProvider
 import pywbem
@@ -50,6 +51,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
 
     @cmpi_logging.trace_method
     def get_mbr_instance(self, model, device, base):
+        """ Fill instance of PartitionBasedOn class with MBR positions. """
         # primary partitions are simple
         if device.isPrimary or device.isExtended:
             return self.get_gpt_instance(model, device, base)
@@ -66,7 +68,9 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         return model
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_gpt_instance(self, model, device, base):
+        """ Fill instance of PartitionBasedOn class with GPT positions. """
         model['OrderIndex'] = pywbem.Uint16(device.partedPartition.number)
         model['StartingAddress'] = \
             pywbem.Uint64(device.partedPartition.geometry.start)
@@ -80,9 +84,11 @@ class LMI_PartitionBasedOn(BasedOnProvider):
                 env, model, device, base)
 
         if not device:
-            device = self.provider_manager.get_device_for_name(model['Dependent'])
+            device = self.provider_manager.get_device_for_name(
+                    model['Dependent'])
         if not base:
-            base = self.provider_manager.get_device_for_name(model['Antecedent'])
+            base = self.provider_manager.get_device_for_name(
+                    model['Antecedent'])
 
         if device.isLogical:
             model = self.get_mbr_instance(model, device, base)

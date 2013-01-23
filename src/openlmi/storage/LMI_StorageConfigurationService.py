@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_StorageConfigurationService class."""
 
 from openlmi.storage.ServiceProvider import ServiceProvider
 import pywbem
@@ -165,8 +166,9 @@ class LMI_StorageConfigurationService(ServiceProvider):
                 name='theelement',
                 type='reference',
                 value=self.provider_manager.get_name_for_device(device)))
-        return (self.Values.CreateOrModifyElementFromStoragePool.Job_Completed_with_No_Error,
-                outparams)
+        ret = self.Values.CreateOrModifyElementFromStoragePool \
+                .Job_Completed_with_No_Error
+        return (ret, outparams)
 
 
     @cmpi_logging.trace_method
@@ -182,7 +184,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         cmpi_logging.log_storage_call("CREATE LV", args)
 
-        lv = self.storage.newLV(**args)  # IGNORE:W0142
+        lv = self.storage.newLV(**args)
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(lv)
         partitioning.do_storage_action(self.storage, action)
 
@@ -197,9 +199,9 @@ class LMI_StorageConfigurationService(ServiceProvider):
                     type="uint64",
                     value=pywbem.Uint64(newsize))
         ]
-
-        return (self.Values.CreateOrModifyElementFromStoragePool.Job_Completed_with_No_Error,
-                outparams)
+        ret = self.Values.CreateOrModifyElementFromStoragePool \
+                .Job_Completed_with_No_Error
+        return (ret, outparams)
 
     @cmpi_logging.trace_method
     def cim_method_createormodifylv(self, env, object_name,
@@ -237,7 +239,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
             if not device:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find the TheElement device.")
-            if not isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+            if not isinstance(device,
+                    pyanaconda.storage.devices.LVMLogicalVolumeDevice):
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "The TheElement parameter is not LMI_LVStorageExtent.")
         else:
@@ -249,7 +252,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
             if not pool:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot find the InPool device.")
-            if not isinstance(pool, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+            if not isinstance(pool,
+                    pyanaconda.storage.devices.LVMVolumeGroupDevice):
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "The InPool parameter is not LMI_VGStoragePool.")
         else:
@@ -291,7 +295,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
         if pool and device:
             if device.vg != pool:
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
-                        "InPool does not match TheElement's pool, modification of a pool is not supported.")
+                        "InPool does not match TheElement's pool, modification"\
+                        " of a pool is not supported.")
 
         if not device and not pool:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
@@ -299,7 +304,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         if not device and not newsize:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                    "Parameter Size must be set when creating a logical volume.")
+                    "Parameter Size must be set when creating a logical"\
+                    " volume.")
 
         if device:
             return self._modify_lv(device, param_elementname, newsize)
@@ -336,7 +342,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
             parameter Job.
         """
         if param_elementtype is not None:
-            if param_elementtype != self.Values.CreateOrModifyElementFromStoragePool.ElementType.StorageExtent:
+            etype = self.Values.CreateOrModifyElementFromStoragePool.ElementType
+            if param_elementtype != etype.StorageExtent:
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "The only ElementType is StorageExtent (3).")
         # create LV
@@ -392,7 +399,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             # TODO: check if it is unused!
             if not (device.format
                     and isinstance(device.format,
-                            pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume)):
+                        pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume)):
                 # create the pv format there
                 pv = pyanaconda.storage.formats.getFormat('lvmpv')
                 self.storage.formatDevice(device, pv)
@@ -406,7 +413,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         cmpi_logging.log_storage_call("CREATE VG", args)
 
-        vg = self.storage.newVG(**args)  # IGNORE:W0142
+        vg = self.storage.newVG(**args)
         action = pyanaconda.storage.ActionCreateDevice(vg)
         partitioning.do_storage_action(self.storage, action)
 
@@ -460,7 +467,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
             if not pool:
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "Cannot find the Pool device.")
-            if not isinstance(pool, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+            if not isinstance(pool,
+                    pyanaconda.storage.devices.LVMVolumeGroupDevice):
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "The Pool parameter is not LMI_VGStoragePool.")
         else:
@@ -485,8 +493,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         # extents vs goal:
         if devices and goal:
-            final_redundancy = DeviceProvider.Redundancy.get_common_redundancy_list(
-                    redundancies)
+            final_redundancy = DeviceProvider.Redundancy \
+                    .get_common_redundancy_list(redundancies)
             error = self._check_redundancy_setting(final_redundancy, goal)
             if error:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
@@ -580,9 +588,11 @@ class LMI_StorageConfigurationService(ServiceProvider):
                     "Parameter Size is not supported.")
 
         if param_elementtype is not None:
-            if param_elementtype != self.Values.CreateOrModifyElementFromElements.ElementType.Storage_Extent:
+            etypes = self.Values.CreateOrModifyElementFromElements.ElementType
+            if param_elementtype != etypes.Storage_Extent:
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
-                        "Parameter ElementType must have value '3 - StorageExtent'.")
+                        "Parameter ElementType must have value" \
+                        " '3 - StorageExtent'.")
 
         return self.cim_method_createormodifymdraid(env, object_name,
                 param_elementname=param_elementname,
@@ -670,6 +680,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         return best_level
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def _create_mdraid(self, level, goal, devices, name):
         """
             Create new  MD RAID. The parameters were already checked.
@@ -684,7 +695,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         cmpi_logging.log_storage_call("CREATE MDRAID", args)
 
-        raid = self.storage.newMDArray(**args)  # IGNORE:W0142
+        raid = self.storage.newMDArray(**args)
         action = pyanaconda.storage.ActionCreateDevice(raid)
         partitioning.do_storage_action(self.storage, action)
 
@@ -703,6 +714,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         return (retval, outparams)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def _modify_mdraid(self, raid, level, goal, devices, name):
         """
             Modify existing MD RAID. The parameters were already checked.
@@ -748,7 +760,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
             if not raid:
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "Cannot find the TheElement device.")
-            if not isinstance(raid, pyanaconda.storage.devices.MDRaidArrayDevice):
+            if not isinstance(raid,
+                    pyanaconda.storage.devices.MDRaidArrayDevice):
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "The Pool parameter is not LMI_MDRAIDStorageExtent.")
         else:
@@ -807,7 +820,8 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         if (level == 5 or level == 4) and len(devices) < 3:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                    "At least three devices are required for RAID level 4 or 5.")
+                    "At least three devices are required for RAID level" \
+                    " 4 or 5.")
         if level == 6 and len(devices) < 4:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "At least four devices are required for RAID level 6.")

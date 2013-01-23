@@ -29,9 +29,11 @@ GPT_TABLE_SIZE = 34 * 2  # there are two copies
 MBR_TABLE_SIZE = 1
 
 def _align_up(address, alignment):
+    """ Align address to nearest higher address divisible by alignment."""
     return (address / alignment + 1) * alignment
 
 def _align_down(address, alignment):
+    """ Align address to nearest lower address divisible by alignment."""
     return (address / alignment) * alignment
 
 @cmpi_logging.trace_function
@@ -43,7 +45,8 @@ def get_logical_partition_start(partition):
     disk = partition.disk
     ext = disk.format.partedDisk.getExtendedPartition()
     if not ext:
-        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find extended partition.')
+        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                'Cannot find extended partition.')
 
     metadata = None
     part = ext.nextPartition()
@@ -57,9 +60,11 @@ def get_logical_partition_start(partition):
 
     print 'partition', part, 'metadata', metadata
     if not part:
-        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find the partition on the disk.')
+        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                'Cannot find the partition on the disk.')
     if not metadata:
-        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED, 'Cannot find metadata for the partition.')
+        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                'Cannot find metadata for the partition.')
 
     return metadata.geometry.start
 
@@ -124,7 +129,8 @@ def do_storage_action(storage, action):
 
     do_partitioning = False
     if (isinstance(action.device, pyanaconda.storage.devices.PartitionDevice)
-            and isinstance(action, pyanaconda.storage.deviceaction.ActionCreateDevice)):
+            and isinstance(action,
+                    pyanaconda.storage.deviceaction.ActionCreateDevice)):
         do_partitioning = True
     storage.devicetree.registerAction(action)
 
@@ -138,11 +144,13 @@ def do_storage_action(storage, action):
             pyanaconda.storage.partitioning.doPartitioning(storage=storage)
 
         storage.devicetree.processActions(dryRun=False)
-        if not isinstance(action, pyanaconda.storage.deviceaction.ActionDestroyDevice):
+        if not isinstance(action,
+                pyanaconda.storage.deviceaction.ActionDestroyDevice):
             cmpi_logging.logger.trace_verbose("Result: " + repr(action.device))
         if do_raid:
             # work around mdadm not waiting for device to appear/disappear
-            if isinstance(action, pyanaconda.storage.deviceaction.ActionDestroyDevice):
+            if isinstance(action,
+                    pyanaconda.storage.deviceaction.ActionDestroyDevice):
                 # remove the metadata, otherwise reset() still recognizes
                 # the array
                 for device in action.device.parents:

@@ -17,7 +17,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
-
+"""
+    Logging to CMPI.
+    
+    It must be initialized just once using 'cmpi_logging.LogManager(env)',
+    where env is CIMOM environment.
+    
+    Other modules can then use following code:
+        import cmpi_logging
+        cmpi_logging.logger.log_info("Hello world") 
+"""
 
 import logging
 import inspect
@@ -73,17 +82,19 @@ def trace_method(func):
     """ Decorator, trace entry and exit for a class method. """
     classname = inspect.getouterframes(inspect.currentframe())[1][3]
     def helper_func(*args, **kwargs):
-        """ Helper function, wrapping real function by trace_method decorator."""
+        """
+            Helper function, wrapping real function by trace_method decorator.
+        """
         logger.log(TRACE_VERBOSE,
                 "Entering %s.%s" % (classname, func.__name__,))
         try:
             ret = func(*args, **kwargs)
-        except Exception, e:
+        except Exception, exc:
             logger.log(TRACE_WARNING,
                     "%s.%s threw exception %s" % (
                             classname,
                             func.__name__,
-                            str(e)))
+                            str(exc)))
             raise
         logger.log(
                 TRACE_VERBOSE,
@@ -97,14 +108,16 @@ def trace_method(func):
 def trace_function(func):
     """ Decorator, trace entry and exit for a function outside any class. """
     def helper_func(*args, **kwargs):
-        """ Helper function, wrapping real function by trace_method decorator."""
+        """
+            Helper function, wrapping real function by trace_method decorator.
+        """
         logger.log(TRACE_VERBOSE,
                 "Entering %s" % (func.__name__,))
         try:
             ret = func(*args, **kwargs)
-        except Exception, e:
+        except Exception, exc:
             logger.log(TRACE_WARNING,
-                    "%s threw exception %s" % (func.__name__, str(e)))
+                    "%s threw exception %s" % (func.__name__, str(exc)))
             raise
         logger.log(
                 TRACE_VERBOSE,
@@ -144,7 +157,8 @@ class LogManager(object):
         self.stderr_handler = None
         self.config = None
 
-        global logger  # IGNORE:W0603
+        # pylint: disable-msg=W0603
+        global logger
         logger = self.logger
         logger.info("CMPI log started")
 
@@ -187,6 +201,9 @@ class LogManager(object):
             self.stderr_handler = None
 
     def destroy(self):
+        """
+            Destroy the manager and stop logging.
+        """
         if self.stderr_handler:
             self.logger.removeHandler(self.stderr_handler)
             self.stderr_handler = None
@@ -211,7 +228,10 @@ def log_storage_call(msg, args):
             value = [d.path for d in value]
         print_args[key] = value
 
-    global logger
-    logger.info(msg + ": " + str(print_args))
 
-logger = None
+    global logger  # pylint: disable-msg=W0602
+    if logger:
+        logger.info(msg + ": " + str(print_args))
+
+
+logger = None  # pylint: disable-msg=C0103

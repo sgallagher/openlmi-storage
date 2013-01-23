@@ -17,6 +17,8 @@
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
 
+""" Module for BasedOnProvider class. """
+
 import pywbem
 from openlmi.storage.BaseProvider import BaseProvider
 import openlmi.storage.cmpi_logging as cmpi_logging
@@ -54,32 +56,37 @@ class BasedOnProvider(BaseProvider):
                         "Cannot find provider for device " + device.path)
             for base in provider.get_base_devices(device):
                 model['Dependent'] = provider.get_name_for_device(device)
-                model['Antecedent'] = self.provider_manager.get_name_for_device(base)
+                model['Antecedent'] = self.provider_manager.get_name_for_device(
+                        base)
                 if keys_only:
                     yield model
                 else:
                     yield self.get_instance(env, model, device, base)
 
 
+    # pylint: disable-msg=W0221
     @cmpi_logging.trace_method
-    def get_instance(self, env, model, device=None, base=None):  # IGNORE:W0221
+    def get_instance(self, env, model, device=None, base=None):
         """
             Provider implementation of GetInstance intrinsic method.
             It just checks if Dependent and Antecedent are related.
         """
         if not device:
-            device = self.provider_manager.get_device_for_name(model['Dependent'])
+            device = self.provider_manager.get_device_for_name(
+                    model['Dependent'])
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Dependent device")
 
         if not base:
-            base = self.provider_manager.get_device_for_name(model['Antecedent'])
+            base = self.provider_manager.get_device_for_name(
+                    model['Antecedent'])
         if not base:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find Antecedent device")
 
-        device_provider = self.provider_manager.get_device_provider_for_name(model['Dependent'])
+        device_provider = self.provider_manager.get_device_provider_for_name(
+                model['Dependent'])
         if not (base in device_provider.get_base_devices(device)):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Antecedent is not related to Dependent device")
@@ -145,14 +152,14 @@ class BasedOnProvider(BaseProvider):
         CIM_ERR_FAILED (some other unspecified error occurred)
 
         """
-        ch = env.get_cimom_handle()
+        cimom = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace,
+        if cimom.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_StorageExtent') or \
-                ch.is_subclass(object_name.namespace,
+                cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,

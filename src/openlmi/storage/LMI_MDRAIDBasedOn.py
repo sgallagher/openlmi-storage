@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_MDRAIDBasedOn class."""
 
 from openlmi.storage.BasedOnProvider import BasedOnProvider
 import pywbem
@@ -44,9 +45,11 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
                 env, model, device, base)
 
         if not device:
-            device = self.provider_manager.get_device_for_name(model['Dependent'])
+            device = self.provider_manager.get_device_for_name(
+                    model['Dependent'])
         if not base:
-            base = self.provider_manager.get_device_for_name(model['Antecedent'])
+            base = self.provider_manager.get_device_for_name(
+                    model['Antecedent'])
 
         model['OrderIndex'] = pywbem.Uint16(device.parents.index(base) + 1)
 

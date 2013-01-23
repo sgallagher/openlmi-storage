@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_LVStorageExtent class."""
 
 from openlmi.storage.ExtentProvider import ExtentProvider
 import pyanaconda.storage
@@ -109,7 +110,8 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not path:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+        if not isinstance(device,
+                pyanaconda.storage.devices.LVMLogicalVolumeDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -128,7 +130,8 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not path:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+        if not isinstance(device,
+                pyanaconda.storage.devices.LVMLogicalVolumeDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None

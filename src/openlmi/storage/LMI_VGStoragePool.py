@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_VGStoragePool class."""
 
 from openlmi.storage.DeviceProvider import DeviceProvider
 import pywbem
@@ -96,6 +97,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         return name
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def get_instance(self, env, model, device=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -106,7 +108,8 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         if not device:
             device = self.get_device_for_name(model)
         if not device:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find the VG.")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find the VG.")
 
         model['Primordial'] = False
         model['ElementName'] = device.name
@@ -224,18 +227,21 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Wrong keys.")
         device = self.get_device_for_name(object_name)
         if not device:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find the VG.")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find the VG.")
 
         # we support only logical disks for now (should be StorageExtent)
+        etypes = self.Values.GetSupportedSizeRange.ElementType
         if (param_elementtype
-                and param_elementtype != self.Values.GetSupportedSizeRange.ElementType.Logical_Disk):
+                and param_elementtype != etypes.Logical_Disk):
             ret = self.Values.GetSupportedSizeRange.Invalid_Element_Type
             return (ret, [])
 
         # TODO: check Goal setting!
 
         extent_size = long(device.peSize * units.MEGABYTE)
-        available_size = long(device.peSize * device.freeExtents * units.MEGABYTE)
+        available_size = long(
+                device.peSize * device.freeExtents * units.MEGABYTE)
 
         out_params = []
         out_params += [pywbem.CIMParameter('minimumvolumesize', type='uint64',
@@ -283,7 +289,8 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not path:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if not isinstance(device,
+                pyanaconda.storage.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -302,7 +309,8 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not path:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if not isinstance(device,
+                pyanaconda.storage.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None

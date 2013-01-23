@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for CapabilitiesProvider class. """
 
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
@@ -92,6 +93,7 @@ class CapabilitiesProvider(BaseProvider):
         """
         return []
 
+    # pylint: disable-msg=W0613
     @cmpi_logging.trace_method
     def create_setting_for_capabilities(self, capabilities):
         """
@@ -102,6 +104,7 @@ class CapabilitiesProvider(BaseProvider):
         """
         return None
 
+    # pylint: disable-msg=W0221
     @cmpi_logging.trace_method
     def get_instance(self, env, model, capabilities=None):
         """
@@ -227,9 +230,11 @@ class ElementCapabilitiesProvider(BaseProvider):
                     classname=self.service_provider.classname,
                     namespace=self.config.namespace,
                     keybindings={
-                            'CreationClassName': self.service_provider.classname,
+                            'CreationClassName':
+                                    self.service_provider.classname,
                             'Name': self.service_provider.classname,
-                            'SystemCreationClassName' : self.config.system_class_name,
+                            'SystemCreationClassName' :
+                                    self.config.system_class_name,
                             'SystemName': self.config.system_name
                     })
 
@@ -253,6 +258,7 @@ class ElementCapabilitiesProvider(BaseProvider):
             else:
                 yield self.get_instance(env, model, capabilities)
 
+    # pylint: disable-msg=W0221
     @cmpi_logging.trace_method
     def get_instance(self, env, model, capabilities=None):
         """
@@ -282,14 +288,14 @@ class ElementCapabilitiesProvider(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations. """
-        ch = env.get_cimom_handle()
+        cimom = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace,
+        if cimom.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_Capabilities') or \
-                ch.is_subclass(object_name.namespace,
+                cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super='CIM_ManagedElement'):
             return self.simple_refs(env, object_name, model,

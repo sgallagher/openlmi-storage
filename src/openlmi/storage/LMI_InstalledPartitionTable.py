@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_InstalledPartitionTable class."""
 
 import pyanaconda.storage.formats
 from openlmi.storage.BaseProvider import BaseProvider
@@ -30,7 +31,8 @@ class LMI_InstalledPartitionTable(BaseProvider):
     @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_InstalledPartitionTable, self).__init__(*args, **kwargs)
-        self.capabilities_provider = self.provider_manager.get_capabilities_provider_for_class(
+        mgr = self.provider_manager
+        self.capabilities_provider = mgr.get_capabilities_provider_for_class(
                 "LMI_DiskPartitionConfigurationCapabilities")
 
     @cmpi_logging.trace_method
@@ -61,9 +63,11 @@ class LMI_InstalledPartitionTable(BaseProvider):
             for given device
             or None if there is no partition table on the device.
         """
-        capabilities = self.capabilities_provider.get_capabilities_for_device(device)
+        capabilities = self.capabilities_provider.get_capabilities_for_device(
+                device)
         if capabilities:
-            return self.capabilities_provider.get_name_for_id(capabilities['InstanceID'])
+            return self.capabilities_provider.get_name_for_id(
+                    capabilities['InstanceID'])
         return None
 
     @cmpi_logging.trace_method
@@ -76,8 +80,10 @@ class LMI_InstalledPartitionTable(BaseProvider):
         for device in self.storage.devices:
             fmt_class = pyanaconda.storage.formats.disklabel.DiskLabel
             if device.format and isinstance(device.format, fmt_class):
-                model['Antecedent'] = self.provider_manager.get_name_for_device(device)
-                model['Dependent'] = self.get_capabilities_name_for_device(device)
+                model['Antecedent'] = self.provider_manager.get_name_for_device(
+                        device)
+                model['Dependent'] = self.get_capabilities_name_for_device(
+                        device)
                 yield model
 
 
@@ -85,15 +91,16 @@ class LMI_InstalledPartitionTable(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""
-        ch = env.get_cimom_handle()
+        cimom = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace,
+        if cimom.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_StorageExtent') or \
-                ch.is_subclass(object_name.namespace,
+                cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
-                               super='CIM_DiskPartitionConfigurationCapabilities'):
+                               super=\
+                               'CIM_DiskPartitionConfigurationCapabilities'):
             return self.simple_refs(env, object_name, model,
                           result_class_name, role, result_role, keys_only)

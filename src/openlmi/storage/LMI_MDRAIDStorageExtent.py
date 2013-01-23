@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_MDRAIDStorageExtent class."""
 
 from openlmi.storage.ExtentProvider import ExtentProvider
 import pyanaconda.storage
@@ -66,9 +67,10 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
         """
         parents = self.get_base_devices(device)
         # find all parents and get their redundancy
-        redundancies = map(self._find_redundancy, parents)
+        redundancies = [self._find_redundancy(dev) for dev in parents]
         if device.level in [0, 1, 4, 5, 6, 10]:
-            final_redundancy = DeviceProvider.Redundancy.get_common_redundancy_list(redundancies, device.level)
+            final_redundancy = DeviceProvider.Redundancy \
+                    .get_common_redundancy_list(redundancies, device.level)
         else:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Unsupported raid type: " + str(device.level))

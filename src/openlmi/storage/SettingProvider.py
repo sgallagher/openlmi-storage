@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for SettingProvider class."""
 
 import pywbem
 from openlmi.storage.BaseProvider import BaseProvider
@@ -112,6 +113,7 @@ class SettingProvider(BaseProvider):
         return "LMI:" + self.setting_classname + ":" + myid
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_configuration_for_id(self, instance_id):
         """
             Return Setting instance for given instance_id.
@@ -122,6 +124,7 @@ class SettingProvider(BaseProvider):
         return None
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0613
     def get_associated_element_name(self, instance_id):
         """
             Return CIMInstanceName for ElementSettingData association.
@@ -170,6 +173,7 @@ class SettingProvider(BaseProvider):
         # find the setting in configurations
         return self.get_configuration_for_id(instance_id)
 
+    # pylint: disable-msg=W0221
     @cmpi_logging.trace_method
     def get_instance(self, env, model, setting=None):
         """
@@ -179,7 +183,8 @@ class SettingProvider(BaseProvider):
             setting = self.find_instance(model['InstanceID'])
 
         if not setting:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find setting.")
 
         # convert setting to model using supported_properties
         for (name, value) in setting.items():
@@ -187,14 +192,15 @@ class SettingProvider(BaseProvider):
                 if self.supported_properties.has_key(name):
                     model[name] = self.supported_properties[name](value)
 
+        types = self.Values.ChangeableType
         if setting.type == Setting.TYPE_CONFIGURATION:
-            model['ChangeableType'] = self.Values.ChangeableType.Not_Changeable_Transient
+            model['ChangeableType'] = types.Not_Changeable_Transient
         elif setting.type == Setting.TYPE_PERSISTENT:
-            model['ChangeableType'] = self.Values.ChangeableType.Changeable_Persistent
+            model['ChangeableType'] = types.Changeable_Persistent
         elif setting.type == Setting.TYPE_PRECONFIGURED:
-            model['ChangeableType'] = self.Values.ChangeableType.Not_Changeable_Persistent
+            model['ChangeableType'] = types.Not_Changeable_Persistent
         elif setting.type == Setting.TYPE_TRANSIENT:
-            model['ChangeableType'] = self.Values.ChangeableType.Changeable_Transient
+            model['ChangeableType'] = types.Changeable_Transient
 
         return model
 
@@ -241,7 +247,8 @@ class SettingProvider(BaseProvider):
         """
         setting = self.find_instance(instance['InstanceID'])
         if not setting:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND, "Cannot find setting.")
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
+                    "Cannot find setting.")
 
         if not modify_existing:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
@@ -269,17 +276,18 @@ class SettingProvider(BaseProvider):
                     raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                             "Property is not supported: " + name)
                 continue
+            types = self.Values.ChangeableType
             if name == 'ChangeableType':
                 if setting.type == Setting.TYPE_TRANSIENT:
-                    if instance[name] == self.Values.ChangeableType.Changeable_Persistent:
+                    if instance[name] == types.Changeable_Persistent:
                         # can change only transient -> persistent
                         setting.type = Setting.TYPE_PERSISTENT
                         continue
-                    if instance[name] == self.Values.ChangeableType.Changeable_Transient:
+                    if instance[name] == types.Changeable_Transient:
                         # ignore transient -> transient
                         continue
                 elif (setting.type == Setting.TYPE_PERSISTENT
-                            and instance[name] == self.Values.ChangeableType.Changeable_Persistent):
+                            and instance[name] == types.Changeable_Persistent):
                     # ignore persistent -> persistent
                     continue
 
@@ -288,7 +296,8 @@ class SettingProvider(BaseProvider):
 
             # finally, we should set the variable
             if instance[name] is not None:
-                if self.validate_properties and self.validate_properties.has_key(name):
+                if (self.validate_properties
+                        and self.validate_properties.has_key(name)):
                     # check validity of the property
                     validator = self.validate_properties[name]
                     if not validator(instance[name]):
@@ -421,7 +430,6 @@ class ElementSettingDataProvider(BaseProvider):
 
 
     @cmpi_logging.trace_method
-
     def get_instance(self, env, model):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -449,7 +457,9 @@ class ElementSettingDataProvider(BaseProvider):
         model.path.update({'ManagedElement': None, 'SettingData': None})
         for setting in self.setting_provider.enumerate_configurations():
             instance_id = setting.id
-            model['ManagedElement'] = self.setting_provider.get_associated_element_name(instance_id)
+            provider = self.setting_provider
+            model['ManagedElement'] = provider.get_associated_element_name(
+                    instance_id)
             model['SettingData'] = pywbem.CIMInstanceName(
                     classname=self.setting_data_classname,
                     namespace=self.config.namespace,
@@ -464,11 +474,11 @@ class ElementSettingDataProvider(BaseProvider):
                                result_role, keys_only):
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        ch = env.get_cimom_handle()
-        if ch.is_subclass(object_name.namespace,
+        cimom = env.get_cimom_handle()
+        if cimom.is_subclass(object_name.namespace,
                     sub=object_name.classname,
                     super=self.managed_element_classname) or \
-                    ch.is_subclass(object_name.namespace,
+                    cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super=self.setting_data_classname):
             return self.simple_refs(env, object_name, model,

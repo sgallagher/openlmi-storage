@@ -16,6 +16,8 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_LVStorageCapabilities class."""
+
 from openlmi.storage.CapabilitiesProvider import CapabilitiesProvider
 import openlmi.storage.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingManager import StorageSetting
@@ -43,13 +45,15 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not device:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if not isinstance(device,
+                pyanaconda.storage.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMVolumeGroupDevice" % instance_id)
             return None
 
         if not self.pool_provider:
-            self.pool_provider = self.provider_manager.get_provider_for_device(device)
+            self.pool_provider = self.provider_manager.get_provider_for_device(
+                    device)
         return self.pool_provider.get_name_for_device(device)
 
 
@@ -57,23 +61,31 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
     def _get_capabilities_for_device(self, device):
         """ Return capabilities fir given device. """
         if not self.pool_provider:
-            self.pool_provider = self.provider_manager.get_provider_for_device(device)
+            self.pool_provider = self.provider_manager.get_provider_for_device(
+                    device)
 
         redundancy = self.pool_provider.get_redundancy(device)
         caps = {}
         caps['InstanceID'] = self.create_capabilities_id(device.path)
         caps['ElementName'] = device.path
-        caps['DataRedundancyDefault'] = pywbem.Uint16(redundancy.data_redundancy)
+        caps['DataRedundancyDefault'] = \
+                pywbem.Uint16(redundancy.data_redundancy)
         caps['DataRedundancyMax'] = pywbem.Uint16(redundancy.data_redundancy)
         caps['DataRedundancyMin'] = pywbem.Uint16(redundancy.data_redundancy)
         caps['NoSinglePointOfFailure'] = redundancy.no_single_point_of_failure
-        caps['NoSinglePointOfFailureDefault'] = redundancy.no_single_point_of_failure
-        caps['ExtentStripeLengthDefault'] = pywbem.Uint16(redundancy.stripe_length)
-        caps['PackageRedundancyDefault'] = pywbem.Uint16(redundancy.package_redundancy)
-        caps['PackageRedundancyMax'] = pywbem.Uint16(redundancy.package_redundancy)
-        caps['PackageRedundancyMin'] = pywbem.Uint16(redundancy.package_redundancy)
+        caps['NoSinglePointOfFailureDefault'] = \
+                redundancy.no_single_point_of_failure
+        caps['ExtentStripeLengthDefault'] = \
+                pywbem.Uint16(redundancy.stripe_length)
+        caps['PackageRedundancyDefault'] = \
+                pywbem.Uint16(redundancy.package_redundancy)
+        caps['PackageRedundancyMax'] = pywbem.Uint16(
+                redundancy.package_redundancy)
+        caps['PackageRedundancyMin'] = pywbem.Uint16(
+                redundancy.package_redundancy)
         if redundancy.parity_layout:
-            caps['ParityLayoutDefault'] = pywbem.Uint16(redundancy.parity_layout + 1)
+            caps['ParityLayoutDefault'] = pywbem.Uint16(
+                    redundancy.parity_layout + 1)
         else:
             caps['ParityLayoutDefault'] = None
         return caps
@@ -108,13 +120,20 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         setting['DataRedundancyGoal'] = capabilities['DataRedundancyDefault']
         setting['DataRedundancyMax'] = capabilities['DataRedundancyDefault']
         setting['DataRedundancyMin'] = capabilities['DataRedundancyDefault']
-        setting['ExtentStripeLength'] = capabilities['ExtentStripeLengthDefault']
-        setting['ExtentStripeLengthMax'] = capabilities['ExtentStripeLengthDefault']
-        setting['ExtentStripeLengthMin'] = capabilities['ExtentStripeLengthDefault']
-        setting['NoSinglePointOfFailure'] = capabilities['NoSinglePointOfFailure']
-        setting['PackageRedundancyGoal'] = capabilities['PackageRedundancyDefault']
-        setting['PackageRedundancyMax'] = capabilities['PackageRedundancyDefault']
-        setting['PackageRedundancyMin'] = capabilities['PackageRedundancyDefault']
+        setting['ExtentStripeLength'] = \
+                capabilities['ExtentStripeLengthDefault']
+        setting['ExtentStripeLengthMax'] = \
+                capabilities['ExtentStripeLengthDefault']
+        setting['ExtentStripeLengthMin'] = \
+                capabilities['ExtentStripeLengthDefault']
+        setting['NoSinglePointOfFailure'] = \
+                capabilities['NoSinglePointOfFailure']
+        setting['PackageRedundancyGoal'] = \
+                capabilities['PackageRedundancyDefault']
+        setting['PackageRedundancyMax'] = \
+                capabilities['PackageRedundancyDefault']
+        setting['PackageRedundancyMin'] = \
+                capabilities['PackageRedundancyDefault']
         setting['ElementName'] = 'CreatedFrom' + capabilities['InstanceID']
         if capabilities['ParityLayoutDefault']:
             setting['ParityLayout'] = capabilities['ParityLayoutDefault'] - 1
@@ -143,7 +162,8 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not device:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if not isinstance(device,
+                pyanaconda.storage.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMVolumeGroupDevice" % instance_id)
             return None
@@ -151,6 +171,7 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         return self._get_capabilities_for_device(device)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def cim_method_createsetting(self, env, object_name,
             param_settingtype=None):
         """
@@ -162,13 +183,14 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         """
         # just check param_settingtype
         if param_settingtype:
-            if (param_settingtype != self.Values.CreateSetting.SettingType.Default
-                    and param_settingtype != self.Values.CreateSetting.SettingType.Goal):
+            setting_type = self.Values.CreateSetting.SettingType
+            if (param_settingtype != setting_type.Default
+                    and param_settingtype != setting_type.Goal):
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Wrong value of SettingType parameter.")
 
-        (retval, outvars) = super(LMI_LVStorageCapabilities, self).cim_method_createsetting(
-                env, object_name)
+        (retval, outvars) = super(LMI_LVStorageCapabilities, self)\
+                .cim_method_createsetting(env, object_name)
 
         # rename output param from 'setting' to 'newsetting'
         if outvars and outvars[0].name == "setting":
@@ -240,7 +262,8 @@ class LMI_LVElementCapabilities(BaseProvider):
         """
         for capabilities in self.capabilities_provider.enumerate_capabilities():
 
-            managed_element_name = self.capabilities_provider.get_pool_name_for_capabilities(
+            provider = self.capabilities_provider
+            managed_element_name = provider.get_pool_name_for_capabilities(
                     capabilities['InstanceID'])
 
             capabilities_name = pywbem.CIMInstanceName(
@@ -264,6 +287,7 @@ class LMI_LVElementCapabilities(BaseProvider):
                 yield self.get_instance(env, model, capabilities)
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def get_instance(self, env, model, capabilities_name=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -271,7 +295,8 @@ class LMI_LVElementCapabilities(BaseProvider):
         # find the capabilities instance
         instance_id = None
         if not capabilities_name:
-            capabilities = self.capabilities_provider.get_capabilities_for_id(model['Capabilities']['InstanceID'])
+            capabilities = self.capabilities_provider.get_capabilities_for_id(
+                    model['Capabilities']['InstanceID'])
             if not capabilities:
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                         "Capabilities not found.")
@@ -279,7 +304,8 @@ class LMI_LVElementCapabilities(BaseProvider):
         else:
             instance_id = capabilities_name['InstanceID']
 
-        name = self.capabilities_provider.get_pool_name_for_capabilities(instance_id)
+        name = self.capabilities_provider.get_pool_name_for_capabilities(
+                instance_id)
         if not name:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find StoragePool for Capabilities.")
@@ -294,14 +320,14 @@ class LMI_LVElementCapabilities(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations. """
-        ch = env.get_cimom_handle()
+        cimom = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace,
+        if cimom.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_Capabilities') or \
-                ch.is_subclass(object_name.namespace,
+                cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super='CIM_ManagedElement'):
             return self.simple_refs(env, object_name, model,

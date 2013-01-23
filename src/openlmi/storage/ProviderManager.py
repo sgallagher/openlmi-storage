@@ -16,6 +16,8 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for ProviderManager class."""
+
 import openlmi.storage.cmpi_logging as cmpi_logging
 
 class ProviderManager(object):
@@ -88,9 +90,9 @@ class ProviderManager(object):
             Return provider for given CIM InstanceName.
             Return None if no such provider is registered.
         """
-        for p in self.device_providers:
-            if p.provides_name(object_name):
-                return p
+        for provider in self.device_providers:
+            if provider.provides_name(object_name):
+                return provider
         return None
 
     @cmpi_logging.trace_method
@@ -99,9 +101,9 @@ class ProviderManager(object):
             Return Anaconda StorageDevice for given CIM InstanceName.
             Return None if no device exist.
         """
-        p = self.get_device_provider_for_name(object_name)
-        if p:
-            return p.get_device_for_name(object_name)
+        provider = self.get_device_provider_for_name(object_name)
+        if provider:
+            return provider.get_device_for_name(object_name)
         return None
 
     @cmpi_logging.trace_method
@@ -110,9 +112,9 @@ class ProviderManager(object):
             Return provider for given Anaconda StorageDevice.
             Return None if no such provider is registered.
         """
-        for p in self.device_providers:
-            if p.provides_device(device):
-                return p
+        for provider in self.device_providers:
+            if provider.provides_device(device):
+                return provider
         return None
 
     @cmpi_logging.trace_method
@@ -121,9 +123,9 @@ class ProviderManager(object):
             Return CIM InstanceName for given Anaconda StorageDevice.
             Return None if no device exist.
         """
-        p = self.get_provider_for_device(device)
-        if p:
-            return p.get_name_for_device(device)
+        provider = self.get_provider_for_device(device)
+        if provider:
+            return provider.get_name_for_device(device)
         return None
 
     @cmpi_logging.trace_method

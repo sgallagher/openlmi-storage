@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_StorageExtent class."""
 
 from openlmi.storage.ExtentProvider import ExtentProvider
 import pyanaconda.storage

@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_SystemStorageDevice class."""
 
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
@@ -67,7 +68,7 @@ class LMI_SystemStorageDevice(BaseProvider):
                     })
             provider = self.provider_manager.get_provider_for_device(device)
             if not provider:
-                cmpi_logging.logger.trace_warning(
+                cmpi_logging.logger.trace_warn(
                         "Cannot find provider for " + device.path)
                 continue
             model['PartComponent'] = provider.get_name_for_device(device)
@@ -77,14 +78,14 @@ class LMI_SystemStorageDevice(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""
-        ch = env.get_cimom_handle()
+        cimom = env.get_cimom_handle()
 
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        if ch.is_subclass(object_name.namespace,
+        if cimom.is_subclass(object_name.namespace,
                           sub=object_name.classname,
                           super='CIM_System') or \
-                ch.is_subclass(object_name.namespace,
+                cimom.is_subclass(object_name.namespace,
                                sub=object_name.classname,
                                super='CIM_StorageExtent'):
             return self.simple_refs(env, object_name, model,

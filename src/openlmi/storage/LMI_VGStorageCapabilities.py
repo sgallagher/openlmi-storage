@@ -16,6 +16,7 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+""" Module for LMI_VGStorageCapabilities class."""
 
 from openlmi.storage.CapabilitiesProvider import CapabilitiesProvider
 from openlmi.storage.SettingManager import Setting
@@ -68,6 +69,7 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
         return self.instances
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def create_setting_for_capabilities(self, capabilities, default=False):
         """
             Create LMI_VGStorageSetting for given capabilities.
@@ -82,35 +84,59 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
         setting = Setting(Setting.TYPE_TRANSIENT, setting_id)
 
         if default:
-            setting['ExtentSize'] = pywbem.Uint64(capabilities['ExtentSizeDefault'])
-            setting['DataRedundancyGoal'] = pywbem.Uint16(capabilities['DataRedundancyDefault'])
-            setting['DataRedundancyMax'] = pywbem.Uint16(capabilities['DataRedundancyDefault'])
-            setting['DataRedundancyMin'] = pywbem.Uint16(capabilities['DataRedundancyDefault'])
-            setting['ExtentStripeLength'] = pywbem.Uint16(capabilities['ExtentStripeLengthDefault'])
-            setting['ExtentStripeLengthMax'] = pywbem.Uint16(capabilities['ExtentStripeLengthDefault'])
-            setting['ExtentStripeLengthMin'] = pywbem.Uint16(capabilities['ExtentStripeLengthDefault'])
-            setting['NoSinglePointOfFailure'] = capabilities['NoSinglePointOfFailureDefault']
-            setting['PackageRedundancyGoal'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
-            setting['PackageRedundancyMax'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
-            setting['PackageRedundancyMin'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
+            setting['ExtentSize'] = pywbem.Uint64(
+                    capabilities['ExtentSizeDefault'])
+            setting['DataRedundancyGoal'] = pywbem.Uint16(
+                    capabilities['DataRedundancyDefault'])
+            setting['DataRedundancyMax'] = pywbem.Uint16(
+                    capabilities['DataRedundancyDefault'])
+            setting['DataRedundancyMin'] = pywbem.Uint16(
+                    capabilities['DataRedundancyDefault'])
+            setting['ExtentStripeLength'] = pywbem.Uint16(
+                    capabilities['ExtentStripeLengthDefault'])
+            setting['ExtentStripeLengthMax'] = pywbem.Uint16(
+                    capabilities['ExtentStripeLengthDefault'])
+            setting['ExtentStripeLengthMin'] = pywbem.Uint16(
+                    capabilities['ExtentStripeLengthDefault'])
+            setting['NoSinglePointOfFailure'] = \
+                    capabilities['NoSinglePointOfFailureDefault']
+            setting['PackageRedundancyGoal'] = pywbem.Uint16(
+                    capabilities['PackageRedundancyDefault'])
+            setting['PackageRedundancyMax'] = pywbem.Uint16(
+                    capabilities['PackageRedundancyDefault'])
+            setting['PackageRedundancyMin'] = pywbem.Uint16(
+                    capabilities['PackageRedundancyDefault'])
             if capabilities['ParityLayoutDefault']:
-                setting['ParityLayout'] = pywbem.Uint16(capabilities['ParityLayoutDefault'] - 1)
+                setting['ParityLayout'] = pywbem.Uint16(
+                        capabilities['ParityLayoutDefault'] - 1)
             else:
                 setting['ParityLayout'] = None
         else:
-            setting['ExtentSize'] = pywbem.Uint64(capabilities['ExtentSizeDefault'])
-            setting['DataRedundancyGoal'] = pywbem.Uint16(capabilities['DataRedundancyDefault'])
-            setting['DataRedundancyMax'] = pywbem.Uint16(capabilities['DataRedundancyMax'])
-            setting['DataRedundancyMin'] = pywbem.Uint16(capabilities['DataRedundancyMin'])
-            setting['ExtentStripeLength'] = pywbem.Uint16(capabilities['ExtentStripeLengthDefault'])
-            setting['ExtentStripeLengthMax'] = pywbem.Uint16(capabilities['ExtentStripeLengthDefault'])
-            setting['ExtentStripeLengthMin'] = pywbem.Uint16(capabilities['ExtentStripeLengthDefault'])
-            setting['NoSinglePointOfFailure'] = capabilities['NoSinglePointOfFailureDefault']
-            setting['PackageRedundancyGoal'] = pywbem.Uint16(capabilities['PackageRedundancyDefault'])
-            setting['PackageRedundancyMax'] = pywbem.Uint16(capabilities['PackageRedundancyMax'])
-            setting['PackageRedundancyMin'] = pywbem.Uint16(capabilities['PackageRedundancyMin'])
+            setting['ExtentSize'] = pywbem.Uint64(
+                    capabilities['ExtentSizeDefault'])
+            setting['DataRedundancyGoal'] = pywbem.Uint16(
+                    capabilities['DataRedundancyDefault'])
+            setting['DataRedundancyMax'] = pywbem.Uint16(
+                    capabilities['DataRedundancyMax'])
+            setting['DataRedundancyMin'] = pywbem.Uint16(
+                    capabilities['DataRedundancyMin'])
+            setting['ExtentStripeLength'] = pywbem.Uint16(
+                    capabilities['ExtentStripeLengthDefault'])
+            setting['ExtentStripeLengthMax'] = pywbem.Uint16(
+                    capabilities['ExtentStripeLengthDefault'])
+            setting['ExtentStripeLengthMin'] = pywbem.Uint16(
+                    capabilities['ExtentStripeLengthDefault'])
+            setting['NoSinglePointOfFailure'] = \
+                    capabilities['NoSinglePointOfFailureDefault']
+            setting['PackageRedundancyGoal'] = pywbem.Uint16(
+                    capabilities['PackageRedundancyDefault'])
+            setting['PackageRedundancyMax'] = pywbem.Uint16(
+                    capabilities['PackageRedundancyMax'])
+            setting['PackageRedundancyMin'] = pywbem.Uint16(
+                    capabilities['PackageRedundancyMin'])
             if capabilities['ParityLayoutDefault']:
-                setting['ParityLayout'] = pywbem.Uint16(capabilities['ParityLayoutDefault'] - 1)
+                setting['ParityLayout'] = pywbem.Uint16(
+                        capabilities['ParityLayoutDefault'] - 1)
             else:
                 setting['ParityLayout'] = None
 
@@ -122,6 +148,8 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
                 keybindings={'InstanceID': setting_id})
 
 
+    @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def cim_method_createsetting(self, env, object_name,
                                  param_settingtype=None):
         """
@@ -136,9 +164,10 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
         """
         default = False
         if param_settingtype:
-            if param_settingtype == self.Values.CreateSetting.SettingType.Default:
+            setting_types = self.Values.CreateSetting.SettingType
+            if param_settingtype == setting_types.Default:
                 default = True
-            elif param_settingtype == self.Values.CreateSetting.SettingType.Goal:
+            elif param_settingtype == setting_types.Goal:
                 default = False
             else:
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
@@ -149,13 +178,15 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find the Capabilities.")
 
-        setting_name = self.create_setting_for_capabilities(capabilities, default)
+        setting_name = self.create_setting_for_capabilities(
+                capabilities, default)
 
         outparams = [pywbem.CIMParameter('newsetting', type='reference',
                            value=setting_name)]
         rval = self.Values.CreateSetting.Success
         return (rval, outparams)
 
+    @cmpi_logging.trace_method
     def cim_method_createvgstoragesetting(self, env, object_name,
                                           param_inextents=None):
         """
@@ -198,18 +229,29 @@ class LMI_VGStorageCapabilities(CapabilitiesProvider):
 
         setting = Setting(Setting.TYPE_TRANSIENT, setting_id)
         setting['ExtentSize'] = pywbem.Uint64(DEFAULT_EXTENT_SIZE)
-        setting['DataRedundancyGoal'] = pywbem.Uint16(final_redundancy.data_redundancy)
-        setting['DataRedundancyMax'] = pywbem.Uint16(final_redundancy.data_redundancy)
-        setting['DataRedundancyMin'] = pywbem.Uint16(final_redundancy.data_redundancy)
-        setting['ExtentStripeLength'] = pywbem.Uint16(final_redundancy.stripe_length)
-        setting['ExtentStripeLengthMax'] = pywbem.Uint16(final_redundancy.stripe_length)
-        setting['ExtentStripeLengthMin'] = pywbem.Uint16(final_redundancy.stripe_length)
-        setting['NoSinglePointOfFailure'] = final_redundancy.no_single_point_of_failure
-        setting['PackageRedundancyGoal'] = pywbem.Uint16(final_redundancy.package_redundancy)
-        setting['PackageRedundancyMax'] = pywbem.Uint16(final_redundancy.package_redundancy)
-        setting['PackageRedundancyMin'] = pywbem.Uint16(final_redundancy.package_redundancy)
+        setting['DataRedundancyGoal'] = pywbem.Uint16(
+                final_redundancy.data_redundancy)
+        setting['DataRedundancyMax'] = pywbem.Uint16(
+                final_redundancy.data_redundancy)
+        setting['DataRedundancyMin'] = pywbem.Uint16(
+                final_redundancy.data_redundancy)
+        setting['ExtentStripeLength'] = pywbem.Uint16(
+                final_redundancy.stripe_length)
+        setting['ExtentStripeLengthMax'] = pywbem.Uint16(
+                final_redundancy.stripe_length)
+        setting['ExtentStripeLengthMin'] = pywbem.Uint16(
+                final_redundancy.stripe_length)
+        setting['NoSinglePointOfFailure'] = \
+                final_redundancy.no_single_point_of_failure
+        setting['PackageRedundancyGoal'] = pywbem.Uint16(
+                final_redundancy.package_redundancy)
+        setting['PackageRedundancyMax'] = pywbem.Uint16(
+                final_redundancy.package_redundancy)
+        setting['PackageRedundancyMin'] = pywbem.Uint16(
+                final_redundancy.package_redundancy)
         if final_redundancy.parity_layout is not None:
-            setting['ParityLayout'] = pywbem.Uint16(final_redundancy.parity_layout)
+            setting['ParityLayout'] = pywbem.Uint16(
+                    final_redundancy.parity_layout)
         else:
             setting['ParityLayout'] = None
 
