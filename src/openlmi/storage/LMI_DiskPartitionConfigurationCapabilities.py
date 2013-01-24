@@ -262,7 +262,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Capabilities not found.")
 
-        # check parameters
+        # Check parameters
         if not param_extent:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "Parameter Extent must be provided.")
@@ -271,6 +271,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Extent not found.")
 
+        # Check device vs capabilities
         self.check_capabilities_for_device(device, capabilities)
 
         if capabilities['PartitionStyle'] == self.Values.PartitionStyle.EMBR:
@@ -286,6 +287,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             grow = False
             size = param_size / (units.MEGABYTE * 1.0)
 
+        # Find the best place
         geometry = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
                 disk=device.format.partedDisk,
                 part_type=part_type,
@@ -293,6 +295,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
                 grow=grow)
 
         if not geometry:
+            # No place found
             retval = self.Values.FindPartitionLocation.Not_Enough_Free_Space
             out_params = [pywbem.CIMParameter('size', type='uint64',
                     value=pywbem.Uint64(0))]
@@ -300,26 +303,24 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
 
         retval = self.Values.FindPartitionLocation.Success
 
-        start = geometry.start
-        end = geometry.end
         sector_size = device.partedDevice.sectorSize
-        new_size = geometry.length * sector_size
+        new_size = geometry.length * device.partedDevice.sectorSize
 
         # anaconda returns the whole region size, we should make it smaller
         # to adjust to requested size
         if not grow and new_size > param_size:
             # truncate the end to start + size
-            end = start + (param_size / sector_size)
+            geometry.end = geometry.start + (param_size / sector_size)
             if param_size % sector_size > 0:
-                end = end + 1
-        new_size = (end - start) * sector_size
+                geometry.end = geometry.end + 1
+        new_size = (geometry.end - geometry.start) * sector_size
 
         out_params = [pywbem.CIMParameter('size', type='uint64',
                 value=pywbem.Uint64(new_size))]
         out_params += [pywbem.CIMParameter('startingaddress', type='uint64',
-                value=pywbem.Uint64(start))]
+                value=pywbem.Uint64(geometry.start))]
         out_params += [pywbem.CIMParameter('endingaddress', type='uint64',
-                value=pywbem.Uint64(end))]
+                value=pywbem.Uint64(geometry.end))]
         return (retval, out_params)
 
 
