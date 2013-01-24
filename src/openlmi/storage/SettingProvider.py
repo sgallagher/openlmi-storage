@@ -217,6 +217,88 @@ class SettingProvider(BaseProvider):
             return False
         return bool(value)
 
+    @cmpi_logging.trace_function
+    def _check_changeable_type_modify(self, instance, setting):
+        """
+            Return True, if ModifInstance(instance) can modify ChangeableType
+            property Setting instance.
+            Return False, if the property should be skipped.
+            Raise exception on error.
+        """
+        types = self.Values.ChangeableType
+        if setting.type == Setting.TYPE_TRANSIENT:
+            if instance['ChangeableType'] == types.Changeable_Persistent:
+                # Can change only transient -> persistent
+                # -> modify it now
+                setting.type = Setting.TYPE_PERSISTENT
+                return False
+            if instance['ChangeableType'] == types.Changeable_Transient:
+                # Ignore transient -> transient
+                return False
+        elif (setting.type == Setting.TYPE_PERSISTENT
+                    and instance['ChangeableType']
+                        == types.Changeable_Persistent):
+            # Ignore persistent -> persistent
+            return False
+        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                "Cannot modify ChangeableType property to new value.")
+
+    @cmpi_logging.trace_function
+    def _check_property_modify(self, instance, setting, property_name):
+        """
+            Return True, if ModifInstance(instance) can modify property of
+            this name in given Setting instance.
+            Return False, if the property should be skipped.
+            Raise exception on error.
+        """
+        if property_name == 'InstanceID':
+            # Ignore InstanceID property
+            return False
+
+        if self.ignore_defaults and self.ignore_defaults.has_key(property_name):
+            # Ignore properties in self. ignore_defaults
+            if self.ignore_defaults[property_name] != instance[property_name]:
+                # But only if they have the default value
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Property is not supported: " + property_name)
+            return False
+
+        if not self.supported_properties.has_key(property_name):
+            # We do not support the property
+            if instance[property_name]:
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "Property is not supported: " + property_name)
+            return False
+
+        if property_name == 'ChangeableType':
+            # ChangeableType has special treatment, only some changes are
+            # allowed
+            return self._check_changeable_type_modify(instance, setting)
+
+        # Finally, allow the property to be set to new value.
+        return True
+
+    @cmpi_logging.trace_function
+    def _do_modify_instance(self, instance, setting):
+        """
+            Modify instance of Setting with given CIMInstance.
+        """
+        for name in instance.iterkeys():
+            if not self._check_property_modify(instance, setting, name):
+                continue
+
+            if instance[name] is not None:
+                if (self.validate_properties
+                        and self.validate_properties.has_key(name)):
+                    # check validity of the property
+                    validator = self.validate_properties[name]
+                    if not validator(instance[name]):
+                        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                                "The value of property %s is invalid." % (name))
+                setting[name] = str(instance[name])
+            else:
+                setting[name] = None
+        return setting
 
     @cmpi_logging.trace_function
     def set_instance(self, env, instance, modify_existing):
@@ -259,54 +341,7 @@ class SettingProvider(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "Cannot modify not-changeable setting.")
 
-        for name in instance.iterkeys():
-            if name == 'InstanceID':
-                continue
-            # is it default?
-            if self.ignore_defaults and self.ignore_defaults.has_key(name):
-                if self.ignore_defaults[name] != instance[name]:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                            "Property is not supported: " + name)
-                # ignore the property, it has the default value
-                continue
-
-            # is it supported?
-            if not self.supported_properties.has_key(name):
-                if instance[name]:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                            "Property is not supported: " + name)
-                continue
-            types = self.Values.ChangeableType
-            if name == 'ChangeableType':
-                if setting.type == Setting.TYPE_TRANSIENT:
-                    if instance[name] == types.Changeable_Persistent:
-                        # can change only transient -> persistent
-                        setting.type = Setting.TYPE_PERSISTENT
-                        continue
-                    if instance[name] == types.Changeable_Transient:
-                        # ignore transient -> transient
-                        continue
-                elif (setting.type == Setting.TYPE_PERSISTENT
-                            and instance[name] == types.Changeable_Persistent):
-                    # ignore persistent -> persistent
-                    continue
-
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "Cannot modify ChangeableType property to new value.")
-
-            # finally, we should set the variable
-            if instance[name] is not None:
-                if (self.validate_properties
-                        and self.validate_properties.has_key(name)):
-                    # check validity of the property
-                    validator = self.validate_properties[name]
-                    if not validator(instance[name]):
-                        raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                                "The value of property %s is invalid." % (name))
-                setting[name] = str(instance[name])
-            else:
-                setting[name] = None
-
+        setting = self._do_modify_instance(instance, setting)
 
         self.setting_manager.set_setting(self.setting_classname, setting)
         return instance
