@@ -138,7 +138,8 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
 
 
     @cmpi_logging.trace_method
-
+    # Too many arguments, but this is generated function!
+    # pylint: disable-msg=R0913
     def cim_method_createormodifypartition(self, env, object_name,
                                            param_goal=None,
                                            param_partition=None,
@@ -285,21 +286,33 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
     def _get_max_partition_size(self, device, partition_type):
         """
             Return maximum partition size on given device, in bytes.
-            Partition_type must be parted constant.
+            Partition_type must be parted constant or None
         """
-        if not isinstance(device.format,
-                pyanaconda.storage.formats.disklabel.DiskLabel):
-            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                "Cannot find partition table on the extent.")
-        parted_disk = device.format.partedDisk
-        geom = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
-                parted_disk,
-                partition_type,
-                1,
-                grow=True)
-        if geom is None:
-            return 0
-        return geom.getLength()
+        if partition_type is None:
+            # Find the largest logical and normal and return the largest
+            max_primary = self._get_max_partition_size(
+                device, parted.PARTITION_NORMAL)
+            max_logical = 0
+            if device.format.extendedPartition is not None:
+                max_logical = self._get_max_partition_size(
+                    device, parted.PARTITION_LOGICAL)
+            elif (device.format.labelType == 'msdos' and
+                    len(device.format.partitions) > 3):
+                # There is no extended partition and the new one
+                # will be logical
+                # -> reserve 2 MB for extended partition metadata
+                max_primary = max_primary - 2 * units.MEGABYTE
+            return max(max_primary, max_logical)
+        else:
+            parted_disk = device.format.partedDisk
+            geom = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
+                    parted_disk,
+                    partition_type,
+                    1,
+                    grow=True)
+            if geom is None:
+                return 0
+            return geom.getLength()
 
 
 
@@ -316,6 +329,29 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                 " LMI_CreateOrModifyPartition instead.")
 
     @cmpi_logging.trace_method
+    def _calculate_partition_type(self, device, goal):
+        """
+            Calculate the right partition type for given goal and return
+            pypaterd partition type.
+        """
+        part_type = None
+        part_types = LMI_DiskPartitionConfigurationSetting.Values.PartitionType
+        if int(goal['PartitionType']) == part_types.Extended:
+            if device.format.labelType != "msdos":
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Goal.PartitionType cannot be Extended for this"
+                    " Extent.")
+            part_type = parted.PARTITION_EXTENDED
+        elif int(goal['PartitionType']) == part_types.Primary:
+            part_type = parted.PARTITION_NORMAL
+        elif int(goal['PartitionType']) == part_types.Logical:
+            if device.format.labelType != "msdos":
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, "Goal.PartitionType cannot be Logical for this"
+                    " Extent.")
+            part_type = parted.PARTITION_LOGICAL
+        return part_type
+
+    @cmpi_logging.trace_method
     def _lmi_create_partition(self, device, goal, size):
         """
             Create partition on given device with  given goal and size.
@@ -327,28 +363,21 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         hidden = None
         primary = False
 
+        if not isinstance(device.format,
+                pyanaconda.storage.formats.disklabel.DiskLabel):
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Cannot find partition table on the extent.")
+
         # check goal and set appropriate partition parameters
         if goal:
             bootable = goal['Bootable']
-            part_types = \
-                LMI_DiskPartitionConfigurationSetting.Values.PartitionType
-            if int(goal['PartitionType']) == part_types.Extended:
-                if device.format.labelType != "msdos":
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                            "Goal.PartitionType cannot be Extended for this"\
-                            " Extent.")
-                part_type = parted.PARTITION_EXTENDED
-                primary = True
-            elif int(goal['PartitionType']) == part_types.Primary:
-                part_type = parted.PARTITION_NORMAL
-                primary = True
-            elif int(goal['PartitionType']) == part_types.Logical:
-                if device.format.labelType != "msdos":
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                            "Goal.PartitionType cannot be Logical for this"\
-                            " Extent.")
-                part_type = parted.PARTITION_LOGICAL
             hidden = goal['Hidden']
+            part_type = self._calculate_partition_type(device, goal)
+            if part_type is not None:
+                if part_type == parted.PARTITION_LOGICAL:
+                    primary = False
+                else:
+                    primary = True
 
         # check size and grow it if necessary
         if size is None:
@@ -356,28 +385,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             size = 1
         else:
             # check maximum size
-            if part_type is None:
-                if not isinstance(device.format,
-                        pyanaconda.storage.formats.disklabel.DiskLabel):
-                    raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                            "Cannot find partition table on the extent.")
-                max_primary = self._get_max_partition_size(
-                        device, parted.PARTITION_NORMAL)
-                max_logical = 0
-                if device.format.extendedPartition is not None:
-                    max_logical = self._get_max_partition_size(
-                            device, parted.PARTITION_LOGICAL)
-                else:
-                    if (device.format.labelType == 'msdos'
-                            and len(device.format.partitions) > 3):
-                        # There is no extended partition and the new one
-                        # will be logical
-                        # -> reserve 2 MB for extended partition metadata
-                        max_primary = max_primary - 2 * units.MEGABYTE
-                max_partition = max(max_primary, max_logical)
-            else:
-                max_partition = self._get_max_partition_size(device, part_type)
-            # convert from sectors to bytes
+            max_partition = self._get_max_partition_size(device, part_type)
             max_partition = max_partition * device.partedDevice.sectorSize
             if max_partition < size:
                 ret = self.Values.LMI_CreateOrModifyPartition.Size_Not_Supported
