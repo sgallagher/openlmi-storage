@@ -32,7 +32,6 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
     @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
-        print args, kwargs
         super(LMI_StorageConfigurationService, self).__init__(
                 classname="LMI_StorageConfigurationService",
                 *args, **kwargs)
@@ -44,6 +43,9 @@ class LMI_StorageConfigurationService(ServiceProvider):
             Return None if so or string with error message if it does
             not match.
         """
+        # Too many return statements, but it has a purpose.
+        # pylint: disable-msg=R0911
+
         drmax = setting.get('DataRedundancyMax', None)
         drmin = setting.get('DataRedundancyMin', None)
         drgoal = setting.get('DataRedundancyGoal', None)
@@ -204,6 +206,69 @@ class LMI_StorageConfigurationService(ServiceProvider):
         return (ret, outparams)
 
     @cmpi_logging.trace_method
+    def _parse_goal(self, param_goal, classname):
+        """
+            Find Setting for given CIMInstanceName and check, that it is
+            of given CIM class. 
+            Return None, if no Goal was given.
+            Raise CIMError, if the Goal cannot be found.
+        """
+        if param_goal:
+            instance_id = param_goal['InstanceID']
+            goal = self.provider_manager.get_setting_for_id(
+                instance_id, classname)
+            if not goal:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    classname + " Goal does not found.")
+        else:
+            goal = None
+        return goal
+
+    @cmpi_logging.trace_method
+    def _parse_element(self, param_theelement, classname):
+        """
+            Find LVMLogicalVolumeDevice for given CIMInstanceName.
+            Return None if no CIMInstanceName was given.
+            Raise CIMError if the device does not exist or is not LV.
+        """
+        if not param_theelement:
+            return None
+        if param_theelement.classname != classname:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Expected %s as TheElement.", (classname))
+
+        device = self.provider_manager.get_device_for_name(param_theelement)
+        if not device:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Cannot find the TheElement device.")
+        if not isinstance(device,
+            pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                "The TheElement parameter is not LMI_LVStorageExtent.")
+        return device
+
+
+    @cmpi_logging.trace_method
+    def _parse_pool(self, param_inpool):
+        """
+            Find LVMVolumeGroupDevice for given CIMInstanceName.
+            Return None if no CIMInstanceName was given.
+            Raise CIMError if the device does not exist or is not VG.
+        """
+        if not param_inpool:
+            return None
+
+        pool = self.provider_manager.get_device_for_name(param_inpool)
+        if not pool:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "Cannot find the InPool device.")
+        if not isinstance(pool,
+            pyanaconda.storage.devices.LVMVolumeGroupDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                    "The InPool parameter is not LMI_VGStoragePool.")
+        return pool
+
+    @cmpi_logging.trace_method
     def cim_method_createormodifylv(self, env, object_name,
                                     param_elementname=None,
                                     param_goal=None,
@@ -219,67 +284,26 @@ class LMI_StorageConfigurationService(ServiceProvider):
             calculation of the Goal setting.
         """
         self.check_instance(object_name)
+
         # check parameters
-
-        # goal
-        if param_goal:
-            instance_id = param_goal['InstanceID']
-
-            goal = self.provider_manager.get_setting_for_id(
-                    instance_id, "LMI_LVStorageSetting")
-            if not goal:
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "LMI_LVStorageSetting Goal does not found.")
-        else:
-            goal = None
-
-        # lv
-        if param_theelement:
-            device = self.provider_manager.get_device_for_name(param_theelement)
-            if not device:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "Cannot find the TheElement device.")
-            if not isinstance(device,
-                    pyanaconda.storage.devices.LVMLogicalVolumeDevice):
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "The TheElement parameter is not LMI_LVStorageExtent.")
-        else:
-            device = None
-
-        # pool
-        if param_inpool:
-            pool = self.provider_manager.get_device_for_name(param_inpool)
-            if not pool:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "Cannot find the InPool device.")
-            if not isinstance(pool,
-                    pyanaconda.storage.devices.LVMVolumeGroupDevice):
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "The InPool parameter is not LMI_VGStoragePool.")
-        else:
-            pool = None
-
-        if param_size is not None:
-            newsize = param_size
-        else:
-            newsize = None
+        goal = self._parse_goal(param_goal, "LMI_LVStorageSetting")
+        device = self._parse_element(param_theelement, "LMI_LVStorageExtent")
+        pool = self._parse_pool(param_inpool)
 
         # check if resize is needed
-        if newsize and device:
+        if param_size and device:
             oldsize = device.vg.align(device.size, False) * units.MEGABYTE
-            if newsize < oldsize:
+            if param_size < oldsize:
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                         "Shrinking of logical volumes is not supported.")
-            if oldsize == newsize:
+            if oldsize == param_size:
                 # don't need to change the size
-                newsize = None
+                param_size = None
 
         # check if rename is needed
-        if param_elementname and device:
-            oldname = device.name
-            if oldname == param_elementname:
-                # don't need to change the name
-                param_elementname = None
+        if device and device.name == param_elementname:
+            # don't need to change the name
+            param_elementname = None
 
         # pool vs goal
         if goal and pool:
@@ -292,8 +316,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
                             + error)
 
         # pool vs theelement
-        if pool and device:
-            if device.vg != pool:
+        if pool and device and device.vg != pool:
                 raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                         "InPool does not match TheElement's pool, modification"\
                         " of a pool is not supported.")
@@ -302,18 +325,19 @@ class LMI_StorageConfigurationService(ServiceProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                     "Either InPool or TheElement must be specified.")
 
-        if not device and not newsize:
+        if not device and not param_size:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "Parameter Size must be set when creating a logical"\
                     " volume.")
 
         if device:
-            return self._modify_lv(device, param_elementname, newsize)
+            return self._modify_lv(device, param_elementname, param_size)
         else:
-            return self._create_lv(pool, param_elementname, newsize)
+            return self._create_lv(pool, param_elementname, param_size)
 
 
     @cmpi_logging.trace_method
+    # Too many aruments of generated method: pylint: disable-msg=R0913
     def cim_method_createormodifyelementfromstoragepool(self, env, object_name,
                                                         param_elementname=None,
                                                         param_goal=None,
@@ -431,6 +455,34 @@ class LMI_StorageConfigurationService(ServiceProvider):
         retval = self.Values.CreateOrModifyVG.Job_Completed_with_No_Error
         return (retval, outparams)
 
+    @cmpi_logging.trace_method
+    def _parse_inextents(self, param_inextents):
+        """
+            Find StorageDevices for given array of CIMInstanceNames and
+            return couple (devices, redundancies), where devices
+            is array of StorageDevices and redundancies is array
+            of Redundancy of the devices.
+            Return (None, None), if no InExtents were given.
+            Raise CIMError, if any of the extents cannot be found.
+        """
+        if not param_inextents:
+            return (None, None)
+        devices = []
+        redundancies = []
+        for extent_name in param_inextents:
+            provider = self.provider_manager.get_device_provider_for_name(
+                    extent_name)
+            if not provider:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Cannot find provider for InExtent " + str(extent_name))
+            device = provider.get_device_for_name(extent_name)
+            if not provider:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Cannot find device for InExtent " + str(extent_name))
+            devices.append(device)
+            redundancies.append(provider.get_redundancy(device))
+
+        return (devices, redundancies)
 
     @cmpi_logging.trace_method
     def cim_method_createormodifyvg(self, env, object_name,
@@ -449,47 +501,9 @@ class LMI_StorageConfigurationService(ServiceProvider):
         # check parameters
         self.check_instance(object_name)
 
-        # goal
-        if param_goal:
-            instance_id = param_goal['InstanceID']
-
-            goal = self.provider_manager.get_setting_for_id(
-                    instance_id, "LMI_VGStorageSetting")
-            if not goal:
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "LMI_VGStorageSetting Goal does not found.")
-        else:
-            goal = None
-
-        # pool
-        if param_pool:
-            pool = self.provider_manager.get_device_for_name(param_pool)
-            if not pool:
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Cannot find the Pool device.")
-            if not isinstance(pool,
-                    pyanaconda.storage.devices.LVMVolumeGroupDevice):
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "The Pool parameter is not LMI_VGStoragePool.")
-        else:
-            pool = None
-
-        # inextents
-        devices = []
-        redundancies = []
-        if param_inextents:
-            for extent_name in param_inextents:
-                provider = self.provider_manager.get_device_provider_for_name(
-                        extent_name)
-                if not provider:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Cannot find provider for InExtent " + str(extent_name))
-                device = provider.get_device_for_name(extent_name)
-                if not provider:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Cannot find device for InExtent " + str(extent_name))
-                devices.append(device)
-                redundancies.append(provider.get_redundancy(device))
+        goal = self._parse_goal(param_goal, "LMI_VGStorageSetting")
+        pool = self._parse_pool(param_pool)
+        (devices, redundancies) = self._parse_inextents(param_inextents)
 
         # extents vs goal:
         if devices and goal:
@@ -502,12 +516,10 @@ class LMI_StorageConfigurationService(ServiceProvider):
                             + error)
 
         # elementname
-        name = None
-        if param_elementname:
-            name = param_elementname
-            if pool and param_elementname == pool.name:
-                # no rename is needed
-                name = None
+        name = param_elementname
+        if pool and param_elementname == pool.name:
+            # no rename is needed
+            name = None
 
         if not pool and not devices:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
@@ -520,6 +532,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
 
     @cmpi_logging.trace_method
+    # Too many aruments of generated method: pylint: disable-msg=R0913
     def cim_method_createormodifystoragepool(self, env, object_name,
                                              param_elementname=None,
                                              param_goal=None,
@@ -559,6 +572,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
                 param_elementname, param_goal, param_inextents, param_pool)
 
     @cmpi_logging.trace_method
+    # Too many aruments of generated method: pylint: disable-msg=R0913
     def cim_method_createormodifyelementfromelements(self, env, object_name,
                                                      param_inelements,
                                                      param_elementtype,
@@ -742,109 +756,67 @@ class LMI_StorageConfigurationService(ServiceProvider):
         # check parameters
         self.check_instance(object_name)
 
-        # goal
-        if param_goal:
-            instance_id = param_goal['InstanceID']
-
-            goal = self.provider_manager.get_setting_for_id(
-                    instance_id, "LMI_MDRAIDStorageSetting")
-            if not goal:
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "LMI_MDRAIDStorageSetting Goal does not found.")
-        else:
-            goal = None
-
-        # theelement
-        if param_theelement:
-            raid = self.provider_manager.get_device_for_name(param_theelement)
-            if not raid:
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Cannot find the TheElement device.")
-            if not isinstance(raid,
-                    pyanaconda.storage.devices.MDRaidArrayDevice):
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "The Pool parameter is not LMI_MDRAIDStorageExtent.")
-        else:
-            raid = None
-
-        # inextents
-        devices = []
-        redundancies = []
-        if param_inextents:
-            for extent_name in param_inextents:
-                provider = self.provider_manager.get_device_provider_for_name(
-                        extent_name)
-                if not provider:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Cannot find provider for InExtent " + str(extent_name))
-                device = provider.get_device_for_name(extent_name)
-                if not provider:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Cannot find device for InExtent " + str(extent_name))
-                devices.append(device)
-                redundancies.append(provider.get_redundancy(device))
+        goal = self._parse_goal(param_goal, "LMI_MDRAIDStorageSetting")
+        raid = self._parse_element(param_theelement,
+                "LMI_MDRAIDStorageExtent")
+        (devices, redundancies) = self._parse_inextents(param_inextents)
 
         # level
-        if param_level is not None:
-            if param_level not in (
-                    self.Values.CreateOrModifyMDRAID.Level.RAID0,
-                    self.Values.CreateOrModifyMDRAID.Level.RAID1,
-                    self.Values.CreateOrModifyMDRAID.Level.RAID4,
-                    self.Values.CreateOrModifyMDRAID.Level.RAID5,
-                    self.Values.CreateOrModifyMDRAID.Level.RAID6,
-                    self.Values.CreateOrModifyMDRAID.Level.RAID10):
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Invalid value of parameter Level.")
-        level = param_level
+        if param_level is not None and param_level not in (
+                self.Values.CreateOrModifyMDRAID.Level.RAID0,
+                self.Values.CreateOrModifyMDRAID.Level.RAID1,
+                self.Values.CreateOrModifyMDRAID.Level.RAID4,
+                self.Values.CreateOrModifyMDRAID.Level.RAID5,
+                self.Values.CreateOrModifyMDRAID.Level.RAID6,
+                self.Values.CreateOrModifyMDRAID.Level.RAID10):
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Invalid value of parameter Level.")
 
         # goal vs level
-        if goal and level is not None:
+        if goal and param_level is not None:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "Only one of Level and Goal parameters may be used.")
 
         # extents vs goal:
         if devices and goal:
             # guess RAID level
-            level = self._find_raid_level(redundancies, goal)
-            if level is None:
+            param_level = self._find_raid_level(redundancies, goal)
+            if param_level is None:
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "The Goal does not match any RAID level for InExtents.")
 
         # nr. of devices vs level
-        if ((level == 0
-                or level == 1)
+        if ((param_level == 0
+                or param_level == 1)
                     and len(devices) < 2):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "At least two devices are required for RAID level %d."
-                    % (level))
+                    % (param_level))
 
-        if (level == 5 or level == 4) and len(devices) < 3:
+        if (param_level == 5 or param_level == 4) and len(devices) < 3:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "At least three devices are required for RAID level" \
                     " 4 or 5.")
-        if level == 6 and len(devices) < 4:
+        if param_level == 6 and len(devices) < 4:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "At least four devices are required for RAID level 6.")
-        if level == 10 and len(devices) < 2:
+        if param_level == 10 and len(devices) < 2:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "At least two devices are required for RAID level 10.")
 
-        # elementname
-        name = None
-        if param_elementname:
-            name = param_elementname
-            if raid and param_elementname == raid.name:
-                # no rename is needed
-                name = None
+        name = param_elementname
+        if raid and param_elementname == raid.name:
+            # no rename is needed
+            name = None
 
         if not raid and not devices:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "Either TheElement or InExtents must be specified")
 
         if raid:
-            return self._modify_mdraid(raid, level, goal, devices, name)
+            return self._modify_mdraid(raid, param_level, goal, devices, name)
         else:
-            return self._create_mdraid(level, goal, devices, name)
+            return self._create_mdraid(param_level, goal, devices, name)
 
 
     class Values(ServiceProvider.Values):
