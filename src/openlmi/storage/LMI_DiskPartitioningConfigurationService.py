@@ -138,6 +138,97 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
 
 
     @cmpi_logging.trace_method
+    def _parse_goal(self, param_goal):
+        """
+            Check Goal parameter of a CIM method.
+            It must be CIMInstanceName of LMI_DiskPartitionConfigurationSetting.
+            Return Setting appropriate to the CIMInstanceName or None
+            if no Goal was specified.
+            Raise CIMError, if the goal does not exist. 
+
+            param_goal = CIMInstanceName
+        """
+        if not param_goal:
+            return None
+
+        instance_id = param_goal['InstanceID']
+        goal = self.provider_manager.get_setting_for_id(
+            instance_id, "LMI_DiskPartitionConfigurationSetting")
+        if not goal:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                "LMI_DiskPartitionConfigurationSetting Goal does not"
+                " found.")
+        return goal
+
+    @cmpi_logging.trace_method
+    def _parse_partition(self, param_partition, device):
+        """
+            Check Partition parameter of a CIM method.
+            It must be CIMInstanceName of a CIM_Partition.
+            If a device was specified in the method, then check that the
+            device contains the partition.
+            Return PartitionDevice. Return None if no Partition parameter
+            was set.
+            Raise CIMError on any error like the partition does not exist
+            or the partition is not on given device.
+            
+            param_partition = CIMInstanceName
+            device = StorageDevice 
+        """
+        if not param_partition:
+            return None
+
+        partition = self.provider_manager.get_device_for_name(param_partition)
+        if not partition:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                "Cannot find the Partition.")
+        if not isinstance(device,
+            pyanaconda.storage.devices.PartitionDevice):
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                "Parameter Partition does not refer to partition.")
+        if device:
+            # the partition must be on the device
+            if device not in partition.parents:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "The Partition does not reside on the Extent.")
+        return partition
+
+    @cmpi_logging.trace_method
+    def _parse_extent(self, param_extent, goal):
+        """
+            Check Extent parameter of a CIM method.
+            It must be CIMInstanceName of a CIM_StorageExtent and it must
+            be possible to create partitions on it.
+            If a Goal was specified in the method, then check that the
+            partition with such goal can be created on the partition. 
+            Return (StorageDevice, logical), where 'logical' is True, if
+            a logical partition is requested. Return None if no Extent parameter
+            was set.
+            Raise CIMError on any error, like the device does not exist
+            or there is no partition table on the device.
+            
+            param_extent = CIMInstanceName
+            goal = Setting 
+        """
+        if not param_extent:
+            return (None, None)
+
+        logical = False
+        device = self.provider_manager.get_device_for_name(param_extent)
+        if not device:
+            raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                     "Cannot find the Extent.")
+        if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+            values = LMI_DiskPartitionConfigurationSetting.Values.PartitionType
+            if goal and int(goal['PartitionType']) != values.Logical:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Only Goal with PartitionType == Logical can be"
+                    " created on this device.")
+            device = device.parents[0]
+            logical = True
+        return (device, logical)
+
+
     # Too many arguments, but this is generated function!
     # pylint: disable-msg=R0913
     def cim_method_createormodifypartition(self, env, object_name,
@@ -176,81 +267,35 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                     "Parameter DeviceFileName is not supported.")
 
         # check goal
-        if param_goal:
-            instance_id = param_goal['InstanceID']
+        goal = self._parse_goal(param_goal)
 
-            goal = self.provider_manager.get_setting_for_id(
-                    instance_id, "LMI_DiskPartitionConfigurationSetting")
-            if not goal:
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "LMI_DiskPartitionConfigurationSetting Goal does not"\
-                        " found.")
-        else:
-            goal = None
+        (device, logical) = self._parse_extent(param_extent, goal)
+        if logical:
+            # Recalculate start/end addresses from 'relative to extended
+            # partition start' to 'relative to disk start'
+            address_shift = partitioning.get_logical_partition_start(device)
+            if param_startingaddress is not None:
+                param_startingaddress = param_startingaddress + address_shift
+            if param_endingaddress is not None:
+                param_endingaddress = param_endingaddress + address_shift
 
-        # check extent:
-        address_shift = 0  # needed to adjust logical partitions addresses
-        if param_extent:
-            device = self.provider_manager.get_device_for_name(param_extent)
-            if not device:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "Cannot find the Extent.")
-            if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
-                values = LMI_DiskPartitionConfigurationSetting.Values
-                if goal and int(goal['PartitionType']) != \
-                        values.PartitionType.Logical:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                            "Only Goal with PartitionType == Logical can be"\
-                            " created on this device.")
-                # don't forget to adjust their start/end addresses
-                address_shift = partitioning.get_logical_partition_start(device)
-                # create logical partitions on the disk, not on the extended
-                # partition
-                device = device.parents[0]
+        if device:
             (minstart, maxend) = partitioning.get_available_sectors(device)
-        else:
-            device = None
 
         # check partition
-        if param_partition:
-            modify = True
-            partition = self.provider_manager.get_device_for_name(
-                    param_partition)
-            if not partition:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "Cannot find the Partition.")
-            if not isinstance(device,
-                    pyanaconda.storage.devices.PartitionDevice):
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Parameter Partition does not refer to partition.")
-            if device:
-                # the partition must be on the device
-                if device not in partition.parents:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                            "The Partition does not reside on the Extent.")
-        else:
-            modify = False
-
-        if param_startingaddress is None:
-            if modify:
+        partition = self._parse_partition(param_partition, device)
+        if partition:
+            if param_startingaddress is None:
                 start = 0
-            else:
-                start = minstart
-        else:
-            start = param_startingaddress + address_shift
-
-        if param_endingaddress is None:
-            if modify:
+            if param_endingaddress is None:
                 end = 0
-            else:
-                end = maxend
-        else:
-            end = param_endingaddress + address_shift
-
-        if modify:
             (retval, partition) = self._modify_partition(
                     partition, goal, start, end)
         else:
+            if param_startingaddress is None:
+                start = minstart
+            if param_endingaddress is None:
+                end = maxend
             (retval, partition) = self._create_partition(
                     device, goal, start, end)
 
@@ -346,7 +391,8 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             part_type = parted.PARTITION_NORMAL
         elif int(goal['PartitionType']) == part_types.Logical:
             if device.format.labelType != "msdos":
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER, "Goal.PartitionType cannot be Logical for this"
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                         "Goal.PartitionType cannot be Logical for this"
                     " Extent.")
             part_type = parted.PARTITION_LOGICAL
         return part_type
@@ -474,63 +520,16 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "Either Partition or extent parameter must be present.")
 
-        # check goal
-        if param_goal:
-            instance_id = param_goal['InstanceID']
+        goal = self._parse_goal(param_goal)
+        (device, _unused) = self._parse_extent(param_extent, goal)
+        partition = self._parse_partition(param_partition, device)
 
-            goal = self.provider_manager.get_setting_for_id(
-                    instance_id, "LMI_DiskPartitionConfigurationSetting")
-            if not goal:
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "LMI_DiskPartitionConfigurationSetting Goal does not"\
-                        " found.")
-            # TODO: remove when bug #891861 is fixed
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
-                     "Goal parameter is not supported.")
-        else:
-            goal = None
-
-        # check extent:
-        if param_extent:
-            device = self.provider_manager.get_device_for_name(param_extent)
-            if not device:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "Cannot find the Extent.")
-            if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
-                values = LMI_DiskPartitionConfigurationSetting.Values
-                if goal and int(goal['PartitionType']) != \
-                        values.PartitionType.Logical:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                            "Only Goal with PartitionType == Logical can be"\
-                            " created on this device.")
-                device = device.parents[0]
-        else:
-            device = None
-
-        # check partition
-        if param_partition:
-            modify = True
-            partition = self.provider_manager.get_device_for_name(
-                    param_partition)
-            if not partition:
-                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
-                        "Cannot find the Partition.")
-            if not isinstance(device,
-                    pyanaconda.storage.devices.PartitionDevice):
-                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                        "Parameter Partition does not refer to partition.")
-            if device:
-                # the partition must be on the device
-                if device not in partition.parents:
-                    raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
-                            "The Partition does not reside on the Extent.")
-        else:
-            modify = False
-
-        if modify:
+        if partition:
+            # modify
             (retval, partition, size) = self._lmi_modify_partition(
                     partition, goal, param_size)
         else:
+            # create
             (retval, partition, size) = self._lmi_create_partition(
                     device, goal, param_size)
 
