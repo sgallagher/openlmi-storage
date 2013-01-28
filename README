@@ -14,9 +14,8 @@ Installation
 Prepare software (using sblim here, might be different for Pegasus):
     $ yum install sblim-sfcb cmpi-bindings-pywbem
 
-Install openlmi-storage somewhere, using /usr/lib/python2.7/site-packages/openlmi/storage/ here
-    $ mkdir /usr/lib/python2.7/site-packages/openlmi/storage/
-    $ cp -r providers/* /usr/lib/python2.7/site-packages/openlmi/storage/
+Install src somewhere, using /usr/lib/python2.7/site-packages/openlmi/storage/ here
+    $ cp -r src/* /usr/lib/python2.7/site-packages/
 
 Register python providers and MOF file:
     $ vim mof/LMI_Storage.reg     # change the paths in the file
