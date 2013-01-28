@@ -320,18 +320,10 @@ class LMI_LVElementCapabilities(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations. """
-        cimom = env.get_cimom_handle()
-
-        # If you want to get references for free, implemented in terms
-        # of enum_instances, just leave the code below unaltered.
-        if cimom.is_subclass(object_name.namespace,
-                          sub=object_name.classname,
-                          super='CIM_Capabilities') or \
-                cimom.is_subclass(object_name.namespace,
-                               sub=object_name.classname,
-                               super='CIM_ManagedElement'):
-            return self.simple_refs(env, object_name, model,
-                          result_class_name, role, result_role, keys_only)
+        return self.simple_references(env, object_name, model,
+                result_class_name, role, result_role, keys_only,
+                "CIM_Capabilities",
+                "CIM_ManagedElement")
 
 
     class Values(object):

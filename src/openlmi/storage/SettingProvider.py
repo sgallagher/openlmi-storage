@@ -509,15 +509,10 @@ class ElementSettingDataProvider(BaseProvider):
                                result_role, keys_only):
         # If you want to get references for free, implemented in terms
         # of enum_instances, just leave the code below unaltered.
-        cimom = env.get_cimom_handle()
-        if cimom.is_subclass(object_name.namespace,
-                    sub=object_name.classname,
-                    super=self.managed_element_classname) or \
-                    cimom.is_subclass(object_name.namespace,
-                               sub=object_name.classname,
-                               super=self.setting_data_classname):
-            return self.simple_refs(env, object_name, model,
-                          result_class_name, role, result_role, keys_only)
+        return self.simple_references(env, object_name, model,
+                result_class_name, role, result_role, keys_only,
+                self.managed_element_classname,
+                self.setting_data_classname)
 
 
 class SettingHelperProvider(SettingProvider):
@@ -564,4 +559,3 @@ class SettingHelperProvider(SettingProvider):
         """
         return self.setting_helper.get_associated_element_name(
                 self, instance_id)
-

@@ -90,72 +90,8 @@ class LMI_LVBasedOn(BaseProvider):
     @cmpi_logging.trace_method
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
-        """Instrument Associations.
-
-        All four association-related operations (Associators, AssociatorNames, 
-        References, ReferenceNames) are mapped to this method. 
-        This method is a python generator
-
-        Keyword arguments:
-        env -- Provider Environment (pycimmb.ProviderEnvironment)
-        object_name -- A pywbem.CIMInstanceName that defines the source 
-            CIM Object whose associated Objects are to be returned.
-        model -- A template pywbem.CIMInstance to serve as a model
-            of the objects to be returned.  Only properties present on this
-            model need to be set. 
-        result_class_name -- If not empty, this string acts as a filter on 
-            the returned set of Instances by mandating that each returned 
-            Instances MUST represent an association between object_name 
-            and an Instance of a Class whose name matches this parameter
-            or a subclass. 
-        role -- If not empty, MUST be a valid Property name. It acts as a 
-            filter on the returned set of Instances by mandating that each 
-            returned Instance MUST refer to object_name via a Property 
-            whose name matches the value of this parameter.
-        result_role -- If not empty, MUST be a valid Property name. It acts 
-            as a filter on the returned set of Instances by mandating that 
-            each returned Instance MUST represent associations of 
-            object_name to other Instances, where the other Instances play 
-            the specified result_role in the association (i.e. the 
-            name of the Property in the Association Class that refers to 
-            the Object related to object_name MUST match the value of this 
-            parameter).
-        keys_only -- A boolean.  True if only the key properties should be
-            set on the generated instances.
-
-        The following diagram may be helpful in understanding the role, 
-        result_role, and result_class_name parameters.
-        +------------------------+                    +-------------------+
-        | object_name.classname  |                    | result_class_name |
-        | ~~~~~~~~~~~~~~~~~~~~~  |                    | ~~~~~~~~~~~~~~~~~ |
-        +------------------------+                    +-------------------+
-           |              +-----------------------------------+      |
-           |              |  [Association] model.classname    |      |
-           | object_name  |  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    |      |
-           +--------------+ object_name.classname REF role    |      |
-        (CIMInstanceName) | result_class_name REF result_role +------+
-                          |                                   |(CIMInstanceName)
-                          +-----------------------------------+
-
-        Possible Errors:
-        CIM_ERR_ACCESS_DENIED
-        CIM_ERR_NOT_SUPPORTED
-        CIM_ERR_INVALID_NAMESPACE
-        CIM_ERR_INVALID_PARAMETER (including missing, duplicate, unrecognized 
-            or otherwise incorrect parameters)
-        CIM_ERR_FAILED (some other unspecified error occurred)
-
-        """
-
-        cimom = env.get_cimom_handle()
-
-        # If you want to get references for free, implemented in terms
-        # of enum_instances, just leave the code below unaltered.
-        if cimom.is_subclass(object_name.namespace,
-                          sub=object_name.classname,
-                          super='CIM_StorageExtent') or \
-                cimom.is_subclass(object_name.namespace,
-                               sub=object_name.classname,
-                               super='CIM_StorageExtent'):
-            return self.simple_refs(env, object_name, model,
-                          result_class_name, role, result_role, keys_only)
+        """Instrument Associations."""
+        return self.simple_references(env, object_name, model,
+                result_class_name, role, result_role, keys_only,
+                "CIM_StorageExtent",
+                "CIM_StorageExtent")

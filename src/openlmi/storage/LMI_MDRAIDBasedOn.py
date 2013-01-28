@@ -54,6 +54,3 @@ class LMI_MDRAIDBasedOn(BasedOnProvider):
         model['OrderIndex'] = pywbem.Uint16(device.parents.index(base) + 1)
 
         return model
-
-
-
