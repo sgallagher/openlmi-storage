@@ -11,7 +11,7 @@ class LMI_EncryptionElementSettingData : CIM_ElementSettingData
 };
 
 [ Experimental, Abstract, Description("Base class for all encryption formats.")]
-class LMI_EncryptionFormat : LMI_ContentFormat
+class LMI_EncryptionFormat : LMI_DataFormat
 {
 };
 

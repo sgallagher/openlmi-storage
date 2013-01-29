@@ -862,11 +862,8 @@ class LMI_LVBasedOn : CIM_BasedOn
 [Experimental, Description("This class represents MD RAID metadata present on a StorageExtent. "
     "It can be part of existing MD RAID or it can be stray metadata of stopped MD RAID."
 )]
-class LMI_MDRAIDFormat : LMI_ContentFormat
+class LMI_MDRAIDFormat : LMI_DataFormat
 {
-    [Description("UUID of the metadata.")]
-    string UUID;
-
     [Description("UUID of the MD RAID, which is the associated StorageExtent part of.")]
     string MDUUID;
 };
@@ -874,16 +871,10 @@ class LMI_MDRAIDFormat : LMI_ContentFormat
 [Experimental, Description("This class represents Physical Volume metadata present on a StorageExtent. "
     "The StorageExtent can be member of existing Volume Group or its Volume Group has been destroyed."
 )]
-class LMI_PVFormat : LMI_ContentFormat
+class LMI_PVFormat : LMI_DataFormat
 {
     [Description("UUID of the Physical Volume.")]
     string UUID;
-
-    [Description("UUID of the Volume Group.")]
-    string VGUUID;
-
-    [Description("Name of the Volume Group.")]
-    string VGElementName;
 };
 
 [ Experimental ]
