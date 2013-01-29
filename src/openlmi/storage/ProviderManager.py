@@ -55,6 +55,7 @@ class ProviderManager(object):
         self.setting_providers = []
         self.service_providers = []
         self.capabilities_providers = []
+        self.format_providers = []
 
     @cmpi_logging.trace_method
     def add_device_provider(self, provider):
@@ -83,6 +84,13 @@ class ProviderManager(object):
             Add new service provider to the manager.
         """
         self.capabilities_providers.append(provider)
+
+    @cmpi_logging.trace_method
+    def add_format_provider(self, provider):
+        """
+            Add new service provider to the manager.
+        """
+        self.format_providers.append(provider)
 
     @cmpi_logging.trace_method
     def get_device_provider_for_name(self, object_name):
@@ -127,6 +135,15 @@ class ProviderManager(object):
         if provider:
             return provider.get_name_for_device(device)
         return None
+
+    @cmpi_logging.trace_method
+    def get_provider_for_format(self, fmt):
+        """
+            Return FormatProvider for given DeviceFormat subclass
+        """
+        for prov in self.format_providers:
+            if prov.provides_format(fmt):
+                return prov
 
     @cmpi_logging.trace_method
     def get_setting_for_id(self, instance_id, setting_classname=None):

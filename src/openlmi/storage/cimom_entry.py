@@ -65,6 +65,10 @@ from openlmi.storage.LMI_VGStorageCapabilities import LMI_VGStorageCapabilities
 from openlmi.storage.LMI_MDRAIDStorageCapabilities \
         import LMI_MDRAIDStorageCapabilities
 from openlmi.storage.LMI_SystemStorageDevice import LMI_SystemStorageDevice
+from openlmi.storage.LMI_MDRAIDFormatProvider import LMI_MDRAIDFormatProvider
+from openlmi.storage.LMI_PVFormatProvider import LMI_PVFormatProvider
+from openlmi.storage.LMI_DataFormatProvider import LMI_DataFormatProvider
+from openlmi.storage.FormatProvider import LMI_ResidesOnExtent
 
 import openlmi.storage.cmpi_logging as cmpi_logging
 import pyanaconda.storage
@@ -265,6 +269,21 @@ def get_providers(env):
 
     provider = LMI_InstalledPartitionTable(**opts)
     providers['LMI_InstalledPartitionTable'] = provider
+
+    fmt = LMI_DataFormatProvider(**opts)
+    manager.add_format_provider(fmt)
+    providers['LMI_DataFormat'] = fmt
+
+    fmt = LMI_MDRAIDFormatProvider(**opts)
+    manager.add_format_provider(fmt)
+    providers['LMI_MDRAIDFormat'] = fmt
+
+    fmt = LMI_PVFormatProvider(**opts)
+    manager.add_format_provider(fmt)
+    providers['LMI_PVFormat'] = fmt
+
+    provider = LMI_ResidesOnExtent(**opts)
+    providers['LMI_ResidesOnExtent'] = provider
 
     print "providers:", providers
 
