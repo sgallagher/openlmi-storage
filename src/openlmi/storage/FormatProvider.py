@@ -162,7 +162,7 @@ class FormatProvider(BaseProvider):
         if not fmt:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find the format.")
-        model['FormatDescription'] = fmt.name
+        model['FormatTypeDescription'] = fmt.name
 
         fmt_types = {
                 "swap": self.Values.FormatType.Swap,
@@ -176,6 +176,7 @@ class FormatProvider(BaseProvider):
         }
         fmt_type = fmt_types.get(fmt.type, self.Values.FormatType.Other)
         model['FormatType'] = fmt_type
+        model['ElementName'] = fmt.device
         return model
 
     class Values(object):
@@ -204,7 +205,6 @@ class LMI_ResidesOnExtent(BaseProvider):
         model.path.update({'Dependent': None, 'Antecedent': None})
 
         for device in self.storage.devices:
-            print "Checking format for device", device.path
             fmt = device.format
             if not fmt or not fmt.type:
                 continue
@@ -215,7 +215,6 @@ class LMI_ResidesOnExtent(BaseProvider):
             devname = self.provider_manager.get_name_for_device(device)
             if not devname:
                 continue
-            print "Format found", fmtname
             model['Dependent'] = fmtname
             model['Antecedent'] = devname
             yield model
@@ -252,7 +251,18 @@ class LMI_ResidesOnExtent(BaseProvider):
     def references(self, env, object_name, model, result_class_name, role,
                    result_role, keys_only):
         """Instrument Associations."""
-        return self.simple_references(env, object_name, model,
-                result_class_name, role, result_role, keys_only,
-                "LMI_DataFormat",
-                "CIM_StorageExtent")
+        # don't forget to try both DataFormat and LocalFileSystem subclasses!
+        refs = self.simple_references(
+                    env, object_name, model,
+                    result_class_name, role, result_role, keys_only,
+                    "LMI_DataFormat",
+                    "CIM_StorageExtent")
+        if refs:
+            return refs
+
+        refs = self.simple_references(
+                    env, object_name, model,
+                    result_class_name, role, result_role, keys_only,
+                    "LMI_LocalFileSystem",
+                    "CIM_StorageExtent")
+        return refs

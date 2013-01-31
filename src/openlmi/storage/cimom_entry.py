@@ -69,6 +69,8 @@ from openlmi.storage.LMI_MDRAIDFormatProvider import LMI_MDRAIDFormatProvider
 from openlmi.storage.LMI_PVFormatProvider import LMI_PVFormatProvider
 from openlmi.storage.LMI_DataFormatProvider import LMI_DataFormatProvider
 from openlmi.storage.FormatProvider import LMI_ResidesOnExtent
+from openlmi.storage.LMI_LocalFileSystem import LMI_LocalFileSystem
+from openlmi.storage.LMI_ExtFileSystem import LMI_ExtFileSystem
 
 import openlmi.storage.cmpi_logging as cmpi_logging
 import pyanaconda.storage
@@ -281,6 +283,14 @@ def get_providers(env):
     fmt = LMI_PVFormatProvider(**opts)
     manager.add_format_provider(fmt)
     providers['LMI_PVFormat'] = fmt
+
+    fmt = LMI_LocalFileSystem(**opts)
+    manager.add_format_provider(fmt)
+    providers['LMI_LocalFileSystem'] = fmt
+
+    fmt = LMI_ExtFileSystem(**opts)
+    manager.add_format_provider(fmt)
+    providers['LMI_ExtFileSystem'] = fmt
 
     provider = LMI_ResidesOnExtent(**opts)
     providers['LMI_ResidesOnExtent'] = provider
