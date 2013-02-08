@@ -50,11 +50,11 @@ class LMI_FileSystemCapabilities : CIM_FileSystemCapabilities
     [ Override("ActualFileSystemType"), Implemented(true),
       ValueMap{"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
           "11", "12", "13", "..",
-          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005", "0x8006" },
+          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005" },
       Values { "Unknown", "UFS", "HFS", "FAT", "FAT16", "FAT32", 
           "NTFS4", "NTFS5", "XFS", "AFS", "EXT2", "EXT3", 
           "REISERFS", "DMTF Reserved",
-          "EXT4", "BTRFS", "XFS", "JFS", "TMPFS", "VFAT"}]
+          "EXT4", "BTRFS", "JFS", "TMPFS", "VFAT"}]
     uint16 ActualFileSystemType;
 
     [ Implemented(true) ] uint16 SupportedPersistenceTypes[];
@@ -85,15 +85,36 @@ class LMI_FileSystemConfigurationCapabilities : CIM_FileSystemConfigurationCapab
     [ Override("SupportedActualFileSystemTypes"), Implemented(true),
       ValueMap{"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
           "11", "12", "13", "..",
-          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005", "0x8006" },
+          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005" },
       Values { "Unknown", "UFS", "HFS", "FAT", "FAT16", "FAT32", 
           "NTFS4", "NTFS5", "XFS", "AFS", "EXT2", "EXT3", 
           "REISERFS", "DMTF Reserved",
-          "EXT4", "BTRFS", "XFS", "JFS", "TMPFS", "VFAT"}]
+          "EXT4", "BTRFS", "JFS", "TMPFS", "VFAT"}]
     uint16 SupportedActualFileSystemTypes[];
 
-    [ Implemented(true) ] uint16 SupportedSynchronousMethods[];
-    [ Implemented(true) ] uint16 SupportedAsynchronousMethods[];
+
+    [Implemented(true), Override("SupportedSynchronousMethods"),
+       Description ( 
+          "An array of methods of this Service that are supported "
+          "as synchronous methods." ), 
+       ValueMap { "2", "3", "4", "5", "6", "..", "0x8001" }, 
+       Values { "CreateFileSystem", "DeleteFileSystem", 
+          "ModifyFileSystem", "CreateGoal", 
+          "GetRequiredStorageSize", "DMTF Reserved", "LMI_CreateFileSystem" }, 
+       Read]
+    uint16 SupportedSynchronousMethods[];
+
+    [Implemented(true), Override("SupportedAsynchronousMethods"),
+       Description ( 
+          "An array of methods of this Service that are supported "
+          "as asynchronous methods." ), 
+       ValueMap { "2", "3", "4", "5", "6", "..", "0x8001" }, 
+       Values { "CreateFileSystem", "DeleteFileSystem", 
+          "ModifyFileSystem", "CreateGoal", 
+          "GetRequiredStorageSize", "DMTF Reserved", "LMI_CreateFileSystem" }, 
+       Read]
+    uint16 SupportedAsynchronousMethods[];
+    
     [ Implemented(true) ] uint16 InitialAvailability;
 };
 
@@ -103,11 +124,11 @@ class LMI_FileSystemSetting : CIM_FileSystemSetting
     [ Override("ActualFileSystemType"), Implemented(true),
       ValueMap{"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
           "11", "12", "13", "..",
-          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005", "0x8006" },
+          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005" },
       Values { "Unknown", "UFS", "HFS", "FAT", "FAT16", "FAT32", 
           "NTFS4", "NTFS5", "XFS", "AFS", "EXT2", "EXT3", 
           "REISERFS", "DMTF Reserved",
-          "EXT4", "BTRFS", "XFS", "JFS", "TMPFS", "VFAT"}]
+          "EXT4", "BTRFS", "JFS", "TMPFS", "VFAT"}]
     uint16 ActualFileSystemType;
 
     [ Implemented(true) ] uint16 DataExtentsSharing;
@@ -213,3 +234,10 @@ class LMI_FileSystemConfigurationService : CIM_FileSystemConfigurationService
     [ Implemented(true) ] string StartMode;
     [ Implemented(true) ] boolean Started;
 };
+
+
+[ Experimental ]
+class LMI_FileSystemConfigurationElementCapabilities : CIM_ElementCapabilities
+{
+};
+

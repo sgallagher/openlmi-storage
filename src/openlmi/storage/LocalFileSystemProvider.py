@@ -448,10 +448,9 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
             # DMTF_Reserved = ..
             EXT4 = pywbem.Uint16(0x8001)
             BTRFS = pywbem.Uint16(0x8002)
-            XFS = pywbem.Uint16(0x8003)
-            JFS = pywbem.Uint16(0x8004)
-            TMPFS = pywbem.Uint16(0x8005)
-            VFAT = pywbem.Uint16(0x8006)
+            JFS = pywbem.Uint16(0x8003)
+            TMPFS = pywbem.Uint16(0x8004)
+            VFAT = pywbem.Uint16(0x8005)
 
         class FilenameCaseAttributes(object):
             Unknown = pywbem.Uint16(0)

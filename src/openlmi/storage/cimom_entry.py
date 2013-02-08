@@ -73,6 +73,8 @@ from openlmi.storage.LMI_LocalFileSystem import LMI_LocalFileSystem
 from openlmi.storage.LMI_ExtFileSystem import LMI_ExtFileSystem
 from openlmi.storage.LMI_FileSystemConfigurationService \
         import LMI_FileSystemConfigurationService
+from openlmi.storage.LMI_FileSystemConfigurationCapabilities \
+        import LMI_FileSystemConfigurationCapabilities
 
 import openlmi.storage.cmpi_logging as cmpi_logging
 import pyanaconda.storage
@@ -321,6 +323,14 @@ def get_providers(env):
     service_provider = LMI_FileSystemConfigurationService(**opts)
     manager.add_service_provider(service_provider)
     providers['LMI_FileSystemConfigurationService'] = service_provider
+    cap_provider = LMI_FileSystemConfigurationCapabilities(
+            ** opts)
+    manager.add_capabilities_provider(cap_provider)
+    providers['LMI_FileSystemConfigurationCapabilities'] = cap_provider
+    assoc_provider = ElementCapabilitiesProvider(
+            "LMI_FileSystemConfigurationElementCapabilities",
+            cap_provider, service_provider, **opts)
+    providers['LMI_FileSystemConfigurationElementCapabilities'] = assoc_provider
 
     provider = LMI_ResidesOnExtent(**opts)
     providers['LMI_ResidesOnExtent'] = provider
