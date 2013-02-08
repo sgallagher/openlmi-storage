@@ -1,0 +1,215 @@
+[ Experimental,
+  Description("Base class for filesystems on StorageExtents of this system.")]
+class LMI_LocalFileSystem : CIM_LocalFileSystem
+{
+    [ Implemented(true), Override("Name"), MaxLen ( 256 ),
+      Description("Unique identifier of the filesystem on computer system."
+        " Usually UUID.")]
+    string Name;
+    
+    [Implemented(true)] uint16 OperationalStatus[];
+    [Implemented(true)] string Root;
+    [Implemented(true)] uint64 BlockSize;
+    [Implemented(true)] uint64 FileSystemSize;
+    [Implemented(true)] uint64 AvailableSpace;
+    [Implemented(true)] boolean ReadOnly;
+    [Implemented(true)] boolean CaseSensitive;
+    [Implemented(true)] boolean CasePreserved;
+    [Implemented(true)] uint32 MaxFileNameLength;
+    [Implemented(true)] string FileSystemType;
+    [Implemented(true)] uint16 PersistenceType;
+    [Implemented(true)] uint16 IsFixedSize;
+};
+
+[ Experimental,
+  Description("Ext2, ext3 or ext4 filesystem.")]
+class LMI_ExtFileSystem : LMI_LocalFileSystem
+{
+    
+    [Implemented(true),
+     Description ("Version of the ext filesystem."),
+     ValueMap{"2", "3", "4"},
+     Values{"ext2", "ext3", "ext4"}]
+    uint16 ExtVersion;
+};
+
+[ Experimental, Description(
+       "FileSystemCapabilities specifies the combination of properties "
+       "that a FileSystemService can support when creating or "
+       "maintaining FileSystems. Each supported combination of "
+       "properties is specified by a FileSystemSetting that is "
+       "associated with the FileSystemCapabilities element via "
+       "ElementSettingData. \n"
+       "A FileSystemCapabilities element specifies the properties "
+       "supported when using it. \n"
+       "This class *does not* provide a CreateGoal method! "
+       "Use CreateSetting instead, which works similarly to "
+       "LMI_StorageCapabilities.CreateSetting.")]
+class LMI_FileSystemCapabilities : CIM_FileSystemCapabilities
+{
+    [ Override("ActualFileSystemType"), Implemented(true),
+      ValueMap{"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
+          "11", "12", "13", "..",
+          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005", "0x8006" },
+      Values { "Unknown", "UFS", "HFS", "FAT", "FAT16", "FAT32", 
+          "NTFS4", "NTFS5", "XFS", "AFS", "EXT2", "EXT3", 
+          "REISERFS", "DMTF Reserved",
+          "EXT4", "BTRFS", "XFS", "JFS", "TMPFS", "VFAT"}]
+    uint16 ActualFileSystemType;
+
+    [ Implemented(true) ] uint16 SupportedPersistenceTypes[];
+    [ Implemented(true) ] uint16 SupportedProperties[];
+
+    [Experimental, Implemented(true), Description ( 
+          "Creates a supported FileSystemSetting. "
+          "Caller can modify the setting via ModifyInstance "
+          "intrinsic method."
+          "Unlike CIM standard CreateGoal, LMI_CreateSetting works "
+          "with references to LMI_FileSystemSetting stored on the "
+          "CIMOM, not with embedded instances and does not "
+          "require iterating through several CreateGoal calls. "
+          "The functionality is very similar to CIM_StorageCapabilities "
+          "and CIM_StorageSetting."),
+        ValueMap { "0", "1", "4" },
+        Values { "Success", "Not Supported", "Failed"}]
+    uint16 LMI_CreateSetting(
+         [IN ( false ), OUT, Description ( 
+             "Created setting.")]
+      LMI_FileSystemSetting REF Setting
+    );
+};
+
+[ Experimental ]
+class LMI_FileSystemConfigurationCapabilities : CIM_FileSystemConfigurationCapabilities
+{
+    [ Override("SupportedActualFileSystemTypes"), Implemented(true),
+      ValueMap{"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
+          "11", "12", "13", "..",
+          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005", "0x8006" },
+      Values { "Unknown", "UFS", "HFS", "FAT", "FAT16", "FAT32", 
+          "NTFS4", "NTFS5", "XFS", "AFS", "EXT2", "EXT3", 
+          "REISERFS", "DMTF Reserved",
+          "EXT4", "BTRFS", "XFS", "JFS", "TMPFS", "VFAT"}]
+    uint16 SupportedActualFileSystemTypes[];
+
+    [ Implemented(true) ] uint16 SupportedSynchronousMethods[];
+    [ Implemented(true) ] uint16 SupportedAsynchronousMethods[];
+    [ Implemented(true) ] uint16 InitialAvailability;
+};
+
+[ Experimental ]
+class LMI_FileSystemSetting : CIM_FileSystemSetting
+{
+    [ Override("ActualFileSystemType"), Implemented(true),
+      ValueMap{"0", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
+          "11", "12", "13", "..",
+          "0x8001", "0x8002", "0x8003", "0x8004", "0x8005", "0x8006" },
+      Values { "Unknown", "UFS", "HFS", "FAT", "FAT16", "FAT32", 
+          "NTFS4", "NTFS5", "XFS", "AFS", "EXT2", "EXT3", 
+          "REISERFS", "DMTF Reserved",
+          "EXT4", "BTRFS", "XFS", "JFS", "TMPFS", "VFAT"}]
+    uint16 ActualFileSystemType;
+
+    [ Implemented(true) ] uint16 DataExtentsSharing;
+    [ Implemented(true) ] uint16 FilenameCaseAttributes;
+    [ Implemented(true) ] uint16 ObjectTypes[];
+    [ Implemented(true) ] uint64 NumberOfObjectsMin[];
+    [ Implemented(true) ] uint64 NumberOfObjectsMax[];
+    [ Implemented(true) ] uint64 NumberOfObjects[];
+    [ Implemented(true) ] uint64 ObjectSize[];
+    [ Implemented(true) ] uint64 ObjectSizeMin[];
+    [ Implemented(true) ] uint64 ObjectSizeMax[];
+    [ Implemented(true) ] uint16 PersistenceTypes[];
+    [ Implemented(true) ] uint16 FilenameFormats[];
+    [ Implemented(true) ] uint16 FilenameLengthMax[];
+};
+
+[ Experimental ]
+class LMI_ExtFileSystemSetting : LMI_FileSystemSetting
+{
+};
+
+[ Experimental ]
+class LMI_FileSystemElementSettingData : CIM_ElementSettingData
+{
+};
+
+[ Experimental ]
+class LMI_ExtFileSystemElementSettingData : CIM_ElementSettingData
+{
+};
+
+
+[ Experimental ]
+class LMI_FileSystemConfigurationService : CIM_FileSystemConfigurationService
+{
+      [Implemented(true), Description ( 
+          "Start a job to create a FileSystem on StorageExtents. "
+          "If the operation completes successfully and did not "
+          "require a long-running ConcreteJob, it will return 0. If "
+          "4096/0x1000 is returned, a ConcreteJob will be started "
+          "to create the element. A Reference to the ConcreteJob "
+          "will be returned in the output parameter Job. If any "
+          "other value is returned, the job will not be started, "
+          "and no action will be taken. \n"
+          "The parameter TheElement will contain a Reference to the "
+          "FileSystem if this operation completed successfully. \n"
+          "The StorageExtents to use is specified by the InExtents "
+          "parameter.\n"
+          "The desired settings for the FileSystem are specified by "
+          "the Goal parameter. Goal is an element of class "
+          "CIM_FileSystemSetting, or a derived class. Unlike "
+          "CIM standard CreateFileSystem, the parameter is reference "
+          "to CIM_FileSystemSetting stored on the CIMOM.\n"
+          "A ResidesOnExtent association is created between the "
+          "created FileSystem and the StorageExtents used for it." ), 
+       ValueMap { "0", "1", "2", "3", "4", "5", "6", "7", "..", 
+          "4096", "4098..32767", "32768..65535" }, 
+       Values { "Job Completed with No Error", "Not Supported", 
+          "Unknown", "Timeout", "Failed", "Invalid Parameter", 
+          "StorageExtent is not big enough to satisfy the request.", 
+          "StorageExtent specified by default cannot be created.", 
+          "DMTF Reserved", 
+          "Method Parameters Checked - Job Started", 
+          "Method Reserved", "Vendor Specific" }]
+   uint32 LMI_CreateFileSystem(
+         [IN, Description ( 
+             "Label of the filesystem being "
+             "created. If NULL, a system-supplied default name "
+             "can be used. The value will be stored in the "
+             "\'ElementName\' property for the created element." )]
+      string ElementName, 
+         [IN ( false ), OUT, Description ( 
+             "Reference to the job (may be null if job completed)."
+              )]
+      CIM_ConcreteJob REF Job, 
+         [IN, Description ( 
+             "The requirements for the FileSystem element to "
+             "maintain. This is an element of class "
+             "CIM_FileSystemSetting, or a derived class. "
+             "This allows the client to specify the properties "
+             "desired for the file system. If NULL, "
+             "the FileSystemConfigurationService will "
+             "create default filesystem."
+             )]
+      CIM_FileSystemSetting REF Goal, 
+         [IN, Description ( 
+             "The StorageExtents on which the created FileSystem "
+             "will reside. At least one extent must be provided. "
+             "If the filesystem being created supports more than "
+             "one storage extent (e.g. btrfs), more extents can be "
+             "provided. The filesystem will then reside on all of "
+             "them."
+             )]
+      CIM_StorageExtent REF InExtents[], 
+         [IN, OUT, Description ( "The newly created FileSystem." )]
+      CIM_FileSystem REF TheElement);
+
+    [ Implemented(true) ] uint16 EnabledDefault;
+    [ Implemented(true) ] uint16 EnabledState;
+    [ Implemented(true) ] uint16 HealthState;
+    [ Implemented(true) ] uint16 OperationalStatus[];
+    [ Implemented(true) ] uint16 PrimaryStatus;
+    [ Implemented(true) ] string StartMode;
+    [ Implemented(true) ] boolean Started;
+};
