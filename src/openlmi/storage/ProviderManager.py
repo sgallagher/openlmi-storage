@@ -137,13 +137,14 @@ class ProviderManager(object):
         return None
 
     @cmpi_logging.trace_method
-    def get_provider_for_format(self, fmt):
+    def get_provider_for_format(self, device, fmt):
         """
             Return FormatProvider for given DeviceFormat subclass
         """
         for prov in self.format_providers:
-            if prov.provides_format(fmt):
+            if prov.provides_format(device, fmt):
                 return prov
+        return None
 
     @cmpi_logging.trace_method
     def get_setting_for_id(self, instance_id, setting_classname=None):

@@ -36,17 +36,19 @@ class LMI_LocalFileSystem(LocalFileSystemProvider):
                 *args, **kwargs)
 
     @cmpi_logging.trace_method
-    def provides_format(self, fmt):
+    def provides_format(self, device, fmt):
         if fmt is None:
             return False
-        # skip all filesystems
+        # skip all non-filesystems
         if not isinstance(fmt, pyanaconda.storage.formats.fs.FS):
             return False
-        # skip formats with its own classes
-        if (isinstance(fmt, pyanaconda.storage.formats.fs.Ext2FS)
-                or isinstance(fmt, pyanaconda.storage.formats.fs.Ext3FS)
-                or isinstance(fmt, pyanaconda.storage.formats.fs.Ext4FS)):
+
+        # TODO: implement btrfs volumes
+        if isinstance(device, pyanaconda.storage.devices.BTRFSVolumeDevice) or \
+           isinstance(device, pyanaconda.storage.devices.BTRFSSubVolumeDevice):
             return False
+
+        # TODO: skip formats with its own classes (currently none)
 
         # skip 'Unknown' format
         if fmt.type is None:

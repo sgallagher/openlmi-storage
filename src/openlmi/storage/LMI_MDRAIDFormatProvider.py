@@ -34,7 +34,7 @@ class LMI_MDRAIDFormatProvider(FormatProvider):
                 *args, **kwargs)
 
     @cmpi_logging.trace_method
-    def provides_format(self, fmt):
+    def provides_format(self, device, fmt):
         if  isinstance(fmt, pyanaconda.storage.formats.mdraid.MDRaidMember):
             return True
         return False

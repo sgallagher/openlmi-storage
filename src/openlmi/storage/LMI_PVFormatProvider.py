@@ -34,7 +34,7 @@ class LMI_PVFormatProvider(FormatProvider):
                 *args, **kwargs)
 
     @cmpi_logging.trace_method
-    def provides_format(self, fmt):
+    def provides_format(self, device, fmt):
         if  isinstance(fmt, pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
             return True
         return False

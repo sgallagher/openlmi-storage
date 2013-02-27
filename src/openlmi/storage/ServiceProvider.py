@@ -35,7 +35,6 @@ class ServiceProvider(BaseProvider):
 
 
     @cmpi_logging.trace_method
-
     def check_instance(self, model):
         """
             Check if the model represents real instance of this class.

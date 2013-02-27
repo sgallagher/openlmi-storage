@@ -58,7 +58,7 @@ class FormatProvider(BaseProvider):
 
     @cmpi_logging.trace_method
     # pylint: disable-msg=W0613
-    def provides_format(self, fmt):
+    def provides_format(self, device, fmt):
         """
             Returns True, if this class is provider for given Anaconda
             DeviceFormat class.
@@ -67,7 +67,7 @@ class FormatProvider(BaseProvider):
         return False
 
     @cmpi_logging.trace_method
-    def get_format_id(self, fmt):
+    def get_format_id(self, device, fmt):
         """
             Return LMI_DataFormat.Name. The name should be unique and stable
             across reboots or reconfigurations. UUID is used, subclasses
@@ -79,9 +79,9 @@ class FormatProvider(BaseProvider):
             uuid = None
 
         if uuid:
-            return uuid
+            return "UUID=" + uuid
 
-        return "dev:" + fmt.device
+        return "DEVICE=" + device.path
 
     @cmpi_logging.trace_method
     def get_format_for_id(self, name):
@@ -92,18 +92,21 @@ class FormatProvider(BaseProvider):
             Subclasses do not need to override this method if they do not
             override get_format_id().
         """
-        if name.startswith("dev:"):
-            (_unused, devname) = name.split(":")
+
+        if name.startswith("DEVICE="):
+            (_unused, devname) = name.split("=")
             device = self.storage.devicetree.getDeviceByPath(devname)
-        else:
-            uuid = name
+        elif name.startswith("UUID="):
+            (_unused, uuid) = name.split("=")
             device = self.storage.devicetree.getDeviceByUuid(uuid)
+        else:
+            return None
         if not device:
             return None
         return device.format
 
     @cmpi_logging.trace_method
-    def get_name_for_format(self, fmt):
+    def get_name_for_format(self, device, fmt):
         """ Return CIMInstanceName for given DeviceFormat subclass."""
         name = pywbem.CIMInstanceName(self.classname,
                 namespace=self.config.namespace,
@@ -111,7 +114,7 @@ class FormatProvider(BaseProvider):
                         "CSCreationClassName": self.config.system_class_name,
                         "CSName": self.config.system_name,
                         "CreationClassName": self.classname,
-                        "Name": self.get_format_id(fmt)})
+                        "Name": self.get_format_id(device, fmt)})
         return name
 
     @cmpi_logging.trace_method
@@ -125,8 +128,8 @@ class FormatProvider(BaseProvider):
 
         for device in self.storage.devices:
             fmt = device.format
-            if fmt and self.provides_format(fmt):
-                name = self.get_name_for_format(fmt)
+            if fmt and self.provides_format(device, fmt):
+                name = self.get_name_for_format(device, fmt)
                 model.update(name)
                 if keys_only:
                     yield model
@@ -208,10 +211,11 @@ class LMI_ResidesOnExtent(BaseProvider):
             fmt = device.format
             if not fmt or not fmt.type:
                 continue
-            provider = self.provider_manager.get_provider_for_format(fmt)
+            provider = self.provider_manager.get_provider_for_format(
+                    device, fmt)
             if not provider:
                 continue
-            fmtname = provider.get_name_for_format(fmt)
+            fmtname = provider.get_name_for_format(device, fmt)
             devname = self.provider_manager.get_name_for_device(device)
             if not devname:
                 continue
@@ -236,12 +240,13 @@ class LMI_ResidesOnExtent(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "The Antecedent device has no format.")
 
-        fmtprovider = self.provider_manager.get_provider_for_format(fmt)
+        fmtprovider = self.provider_manager.get_provider_for_format(
+                device, fmt)
         if not fmtprovider:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "The Antecedent device has unknown format.")
 
-        real_fmtname = fmtprovider.get_name_for_format(fmt)
+        real_fmtname = fmtprovider.get_name_for_format(device, fmt)
         if real_fmtname != fmtname:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "The Antecedent device has different format.")

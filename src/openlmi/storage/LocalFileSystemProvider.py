@@ -38,18 +38,19 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
     def __init__(self, *args, **kwargs):
         super(LocalFileSystemProvider, self).__init__(*args, **kwargs)
 
+        vals = LocalFileSystemProvider.Values
         self.fs_settings = {
             'ext2' : {
                 'ActualFileSystemType':
-                    LocalFileSystemProvider.Values.ActualFileSystemType.EXT2,
+                    vals.ActualFileSystemType.EXT2,
                 'DataExtentsSharing':
-                    LocalFileSystemProvider.Values.DataExtentsSharing.No_Sharing,
+                    vals.DataExtentsSharing.No_Sharing,
                 'FilenameCaseAttributes':
-                    LocalFileSystemProvider.Values.FilenameCaseAttributes.Case_sensitive,
+                    vals.FilenameCaseAttributes.Case_sensitive,
                 'ObjectTypes': [
-                        LocalFileSystemProvider.Values.ObjectTypes.inodes,
-                        LocalFileSystemProvider.Values.ObjectTypes.files,
-                        LocalFileSystemProvider.Values.ObjectTypes.files_directories,
+                        vals.ObjectTypes.inodes,
+                        vals.ObjectTypes.files,
+                        vals.ObjectTypes.files_directories,
                 ],
                 'NumberOfObjectsMin': [
                         pywbem.Uint64(0),
@@ -82,25 +83,25 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
                         pywbem.Uint64(0),  # file size in directory
                 ],
                 'FilenameFormats': [
-                    LocalFileSystemProvider.Values.FilenameFormats.Unix
+                    vals.FilenameFormats.Unix
                 ],
                 'FilenameLengthMax':  [
                         pywbem.Uint64(255),
                 ],
                 'PersistenceTypes': [
-                        LocalFileSystemProvider.Values.PersistenceTypes.Persistent]
+                        vals.PersistenceTypes.Persistent]
             },
             'ext3' : {
                 'ActualFileSystemType':
-                    LocalFileSystemProvider.Values.ActualFileSystemType.EXT3,
+                    vals.ActualFileSystemType.EXT3,
                 'DataExtentsSharing':
-                    LocalFileSystemProvider.Values.DataExtentsSharing.No_Sharing,
+                    vals.DataExtentsSharing.No_Sharing,
                 'FilenameCaseAttributes':
-                    LocalFileSystemProvider.Values.FilenameCaseAttributes.Case_sensitive,
+                    vals.FilenameCaseAttributes.Case_sensitive,
                 'ObjectTypes': [
-                        LocalFileSystemProvider.Values.ObjectTypes.inodes,
-                        LocalFileSystemProvider.Values.ObjectTypes.files,
-                        LocalFileSystemProvider.Values.ObjectTypes.files_directories,
+                        vals.ObjectTypes.inodes,
+                        vals.ObjectTypes.files,
+                        vals.ObjectTypes.files_directories,
                 ],
                 'NumberOfObjectsMin': [
                         pywbem.Uint64(0),
@@ -133,25 +134,25 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
                         pywbem.Uint64(0),
                 ],
                 'FilenameFormats': [
-                    LocalFileSystemProvider.Values.FilenameFormats.Unix
+                    vals.FilenameFormats.Unix
                 ],
                 'FilenameLengthMax':  [
                         pywbem.Uint64(255),
                 ],
                 'PersistenceTypes': [
-                        LocalFileSystemProvider.Values.PersistenceTypes.Persistent]
+                        vals.PersistenceTypes.Persistent]
             },
             'ext4' : {
                 'ActualFileSystemType':
-                    LocalFileSystemProvider.Values.ActualFileSystemType.EXT4,
+                    vals.ActualFileSystemType.EXT4,
                 'DataExtentsSharing':
-                    LocalFileSystemProvider.Values.DataExtentsSharing.No_Sharing,
+                    vals.DataExtentsSharing.No_Sharing,
                 'FilenameCaseAttributes':
-                    LocalFileSystemProvider.Values.FilenameCaseAttributes.Case_sensitive,
+                    vals.FilenameCaseAttributes.Case_sensitive,
                 'ObjectTypes': [
-                        LocalFileSystemProvider.Values.ObjectTypes.inodes,
-                        LocalFileSystemProvider.Values.ObjectTypes.files,
-                        LocalFileSystemProvider.Values.ObjectTypes.files_directories,
+                        vals.ObjectTypes.inodes,
+                        vals.ObjectTypes.files,
+                        vals.ObjectTypes.files_directories,
                 ],
                 'NumberOfObjectsMin': [
                         pywbem.Uint64(0),
@@ -184,25 +185,25 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
                         pywbem.Uint64(0),
                 ],
                 'FilenameFormats': [
-                    LocalFileSystemProvider.Values.FilenameFormats.Unix
+                    vals.FilenameFormats.Unix
                 ],
                 'FilenameLengthMax':  [
                         pywbem.Uint64(255),
                 ],
                 'PersistenceTypes': [
-                        LocalFileSystemProvider.Values.PersistenceTypes.Persistent]
+                        vals.PersistenceTypes.Persistent]
             },
             'btrfs' : {
                 'ActualFileSystemType':
-                    LocalFileSystemProvider.Values.ActualFileSystemType.BTRFS,
+                    vals.ActualFileSystemType.BTRFS,
                 'DataExtentsSharing':
-                    LocalFileSystemProvider.Values.DataExtentsSharing.No_Sharing,
+                    vals.DataExtentsSharing.No_Sharing,
                 'FilenameCaseAttributes':
-                    LocalFileSystemProvider.Values.FilenameCaseAttributes.Case_sensitive,
+                    vals.FilenameCaseAttributes.Case_sensitive,
                 'ObjectTypes': [
-                        LocalFileSystemProvider.Values.ObjectTypes.inodes,
-                        LocalFileSystemProvider.Values.ObjectTypes.files,
-                        LocalFileSystemProvider.Values.ObjectTypes.files_directories,
+                        vals.ObjectTypes.inodes,
+                        vals.ObjectTypes.files,
+                        vals.ObjectTypes.files_directories,
                 ],
                 'NumberOfObjectsMin': [
                         pywbem.Uint64(0),
@@ -235,25 +236,25 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
                         pywbem.Uint64(0),
                 ],
                 'FilenameFormats': [
-                    LocalFileSystemProvider.Values.FilenameFormats.Unix
+                    vals.FilenameFormats.Unix
                 ],
                 'FilenameLengthMax':  [
                         pywbem.Uint64(255),
                 ],
                 'PersistenceTypes': [
-                        LocalFileSystemProvider.Values.PersistenceTypes.Persistent]
+                        vals.PersistenceTypes.Persistent]
             },
             'xfs' : {
                 'ActualFileSystemType':
-                    LocalFileSystemProvider.Values.ActualFileSystemType.XFS,
+                    vals.ActualFileSystemType.XFS,
                 'DataExtentsSharing':
-                    LocalFileSystemProvider.Values.DataExtentsSharing.No_Sharing,
+                    vals.DataExtentsSharing.No_Sharing,
                 'FilenameCaseAttributes':
-                    LocalFileSystemProvider.Values.FilenameCaseAttributes.Case_sensitive,
+                    vals.FilenameCaseAttributes.Case_sensitive,
                 'ObjectTypes': [
-                        LocalFileSystemProvider.Values.ObjectTypes.inodes,
-                        LocalFileSystemProvider.Values.ObjectTypes.files,
-                        LocalFileSystemProvider.Values.ObjectTypes.files_directories,
+                        vals.ObjectTypes.inodes,
+                        vals.ObjectTypes.files,
+                        vals.ObjectTypes.files_directories,
                 ],
                 'NumberOfObjectsMin': [
                         pywbem.Uint64(0),
@@ -286,13 +287,13 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
                         pywbem.Uint64(0),
                 ],
                 'FilenameFormats': [
-                    LocalFileSystemProvider.Values.FilenameFormats.Unix
+                    vals.FilenameFormats.Unix
                 ],
                 'FilenameLengthMax':  [
                         pywbem.Uint64(255),
                 ],
                 'PersistenceTypes': [
-                        LocalFileSystemProvider.Values.PersistenceTypes.Persistent]
+                        vals.PersistenceTypes.Persistent]
             },
         }
 
@@ -317,8 +318,10 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
         model['PersistenceType'] = self.Values.PersistenceType.Persistent
         if fmt.label:
             model['ElementName'] = fmt.label
+        if fmt.uuid:
+            model['ElementName'] = fmt.uuid
         else:
-            model['ElementName'] = "dev:" + fmt.device
+            model['ElementName'] = fmt.device
 
         return model
 
@@ -337,7 +340,6 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
                 setting[key] = str(value)
 
             # TODO: add current block size, nr. of inodes, nr. of
-            print setting.id, setting.items()
             return setting
         return None
 
@@ -348,10 +350,9 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
             as Setting instances.
         """
         for device in self.storage.devices:
-            if self.provides_format(device.format):
+            if self.provides_format(device, device.format):
                 setting = self._get_setting_for_format(
                         setting_provider, device.format)
-                # TODO: add actual max/actual nr. of inodes & blocks
                 if setting:
                     yield setting
 
@@ -389,8 +390,8 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
         if not device:
             return None
         fmt = device.format
-        provider = self.provider_manager.get_provider_for_format(fmt)
-        return provider.get_name_for_format(fmt)
+        provider = self.provider_manager.get_provider_for_format(device, fmt)
+        return provider.get_name_for_format(device, fmt)
 
     @cmpi_logging.trace_method
     def get_supported_setting_properties(self, setting_provider):
