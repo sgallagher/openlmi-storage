@@ -30,8 +30,9 @@ class LMI_LocalFileSystem(LocalFileSystemProvider):
     @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_LocalFileSystem, self).__init__(
-                "LMI_LocalFileSystem",
-                None,
+                classname="LMI_LocalFileSystem",
+                device_type=None,
+                setting_classname="LMI_FileSystemSetting",
                 *args, **kwargs)
 
     @cmpi_logging.trace_method

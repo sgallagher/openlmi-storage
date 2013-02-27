@@ -31,8 +31,9 @@ class LMI_ExtFileSystem(LocalFileSystemProvider):
     @cmpi_logging.trace_method
     def __init__(self, *args, **kwargs):
         super(LMI_ExtFileSystem, self).__init__(
-                "LMI_ExtFileSystem",
-                None,
+                classname="LMI_ExtFileSystem",
+                device_type=None,
+                setting_classname="LMI_ExtFileSystemSetting",
                 *args, **kwargs)
 
     @cmpi_logging.trace_method

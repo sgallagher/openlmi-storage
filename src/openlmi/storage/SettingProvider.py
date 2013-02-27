@@ -217,6 +217,32 @@ class SettingProvider(BaseProvider):
             return False
         return bool(value)
 
+    @staticmethod
+    @cmpi_logging.trace_function
+    def string_to_uint16_array(value):
+        """
+            Convert a string to array of integers.
+            The string must be enclosed in [].
+        """
+        if not (value[0] == "[" and value[-1] == "]"):
+            return None
+        value = value[1:-1]
+        values = value.split(",")
+        return [pywbem.Uint16(i) for i in values]
+
+    @staticmethod
+    @cmpi_logging.trace_function
+    def string_to_uint64_array(value):
+        """
+            Convert a string to array of integers.
+            The string must be enclosed in [].
+        """
+        if not (value[0] == "[" and value[-1] == "]"):
+            return None
+        value = value[1:-1]
+        values = value.split(",")
+        return [pywbem.Uint64(i) for i in values]
+
     @cmpi_logging.trace_function
     def _check_changeable_type_modify(self, instance, setting):
         """

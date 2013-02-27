@@ -287,10 +287,34 @@ def get_providers(env):
     fmt = LMI_LocalFileSystem(**opts)
     manager.add_format_provider(fmt)
     providers['LMI_LocalFileSystem'] = fmt
+    setting_provider = SettingHelperProvider(
+            setting_helper=fmt,
+            setting_classname="LMI_FileSystemSetting",
+            **opts)
+    manager.add_setting_provider(setting_provider)
+    providers['LMI_FileSystemSetting'] = setting_provider
+    assoc_provider = ElementSettingDataProvider(
+            setting_provider=setting_provider,
+            managed_element_classname="LMI_LocalFileSystem",
+            setting_data_classname="LMI_FileSystemSetting",
+            **opts)
+    providers['LMI_FileSystemElementSettingData'] = assoc_provider
 
     fmt = LMI_ExtFileSystem(**opts)
     manager.add_format_provider(fmt)
     providers['LMI_ExtFileSystem'] = fmt
+    setting_provider = SettingHelperProvider(
+            setting_helper=fmt,
+            setting_classname="LMI_ExtFileSystemSetting",
+            **opts)
+    manager.add_setting_provider(setting_provider)
+    providers['LMI_ExtFileSystemSetting'] = setting_provider
+    assoc_provider = ElementSettingDataProvider(
+            setting_provider=setting_provider,
+            managed_element_classname="LMI_ExtFileSystem",
+            setting_data_classname="LMI_ExtFileSystemSetting",
+            **opts)
+    providers['LMI_ExtFileSystemElementSettingData'] = assoc_provider
 
     provider = LMI_ResidesOnExtent(**opts)
     providers['LMI_ResidesOnExtent'] = provider
