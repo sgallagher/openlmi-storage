@@ -16,6 +16,8 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
+import pyanaconda.storage.formats
+import openlmi.storage.util
 """ Module for LMI_FileSystemConfigurationService class."""
 
 from openlmi.storage.ServiceProvider import ServiceProvider
@@ -31,10 +33,11 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
         super(LMI_FileSystemConfigurationService, self).__init__(
                 "LMI_FileSystemConfigurationService", *args, **kwargs)
 
+    @cmpi_logging.trace_method
     def cim_method_lmi_createfilesystem(self, env, object_name,
-                                        param_goal=None,
                                         param_elementname=None,
-                                        param_theelement=None,
+                                        param_goal=None,
+                                        param_filesystemtype=None,
                                         param_inextents=None):
         """Implements LMI_FileSystemConfigurationService.LMI_CreateFileSystem()
 
@@ -60,6 +63,12 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
         object_name -- A pywbem.CIMInstanceName or pywbem.CIMCLassName 
             specifying the object on which the method LMI_CreateFileSystem() 
             should be invoked.
+        param_elementname --  The input parameter ElementName (type unicode) 
+            Label of the filesystem being created. If NULL, a
+            system-supplied default name can be used. The value will be
+            stored in the \'ElementName\' property for the created
+            element.
+            
         param_goal --  The input parameter Goal (type REF (pywbem.CIMInstanceName(classname='CIM_FileSystemSetting', ...)) 
             The requirements for the FileSystem element to maintain. This
             is an element of class CIM_FileSystemSetting, or a derived
@@ -67,14 +76,9 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
             desired for the file system. If NULL, the
             FileSystemConfigurationService will create default filesystem.
             
-        param_elementname --  The input parameter ElementName (type unicode) 
-            Label of the filesystem being created. If NULL, a
-            system-supplied default name can be used. The value will be
-            stored in the \'ElementName\' property for the created
-            element.
-            
-        param_theelement --  The input parameter TheElement (type REF (pywbem.CIMInstanceName(classname='CIM_FileSystem', ...)) 
-            The newly created FileSystem.
+        param_filesystemtype --  The input parameter FileSystemType (type pywbem.Uint16 self.Values.LMI_CreateFileSystem.FileSystemType) 
+            Type of file system to create. When NULL, file system type is
+            retrieved from Goal parameter, which cannot be NULL.
             
         param_inextents --  The input parameter InExtents (type REF (pywbem.CIMInstanceName(classname='CIM_StorageExtent', ...)) 
             The StorageExtents on which the created FileSystem will reside.
@@ -106,8 +110,105 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
         CIM_ERR_FAILED (some other unspecified error occurred)
 
         """
-        raise pywbem.CIMError(pywbem.CIM_ERR_METHOD_NOT_AVAILABLE)
+        self.check_instance(object_name)
 
+        if not param_inextents:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Parameter InExtents must be specified.")
+        devices = []
+        for extent in param_inextents:
+            device = self.provider_manager.get_device_for_name(extent)
+            if not device:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Cannot find block device for InExtent"
+                    + extent['DeviceID'])
+            devices.append(device)
+        if len(devices) > 1:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Creation of filesystems on multiple devices is not"
+                    " yet supported.")
+        if len(devices) < 1:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "At least one InExtent must be specified")
+
+        goal = self._parse_goal(param_goal, "LMI_FileSystemSetting")
+        # TODO: check that goal has supported values
+
+        if not goal and not param_filesystemtype:
+            raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    "Either Goal or FileSystemType parameter must be specified")
+        if not param_filesystemtype:
+            # retrieve fs type from the goal
+            param_filesystemtype = int(goal['ActualFileSystemType'])
+
+        return self._create_fs(
+                devices, param_filesystemtype, param_elementname, goal)
+
+    @cmpi_logging.trace_method
+    def _parse_goal(self, param_goal, classname):
+        """
+            Find Setting for given CIMInstanceName and check, that it is
+            of given CIM class. 
+            Return None, if no Goal was given.
+            Raise CIMError, if the Goal cannot be found.
+        """
+        if param_goal:
+            instance_id = param_goal['InstanceID']
+            goal = self.provider_manager.get_setting_for_id(
+                instance_id, classname)
+            if not goal:
+                raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
+                    classname + " Goal does not found.")
+        else:
+            goal = None
+        return goal
+
+    def _create_fs(self, devices, fstype, label, goal):
+        """
+            Create a filesystem on given devices. The parameters were already
+            checked.
+        """
+        # convert fstype to Blivet FS
+        types = self.Values.LMI_CreateFileSystem.FileSystemType
+        fstypes = {
+                types.FAT: 'vfat',
+                types.FAT16: 'vfat',
+                types.FAT32: 'vfat',
+                types.XFS: 'xfs',
+                types.EXT2: 'ext2',
+                types.EXT3: 'ext3',
+                types.EXT4: 'ext4',
+                types.BTRFS: 'btrfs',
+                types.VFAT: 'vfat'
+        }
+        fsname = fstypes.get(fstype, 'None')
+        if not fsname:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Creation of requested filesystem is not supported.")
+
+        fmt = pyanaconda.storage.formats.getFormat(fsname)
+        if not fmt:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Creation of requested filesystem is not supported.")
+        action = pyanaconda.storage.ActionCreateFormat(devices[0],
+                format=fmt)
+        openlmi.storage.util.partitioning.do_storage_action(
+                self.storage, action)
+        fmtprovider = self.provider_manager.get_provider_for_format(
+                devices[0], fmt)
+        outparams = [
+                pywbem.CIMParameter(
+                        name='theelement',
+                        type='reference',
+                        value=fmtprovider.get_name_for_format(
+                                devices[0], format)),
+                pywbem.CIMParameter(
+                        name='job',
+                        type='reference',
+                        value=None)
+        ]
+        return (self.Values.LMI_CreateFileSystem.Job_Completed_with_No_Error,
+                outparams)
 
     class Values(ServiceProvider.Values):
         class LMI_CreateFileSystem(object):
@@ -117,11 +218,29 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
             Timeout = pywbem.Uint32(3)
             Failed = pywbem.Uint32(4)
             Invalid_Parameter = pywbem.Uint32(5)
-            StorageExtent_is_not_big_enough_to_satisfy_the_request = \
-                    pywbem.Uint32(6)
-            StorageExtent_specified_by_default_cannot_be_created = \
-                    pywbem.Uint32(7)
+            StorageExtent_is_not_big_enough_to_satisfy_the_request_ = pywbem.Uint32(6)
+            StorageExtent_specified_by_default_cannot_be_created_ = pywbem.Uint32(7)
             # DMTF_Reserved = ..
             Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
             # Method_Reserved = 4098..32767
             # Vendor_Specific = 32768..65535
+            class FileSystemType(object):
+                Unknown = pywbem.Uint16(0)
+                UFS = pywbem.Uint16(2)
+                HFS = pywbem.Uint16(3)
+                FAT = pywbem.Uint16(4)
+                FAT16 = pywbem.Uint16(5)
+                FAT32 = pywbem.Uint16(6)
+                NTFS4 = pywbem.Uint16(7)
+                NTFS5 = pywbem.Uint16(8)
+                XFS = pywbem.Uint16(9)
+                AFS = pywbem.Uint16(10)
+                EXT2 = pywbem.Uint16(11)
+                EXT3 = pywbem.Uint16(12)
+                REISERFS = pywbem.Uint16(13)
+                # DMTF_Reserved = ..
+                EXT4 = pywbem.Uint16(32769)
+                BTRFS = pywbem.Uint16(32770)
+                JFS = pywbem.Uint16(32771)
+                TMPFS = pywbem.Uint16(32772)
+                VFAT = pywbem.Uint16(32773)

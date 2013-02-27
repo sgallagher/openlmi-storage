@@ -173,6 +173,18 @@ class LMI_FileSystemConfigurationService : CIM_FileSystemConfigurationService
           "Method Parameters Checked - Job Started", 
           "Method Reserved", "Vendor Specific" }]
    uint32 LMI_CreateFileSystem(
+         [IN, Description (
+             "Type of file system to create. When NULL, file system "
+             "type is retrieved from Goal parameter, which cannot be "
+             "NULL."),
+           ValueMap{"0", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                 "11", "12", "13", "..",
+                 "32769", "32770", "32771", "32772", "32773" },
+           Values { "Unknown", "UFS", "HFS", "FAT", "FAT16", "FAT32",
+                 "NTFS4", "NTFS5", "XFS", "AFS", "EXT2", "EXT3",
+                 "REISERFS", "DMTF Reserved",
+                 "EXT4", "BTRFS", "JFS", "TMPFS", "VFAT"}]
+      uint16 FileSystemType,
          [IN, Description ( 
              "Label of the filesystem being "
              "created. If NULL, a system-supplied default name "
@@ -202,7 +214,7 @@ class LMI_FileSystemConfigurationService : CIM_FileSystemConfigurationService
              "them."
              )]
       CIM_StorageExtent REF InExtents[], 
-         [IN, OUT, Description ( "The newly created FileSystem." )]
+         [IN(false), OUT, Description ( "The newly created FileSystem." )]
       CIM_FileSystem REF TheElement);
 
     [ Implemented(true) ] uint16 EnabledDefault;
