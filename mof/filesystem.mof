@@ -6,7 +6,7 @@ class LMI_LocalFileSystem : CIM_LocalFileSystem
       Description("Unique identifier of the filesystem on computer system."
         " Usually UUID.")]
     string Name;
-    
+
     [Implemented(true)] uint16 OperationalStatus[];
     [Implemented(true)] string Root;
     [Implemented(true)] uint64 BlockSize;
@@ -19,18 +19,6 @@ class LMI_LocalFileSystem : CIM_LocalFileSystem
     [Implemented(true)] string FileSystemType;
     [Implemented(true)] uint16 PersistenceType;
     [Implemented(true)] uint16 IsFixedSize;
-};
-
-[ Experimental,
-  Description("Ext2, ext3 or ext4 filesystem.")]
-class LMI_ExtFileSystem : LMI_LocalFileSystem
-{
-    
-    [Implemented(true),
-     Description ("Version of the ext filesystem."),
-     ValueMap{"2", "3", "4"},
-     Values{"ext2", "ext3", "ext4"}]
-    uint16 ExtVersion;
 };
 
 [ Experimental, Description(
@@ -146,19 +134,10 @@ class LMI_FileSystemSetting : CIM_FileSystemSetting
 };
 
 [ Experimental ]
-class LMI_ExtFileSystemSetting : LMI_FileSystemSetting
-{
-};
-
-[ Experimental ]
 class LMI_FileSystemElementSettingData : CIM_ElementSettingData
 {
 };
 
-[ Experimental ]
-class LMI_ExtFileSystemElementSettingData : CIM_ElementSettingData
-{
-};
 
 
 [ Experimental ]

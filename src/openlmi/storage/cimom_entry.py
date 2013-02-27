@@ -70,7 +70,6 @@ from openlmi.storage.LMI_PVFormatProvider import LMI_PVFormatProvider
 from openlmi.storage.LMI_DataFormatProvider import LMI_DataFormatProvider
 from openlmi.storage.FormatProvider import LMI_ResidesOnExtent
 from openlmi.storage.LMI_LocalFileSystem import LMI_LocalFileSystem
-from openlmi.storage.LMI_ExtFileSystem import LMI_ExtFileSystem
 from openlmi.storage.LMI_FileSystemConfigurationService \
         import LMI_FileSystemConfigurationService
 from openlmi.storage.LMI_FileSystemConfigurationCapabilities \
@@ -303,22 +302,6 @@ def get_providers(env):
             setting_data_classname="LMI_FileSystemSetting",
             **opts)
     providers['LMI_FileSystemElementSettingData'] = assoc_provider
-
-    fmt = LMI_ExtFileSystem(**opts)
-    manager.add_format_provider(fmt)
-    providers['LMI_ExtFileSystem'] = fmt
-    setting_provider = SettingHelperProvider(
-            setting_helper=fmt,
-            setting_classname="LMI_ExtFileSystemSetting",
-            **opts)
-    manager.add_setting_provider(setting_provider)
-    providers['LMI_ExtFileSystemSetting'] = setting_provider
-    assoc_provider = ElementSettingDataProvider(
-            setting_provider=setting_provider,
-            managed_element_classname="LMI_ExtFileSystem",
-            setting_data_classname="LMI_ExtFileSystemSetting",
-            **opts)
-    providers['LMI_ExtFileSystemElementSettingData'] = assoc_provider
 
     service_provider = LMI_FileSystemConfigurationService(**opts)
     manager.add_service_provider(service_provider)
