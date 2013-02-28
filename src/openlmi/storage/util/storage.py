@@ -167,3 +167,24 @@ def do_storage_action(storage, action):
         os.system('udevadm trigger --subsystem-match block')
         os.system('udevadm settle')
         storage.reset()
+
+def log_storage_call(msg, args):
+    """
+        Log a storage action to log.
+        logger.info will be used. The message should have format
+        'CREATE <type>' or 'DELETE <type>', where <type> is type of device
+        (PARTITION, MDRAID, VG, LV, ...). The arguments will be printed
+        after it in no special orded, only StorageDevice instances
+        will be replaced with device.path.
+    """
+    print_args = {}
+    for (key, value) in args.iteritems():
+        if isinstance(value, pyanaconda.storage.devices.StorageDevice):
+            value = value.path
+        if key == 'parents':
+            value = [d.path for d in value]
+        print_args[key] = value
+
+    logger = cmpi_logging.logger
+    if logger:
+        logger.info(msg + ": " + str(print_args))

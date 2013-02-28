@@ -184,7 +184,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         if name:
             args['name'] = name
 
-        cmpi_logging.log_storage_call("CREATE LV", args)
+        storage.log_storage_call("CREATE LV", args)
 
         lv = self.storage.newLV(**args)
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(lv)
@@ -435,7 +435,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         if name:
             args['name'] = name
 
-        cmpi_logging.log_storage_call("CREATE VG", args)
+        storage.log_storage_call("CREATE VG", args)
 
         vg = self.storage.newVG(**args)
         action = pyanaconda.storage.ActionCreateDevice(vg)
@@ -707,7 +707,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         args['level'] = str(level)
         args['memberDevices'] = len(devices)
 
-        cmpi_logging.log_storage_call("CREATE MDRAID", args)
+        storage.log_storage_call("CREATE MDRAID", args)
 
         raid = self.storage.newMDArray(**args)
         action = pyanaconda.storage.ActionCreateDevice(raid)

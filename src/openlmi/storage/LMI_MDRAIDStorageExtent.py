@@ -200,7 +200,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
 
     @cmpi_logging.trace_method
     def do_delete_instance(self, device):
-        cmpi_logging.log_storage_call("DELETE MDRAID",
+        storage.log_storage_call("DELETE MDRAID",
                 {'device': device})
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
         storage.do_storage_action(self.storage, action)

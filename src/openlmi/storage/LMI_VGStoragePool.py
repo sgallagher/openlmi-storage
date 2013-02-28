@@ -377,7 +377,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
 
     @cmpi_logging.trace_method
     def do_delete_instance(self, device):
-        cmpi_logging.log_storage_call("DELETE VG",
+        storage.log_storage_call("DELETE VG",
                 {'device': device})
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
         storage.do_storage_action(self.storage, action)

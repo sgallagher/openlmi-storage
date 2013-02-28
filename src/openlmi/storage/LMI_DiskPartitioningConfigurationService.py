@@ -127,7 +127,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                     "Unsupported PartitionStyle:"
                     + str(capabilities['PartitionStyle']) + ".")
 
-        cmpi_logging.log_storage_call("CREATE DISKLABEL",
+        storage.log_storage_call("CREATE DISKLABEL",
                 {'label': label, 'device': device.path})
 
         fmt = pyanaconda.storage.formats.getFormat('disklabel', labelType=label)
@@ -448,7 +448,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                 'grow': grow,
                 'primary': primary
         }
-        cmpi_logging.log_storage_call("CREATE PARTITION", args)
+        storage.log_storage_call("CREATE PARTITION", args)
 
         partition = self.storage.newPartition(**args)
         partition.disk = device

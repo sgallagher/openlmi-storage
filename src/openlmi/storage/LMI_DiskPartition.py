@@ -96,7 +96,7 @@ class LMI_DiskPartition(ExtentProvider):
         """
             Really delete given Anaconda StorageDevice.
         """
-        cmpi_logging.log_storage_call("DELETE PARTITION",
+        storage.log_storage_call("DELETE PARTITION",
                 {'device': device})
         storage.remove_partition(self.storage, device)
 
