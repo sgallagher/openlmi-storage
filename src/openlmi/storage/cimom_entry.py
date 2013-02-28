@@ -75,7 +75,7 @@ from openlmi.storage.LMI_FileSystemConfigurationService \
 from openlmi.storage.LMI_FileSystemConfigurationCapabilities \
         import LMI_FileSystemConfigurationCapabilities
 
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 import pyanaconda.storage
 import pyanaconda.platform
 import os

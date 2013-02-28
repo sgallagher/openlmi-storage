@@ -19,7 +19,7 @@
 """ Module for LMI_LVStorageCapabilities class."""
 
 from openlmi.storage.CapabilitiesProvider import CapabilitiesProvider
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingManager import StorageSetting
 import pywbem
 import pyanaconda.storage.devices

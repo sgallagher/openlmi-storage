@@ -25,7 +25,7 @@ from openlmi.storage.SettingManager import Setting
 import pywbem
 import pyanaconda.storage.formats
 import parted
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 import openlmi.storage.util.units as units
 
 class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):

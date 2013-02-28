@@ -20,7 +20,7 @@
 
 import os
 import ConfigParser
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class SettingManager(object):
     """

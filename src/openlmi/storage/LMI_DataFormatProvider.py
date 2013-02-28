@@ -20,7 +20,7 @@
 
 from openlmi.storage.FormatProvider import FormatProvider
 import pyanaconda.storage.formats
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_DataFormatProvider(FormatProvider):
     """

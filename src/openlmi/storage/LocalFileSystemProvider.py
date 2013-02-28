@@ -23,7 +23,7 @@ from openlmi.storage.FormatProvider import FormatProvider
 from openlmi.storage.SettingHelper import SettingHelper
 from openlmi.storage.SettingManager import Setting
 from openlmi.storage.SettingProvider import SettingProvider
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class LocalFileSystemProvider(FormatProvider, SettingHelper):
     """

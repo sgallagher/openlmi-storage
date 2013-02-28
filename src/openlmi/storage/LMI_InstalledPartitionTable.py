@@ -21,7 +21,7 @@
 import pyanaconda.storage.formats
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_InstalledPartitionTable(BaseProvider):
     """

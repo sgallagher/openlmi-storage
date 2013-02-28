@@ -20,7 +20,7 @@
 
 import pywbem
 from openlmi.storage.BaseProvider import BaseProvider
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class FormatProvider(BaseProvider):
     """

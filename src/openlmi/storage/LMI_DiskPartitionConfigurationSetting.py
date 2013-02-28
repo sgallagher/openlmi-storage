@@ -23,7 +23,7 @@ from openlmi.storage.SettingProvider import SettingProvider
 from openlmi.storage.SettingManager import Setting
 
 import parted
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_DiskPartitionConfigurationSetting(SettingProvider):
     """

@@ -20,7 +20,7 @@
 
 from openlmi.storage.ExtentProvider import ExtentProvider
 import pyanaconda.storage
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingHelper import SettingHelper
 from openlmi.storage.SettingManager import StorageSetting
 import pywbem

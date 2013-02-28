@@ -23,7 +23,7 @@ import os
 import parted
 import pywbem
 import pyanaconda.storage
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 GPT_TABLE_SIZE = 34 * 2  # there are two copies
 MBR_TABLE_SIZE = 1

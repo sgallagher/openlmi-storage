@@ -26,7 +26,7 @@ import pyanaconda.storage.formats
 import openlmi.storage.util.partitioning as partitioning
 import openlmi.storage.util.units as units
 import parted
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_DiskPartitionConfigurationService(ServiceProvider):
     """

@@ -22,7 +22,7 @@ import openlmi.storage.util
 
 from openlmi.storage.ServiceProvider import ServiceProvider
 import pywbem
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_FileSystemConfigurationService(ServiceProvider):
     """

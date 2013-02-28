@@ -21,7 +21,7 @@
 from openlmi.storage.ServiceProvider import ServiceProvider
 import pywbem
 import pyanaconda.storage.formats
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 import openlmi.storage.util.units as units
 import openlmi.storage.util.partitioning as partitioning
 from openlmi.storage.DeviceProvider import DeviceProvider

@@ -19,7 +19,7 @@
 """ Module for LMI_LocalFilesystem."""
 
 from openlmi.storage.LocalFileSystemProvider import LocalFileSystemProvider
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 import pyanaconda.storage.formats
 
 class LMI_LocalFileSystem(LocalFileSystemProvider):

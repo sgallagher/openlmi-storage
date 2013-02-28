@@ -18,7 +18,7 @@
 # -*- coding: utf-8 -*-
 """ Module for SettingHelper class."""
 
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class SettingHelper(object):
     """

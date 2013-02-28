@@ -20,7 +20,7 @@
 """ Module for BaseProvider class. """
 
 from pywbem.cim_provider2 import CIMProvider2
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class BaseProvider(CIMProvider2):
     """

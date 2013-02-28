@@ -22,7 +22,7 @@ from openlmi.storage.ExtentProvider import ExtentProvider
 import pyanaconda.storage
 import pywbem
 import openlmi.storage.util.partitioning as partitioning
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_DiskPartition(ExtentProvider):
     """

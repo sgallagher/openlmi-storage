@@ -20,7 +20,7 @@
 
 import ConfigParser
 import socket
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 
 class StorageConfiguration(object):
     """

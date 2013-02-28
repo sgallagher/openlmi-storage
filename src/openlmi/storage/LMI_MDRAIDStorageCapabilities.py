@@ -21,7 +21,7 @@
 from openlmi.storage.CapabilitiesProvider import CapabilitiesProvider
 from openlmi.storage.SettingManager import Setting
 import pywbem
-import openlmi.storage.cmpi_logging as cmpi_logging
+import openlmi.common.cmpi_logging as cmpi_logging
 import openlmi.storage.util.units as units
 from openlmi.storage.DeviceProvider import DeviceProvider
 
