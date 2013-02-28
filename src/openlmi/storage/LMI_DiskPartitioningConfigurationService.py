@@ -23,7 +23,7 @@ from openlmi.storage.LMI_DiskPartitionConfigurationSetting \
         import LMI_DiskPartitionConfigurationSetting
 import pywbem
 import pyanaconda.storage.formats
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 import openlmi.storage.util.units as units
 import parted
 import openlmi.common.cmpi_logging as cmpi_logging
@@ -132,7 +132,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
 
         fmt = pyanaconda.storage.formats.getFormat('disklabel', labelType=label)
         action = pyanaconda.storage.deviceaction.ActionCreateFormat(device, fmt)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)
 
         return self.Values.SetPartitionStyle.Success
 
@@ -463,7 +463,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
 
         # finally, do the dirty job
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(partition)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)
         size = partition.size * units.MEGABYTE
 
         ret = self.Values.LMI_CreateOrModifyPartition\

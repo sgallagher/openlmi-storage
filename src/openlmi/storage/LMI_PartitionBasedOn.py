@@ -20,7 +20,7 @@
 
 from openlmi.storage.BasedOnProvider import BasedOnProvider
 import pywbem
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_PartitionBasedOn(BasedOnProvider):
@@ -47,7 +47,7 @@ class LMI_PartitionBasedOn(BasedOnProvider):
         """
             Return starting address of logical's partition metadata.
         """
-        return partitioning.get_logical_partition_start(device)
+        return storage.get_logical_partition_start(device)
 
     @cmpi_logging.trace_method
     def get_mbr_instance(self, model, device, base):

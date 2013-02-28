@@ -21,7 +21,7 @@
 from openlmi.storage.ExtentProvider import ExtentProvider
 import pyanaconda.storage
 import pywbem
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_DiskPartition(ExtentProvider):
@@ -98,7 +98,7 @@ class LMI_DiskPartition(ExtentProvider):
         """
         cmpi_logging.log_storage_call("DELETE PARTITION",
                 {'device': device})
-        partitioning.remove_partition(self.storage, device)
+        storage.remove_partition(self.storage, device)
 
     class Values(ExtentProvider.Values):
         class PartitionType(object):

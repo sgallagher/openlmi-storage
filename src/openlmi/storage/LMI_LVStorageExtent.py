@@ -24,7 +24,7 @@ import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingHelper import SettingHelper
 from openlmi.storage.SettingManager import StorageSetting
 import pywbem
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 from openlmi.storage.SettingProvider import SettingProvider
 
 class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
@@ -180,4 +180,4 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
     def do_delete_instance(self, device):
         cmpi_logging.logger.info("DELETE LV: %s" % (device.path))
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)

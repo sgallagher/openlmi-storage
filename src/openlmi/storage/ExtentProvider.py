@@ -21,7 +21,7 @@
 from openlmi.storage.DeviceProvider import DeviceProvider
 import pywbem
 import pyanaconda.storage.formats
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class ExtentProvider(DeviceProvider):
@@ -123,7 +123,7 @@ class ExtentProvider(DeviceProvider):
             if (device.format and isinstance(device.format,
                     pyanaconda.storage.formats.disklabel.DiskLabel)):
                 # reduce by partition table size
-                consumable_blocks -= partitioning.get_partition_table_size(
+                consumable_blocks -= storage.get_partition_table_size(
                         device)
         else:
             block_size = None

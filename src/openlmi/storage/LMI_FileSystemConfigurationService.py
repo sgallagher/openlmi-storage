@@ -192,7 +192,7 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
                     "Creation of requested filesystem is not supported.")
         action = pyanaconda.storage.ActionCreateFormat(devices[0],
                 format=fmt)
-        openlmi.storage.util.partitioning.do_storage_action(
+        openlmi.storage.util.storage.do_storage_action(
                 self.storage, action)
         fmtprovider = self.provider_manager.get_provider_for_format(
                 devices[0], fmt)

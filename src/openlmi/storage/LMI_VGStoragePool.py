@@ -25,7 +25,7 @@ import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingHelper import SettingHelper
 from openlmi.storage.SettingManager import StorageSetting
 import openlmi.storage.util.units as units
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 import math
 from openlmi.storage.SettingProvider import SettingProvider
 
@@ -380,7 +380,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         cmpi_logging.log_storage_call("DELETE VG",
                 {'device': device})
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)
 
 
     class Values(DeviceProvider.Values):

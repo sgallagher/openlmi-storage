@@ -23,7 +23,7 @@ import pywbem
 import pyanaconda.storage.formats
 import openlmi.common.cmpi_logging as cmpi_logging
 import openlmi.storage.util.units as units
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 from openlmi.storage.DeviceProvider import DeviceProvider
 from openlmi.storage.SettingProvider import SettingProvider
 
@@ -154,7 +154,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             if newsize != oldsize:
                 action = pyanaconda.storage.deviceaction.ActionResizeDevice(
                         device, newsize)
-                partitioning.do_storage_action(self.storage, action)
+                storage.do_storage_action(self.storage, action)
                 self.storage.devicetree.processActions(dryRun=False)
                 self.storage.reset()
 
@@ -188,7 +188,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         lv = self.storage.newLV(**args)
         action = pyanaconda.storage.deviceaction.ActionCreateDevice(lv)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)
 
         newsize = lv.size * units.MEGABYTE
         outparams = [
@@ -439,7 +439,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         vg = self.storage.newVG(**args)
         action = pyanaconda.storage.ActionCreateDevice(vg)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)
 
         newsize = vg.size * units.MEGABYTE
         outparams = [
@@ -711,7 +711,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
 
         raid = self.storage.newMDArray(**args)
         action = pyanaconda.storage.ActionCreateDevice(raid)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)
 
         newsize = raid.size * units.MEGABYTE
         outparams = [

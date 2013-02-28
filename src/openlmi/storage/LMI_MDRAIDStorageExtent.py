@@ -26,7 +26,7 @@ from openlmi.storage.DeviceProvider import DeviceProvider
 from openlmi.storage.SettingHelper import SettingHelper
 from openlmi.storage.SettingManager import StorageSetting
 from openlmi.storage.SettingProvider import SettingProvider
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 
 class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
     """
@@ -203,7 +203,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
         cmpi_logging.log_storage_call("DELETE MDRAID",
                 {'device': device})
         action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
-        partitioning.do_storage_action(self.storage, action)
+        storage.do_storage_action(self.storage, action)
 
     class Values(ExtentProvider.Values):
         class Level(object):

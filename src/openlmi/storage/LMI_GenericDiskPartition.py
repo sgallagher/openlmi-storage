@@ -20,7 +20,7 @@
 
 from openlmi.storage.ExtentProvider import ExtentProvider
 import pyanaconda.storage
-import openlmi.storage.util.partitioning as partitioning
+import openlmi.storage.util.storage as storage
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_GenericDiskPartition(ExtentProvider):
@@ -62,4 +62,4 @@ class LMI_GenericDiskPartition(ExtentProvider):
             Really delete given Anaconda StorageDevice.
         """
         cmpi_logging.logger.info("DELETE PARTITION: %s" % (device.path))
-        partitioning.remove_partition(self.storage, device)
+        storage.remove_partition(self.storage, device)
