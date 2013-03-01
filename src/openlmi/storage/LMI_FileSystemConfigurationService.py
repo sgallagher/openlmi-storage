@@ -16,10 +16,11 @@
 #
 # Authors: Jan Safranek <jsafrane@redhat.com>
 # -*- coding: utf-8 -*-
-import pyanaconda.storage.formats
-import openlmi.storage.util
 """ Module for LMI_FileSystemConfigurationService class."""
 
+import pyanaconda.storage.formats
+import openlmi.storage.util
+from openlmi.storage.JobManager import Job
 from openlmi.storage.ServiceProvider import ServiceProvider
 import pywbem
 import openlmi.common.cmpi_logging as cmpi_logging
@@ -112,6 +113,23 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
         """
         self.check_instance(object_name)
 
+        # remember input parameters for Job
+        input_arguments = {
+                'ElementName' : pywbem.CIMProperty(name='ElementName',
+                        type='string',
+                        value=param_elementname),
+                'Goal' : pywbem.CIMProperty(name='goal',
+                        type='reference',
+                        value=param_goal),
+                'FileSystemType' : pywbem.CIMProperty(name='FileSystemType',
+                        type='uint16',
+                        value=param_filesystemtype),
+                'InExtents': pywbem.CIMProperty(name='FileSystemType',
+                        type='reference',
+                        is_array=True,
+                        value=param_inextents),
+        }
+
         if not param_inextents:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "Parameter InExtents must be specified.")
@@ -130,6 +148,10 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
         if len(devices) < 1:
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                     "At least one InExtent must be specified")
+        # Convert devices to strings, so we can survive if some of them
+        # disappears or is changed while the job is queued.
+        device_strings = [device.path for device in devices]
+        # TODO: check the devices are unused
 
         goal = self._parse_goal(param_goal, "LMI_FileSystemSetting")
         # TODO: check that goal has supported values
@@ -141,8 +163,53 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
             # retrieve fs type from the goal
             param_filesystemtype = int(goal['ActualFileSystemType'])
 
-        return self._create_fs(
-                devices, param_filesystemtype, param_elementname, goal)
+        # convert fstype to Blivet FS
+        types = self.Values.LMI_CreateFileSystem.FileSystemType
+        fstypes = {
+                types.FAT: 'vfat',
+                types.FAT16: 'vfat',
+                types.FAT32: 'vfat',
+                types.XFS: 'xfs',
+                types.EXT2: 'ext2',
+                types.EXT3: 'ext3',
+                types.EXT4: 'ext4',
+                types.BTRFS: 'btrfs',
+                types.VFAT: 'vfat'
+        }
+        fsname = fstypes.get(param_filesystemtype, 'None')
+        if not fsname:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Creation of requested filesystem is not supported.")
+
+        # create the format
+        fmt = pyanaconda.storage.formats.getFormat(fsname)
+        if not fmt:
+            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
+                    "Creation of requested filesystem is not supported.")
+
+        # prepare job
+        job = Job(
+                job_manager=self.job_manager,
+                job_name="CREATE FS " + fsname + " ON " + device.path,
+                input_arguments=input_arguments,
+                method_name='LMI_CreateFileSystem',
+                affected_elements=param_inextents,
+                owning_element=self._get_instance_name())
+        job.set_execute_action(self._create_fs,
+                job, device_strings, fmt, param_elementname, goal)
+
+        # prepare output arguments
+        outparams = [ pywbem.CIMParameter(
+                name='job',
+                type='reference',
+                value=job.get_name())]
+        retvals = self.Values.LMI_CreateFileSystem
+
+        # enqueue the job
+        self.job_manager.add_job(job)
+
+        return (retvals.Method_Parameters_Checked___Job_Started,
+                outparams)
 
     @cmpi_logging.trace_method
     def _parse_goal(self, param_goal, classname):
@@ -163,52 +230,37 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
             goal = None
         return goal
 
-    def _create_fs(self, devices, fstype, label, goal):
+    @cmpi_logging.trace_method
+    def _create_fs(self, job, device_strings, fmt, label, goal):
         """
-            Create a filesystem on given devices. The parameters were already
-            checked.
+            Create a filesystem on given devices. This method is called
+            from JobManager worker thread!
         """
-        # convert fstype to Blivet FS
-        types = self.Values.LMI_CreateFileSystem.FileSystemType
-        fstypes = {
-                types.FAT: 'vfat',
-                types.FAT16: 'vfat',
-                types.FAT32: 'vfat',
-                types.XFS: 'xfs',
-                types.EXT2: 'ext2',
-                types.EXT3: 'ext3',
-                types.EXT4: 'ext4',
-                types.BTRFS: 'btrfs',
-                types.VFAT: 'vfat'
-        }
-        fsname = fstypes.get(fstype, 'None')
-        if not fsname:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
-                    "Creation of requested filesystem is not supported.")
-
-        fmt = pyanaconda.storage.formats.getFormat(fsname)
-        if not fmt:
-            raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
-                    "Creation of requested filesystem is not supported.")
+        devices = []
+        # convert strings back to devices
+        for devname in device_strings:
+            device = self.storage.devicetree.getDeviceByPath(devname)
+            if not device:
+                raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
+                        "One of the devices disappeared: " + devname)
+            devices.append(device)
         action = pyanaconda.storage.ActionCreateFormat(devices[0],
                 format=fmt)
         openlmi.storage.util.storage.do_storage_action(
                 self.storage, action)
         fmtprovider = self.provider_manager.get_provider_for_format(
                 devices[0], fmt)
-        outparams = [
-                pywbem.CIMParameter(
-                        name='theelement',
-                        type='reference',
-                        value=fmtprovider.get_name_for_format(
-                                devices[0], format)),
-                pywbem.CIMParameter(
-                        name='job',
-                        type='reference',
-                        value=None)
-        ]
-        return (self.Values.LMI_CreateFileSystem.Job_Completed_with_No_Error,
-                outparams)
+        outparams = {
+            'theelement': fmtprovider.get_name_for_format(devices[0], format)
+        }
+
+        ret = self.Values.LMI_CreateFileSystem.Job_Completed_with_No_Error
+        job.finish_method(
+                Job.STATE_FINISHED_OK,
+                return_value=ret,
+                return_type=Job.ReturnValueType.Uint32,
+                output_arguments=outparams,
+                error=None)
 
     class Values(ServiceProvider.Values):
         class LMI_CreateFileSystem(object):
@@ -218,8 +270,10 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
             Timeout = pywbem.Uint32(3)
             Failed = pywbem.Uint32(4)
             Invalid_Parameter = pywbem.Uint32(5)
-            StorageExtent_is_not_big_enough_to_satisfy_the_request_ = pywbem.Uint32(6)
-            StorageExtent_specified_by_default_cannot_be_created_ = pywbem.Uint32(7)
+            StorageExtent_is_not_big_enough_to_satisfy_the_request_ = \
+                    pywbem.Uint32(6)
+            StorageExtent_specified_by_default_cannot_be_created_ = \
+                    pywbem.Uint32(7)
             # DMTF_Reserved = ..
             Method_Parameters_Checked___Job_Started = pywbem.Uint32(4096)
             # Method_Reserved = 4098..32767
