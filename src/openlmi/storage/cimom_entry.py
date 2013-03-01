@@ -74,6 +74,7 @@ from openlmi.storage.LMI_FileSystemConfigurationService \
         import LMI_FileSystemConfigurationService
 from openlmi.storage.LMI_FileSystemConfigurationCapabilities \
         import LMI_FileSystemConfigurationCapabilities
+from openlmi.storage.JobManager import JobManager
 
 import openlmi.common.cmpi_logging as cmpi_logging
 import pyanaconda.storage
@@ -127,11 +128,15 @@ def get_providers(env):
 
     providers = {}
 
+    job_manager = JobManager('Storage', env, config.namespace)
+
     # common construction options
     opts = {'storage': storage,
             'config': config,
             'provider_manager': manager,
-            'setting_manager': setting_manager}
+            'setting_manager': setting_manager,
+            'job_manager' : job_manager}
+
     # StorageDevice providers
     provider = LMI_StorageExtent(**opts)
     manager.add_device_provider(provider)
@@ -317,6 +322,9 @@ def get_providers(env):
 
     provider = LMI_ResidesOnExtent(**opts)
     providers['LMI_ResidesOnExtent'] = provider
+
+    job_providers = job_manager.get_providers()
+    providers.update(job_providers)
 
     print "providers:", providers
 

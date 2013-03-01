@@ -33,7 +33,7 @@ class BaseProvider(CIMProvider2):
     """
     @cmpi_logging.trace_method
     def __init__(self, storage, config, provider_manager, setting_manager,
-            *args, **kwargs):
+            job_manager, *args, **kwargs):
         """
             Initialize the provider.
             Store reference to pyanaconda.storage.Storage.
@@ -45,6 +45,7 @@ class BaseProvider(CIMProvider2):
         self.config = config
         self.provider_manager = provider_manager
         self.setting_manager = setting_manager
+        self.job_manager = job_manager
 
     @cmpi_logging.trace_method
     # The method has too many arguments, but that's because of

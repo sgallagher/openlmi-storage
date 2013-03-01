@@ -311,3 +311,37 @@ type: instance association
 namespace: root/cimv2
 unload: never
 
+[LMI_StorageJob]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance method
+namespace: root/cimv2
+unload: never
+
+[LMI_OwningStorageJobElement]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance association
+namespace: root/cimv2
+unload: never
+
+[LMI_AffectedStorageJobElement]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance association
+namespace: root/cimv2
+unload: never
+
+[LMI_StorageMethodResult]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance
+namespace: root/cimv2
+unload: never
+
+[LMI_AssociatedStorageJobMethodResult]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: instance association
+namespace: root/cimv2
+unload: never
