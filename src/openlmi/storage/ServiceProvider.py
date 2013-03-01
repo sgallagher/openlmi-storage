@@ -78,6 +78,19 @@ class ServiceProvider(BaseProvider):
         else:
             yield self.get_instance(env, model)
 
+    @cmpi_logging.trace_method
+    def _get_instance_name(self):
+        """ Return CIMInstanceName of the service singleton."""
+        name = pywbem.CIMInstanceName(
+                classname=self.classname,
+                namespace=self.config.namespace,
+                keybindings={
+                    'SystemName': self.config.system_name,
+                    'SystemCreationClassName': self.config.system_class_name,
+                    'CreationClassName': self.classname,
+                    'Name': self.classname})
+        return name
+
     class Values(object):
         class EnabledDefault(object):
             Enabled = pywbem.Uint16(2)
