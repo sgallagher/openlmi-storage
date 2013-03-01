@@ -62,7 +62,7 @@ class LMI_DiskPartitionConfigurationSetting(SettingProvider):
             setting['PartitionType'] = str(self.Values.PartitionType.Primary)
         else:
             setting['PartitionType'] = str(self.Values.PartitionType.Unknown)
-        setting['ElementName'] = setting.id
+        setting['ElementName'] = setting.the_id
         return setting
 
     @cmpi_logging.trace_method

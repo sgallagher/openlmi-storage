@@ -76,7 +76,7 @@ class SettingManager(object):
             for setting in cls.values():
                 if (setting.type == Setting.TYPE_PERSISTENT
                         or setting.type == Setting.TYPE_PRECONFIGURED):
-                    del(cls[setting.id])
+                    del(cls[setting.the_id])
 
     @cmpi_logging.trace_method
     def load(self):
@@ -112,9 +112,9 @@ class SettingManager(object):
         """ Set given setting. """
         if self.classes.has_key(classname):
             stg = self.classes[classname]
-            stg[setting.id] = setting
+            stg[setting.the_id] = setting
         else:
-            self.classes[classname] = { setting.id : setting}
+            self.classes[classname] = { setting.the_id : setting}
 
     @cmpi_logging.trace_method
     def set_setting(self, classname, setting):
@@ -125,7 +125,7 @@ class SettingManager(object):
         was_persistent = False
         settings = self.classes.get(classname, None)
         if settings:
-            old_setting = settings.get(setting.id, None)
+            old_setting = settings.get(setting.the_id, None)
             if old_setting and old_setting.type == Setting.TYPE_PERSISTENT:
                 was_persistent = True
 
@@ -141,9 +141,9 @@ class SettingManager(object):
         """
         settings = self.classes.get(classname, None)
         if settings:
-            old_setting = settings.get(setting.id, None)
+            old_setting = settings.get(setting.the_id, None)
             if old_setting:
-                del(settings[setting.id])
+                del(settings[setting.the_id])
                 if old_setting.type == Setting.TYPE_PERSISTENT:
                     self._save_class(classname)
 
@@ -209,17 +209,17 @@ class Setting(object):
     @cmpi_logging.trace_method
     def __init__(self, setting_type=None, setting_id=None):
         self.type = setting_type
-        self.id = setting_id
+        self.the_id = setting_id
         self.properties = {}
 
     @cmpi_logging.trace_method
     def load(self, config):
         """
-            Load setting with self.id from given ini file
+            Load setting with self.the_id from given ini file
             (ConfigParser instance).
         """
         self.properties = {}
-        for (key, value) in config.items(self.id):
+        for (key, value) in config.items(self.the_id):
             if value == "":
                 value = None
             self.properties[key] = value
@@ -227,14 +227,14 @@ class Setting(object):
     @cmpi_logging.trace_method
     def save(self, config):
         """
-            Save setting with self.id to given ini file
+            Save setting with self.the_id to given ini file
             (ConfigParser instance).
         """
-        config.add_section(self.id)
+        config.add_section(self.the_id)
         for (key, value) in self.properties.items():
             if value is None:
                 value = ""
-            config.set(self.id, key, value)
+            config.set(self.the_id, key, value)
 
     @cmpi_logging.trace_method
     def __getitem__(self, key):

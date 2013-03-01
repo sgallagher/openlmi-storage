@@ -145,7 +145,7 @@ class SettingProvider(BaseProvider):
         # handle transient, persistent and preconfigured settings
         settings = self.setting_manager.get_settings(self.setting_classname)
         for setting in settings.values():
-            model['InstanceID'] = setting.id
+            model['InstanceID'] = setting.the_id
             if keys_only:
                 yield model
             else:
@@ -153,7 +153,7 @@ class SettingProvider(BaseProvider):
 
         # handle configurations
         for setting in self.enumerate_configurations():
-            model['InstanceID'] = setting.id
+            model['InstanceID'] = setting.the_id
             if keys_only:
                 yield model
             else:
@@ -517,7 +517,7 @@ class ElementSettingDataProvider(BaseProvider):
         """
         model.path.update({'ManagedElement': None, 'SettingData': None})
         for setting in self.setting_provider.enumerate_configurations():
-            instance_id = setting.id
+            instance_id = setting.the_id
             provider = self.setting_provider
             model['ManagedElement'] = provider.get_associated_element_name(
                     instance_id)
