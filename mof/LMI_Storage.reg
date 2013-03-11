@@ -345,3 +345,17 @@ location: pyCmpiProvider
 type: instance association
 namespace: root/cimv2
 unload: never
+
+[LMI_StorageInstModification]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: indication
+namespace: root/cimv2
+unload: never
+
+[LMI_StorageInstCreation]
+provider: /usr/lib/python2.7/site-packages/openlmi/storage/cimom_entry.py
+location: pyCmpiProvider
+type: indication
+namespace: root/cimv2
+unload: never

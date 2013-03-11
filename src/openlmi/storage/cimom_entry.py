@@ -75,11 +75,14 @@ from openlmi.storage.LMI_FileSystemConfigurationService \
 from openlmi.storage.LMI_FileSystemConfigurationCapabilities \
         import LMI_FileSystemConfigurationCapabilities
 from openlmi.storage.JobManager import JobManager
+from openlmi.storage.IndicationManager import IndicationManager
 
 import openlmi.common.cmpi_logging as cmpi_logging
 import pyanaconda.storage
 import pyanaconda.platform
 import os
+
+indication_manager = None
 
 def init_anaconda():
     """ Initialize Anaconda storage module."""
@@ -110,7 +113,7 @@ def init_anaconda():
 
 def get_providers(env):
     """
-        Called by CIMOM. Initialize OpenLMI and return dictionary of all
+        CIMOM callback. Initialize OpenLMI and return dictionary of all
         providers we implement.
     """
     # allow **magic here
@@ -120,6 +123,9 @@ def get_providers(env):
     config = StorageConfiguration()
     config.load()
     log_manager.set_config(config)
+
+    global indication_manager
+    indication_manager = IndicationManager(env, "Storage", config.namespace)
 
     manager = ProviderManager()
     setting_manager = SettingManager(config)
@@ -327,6 +333,25 @@ def get_providers(env):
     providers.update(job_providers)
 
     print "providers:", providers
-
     return providers
 
+def authorize_filter(env, fltr, ns, classes, owner):
+    """ CIMOM callback."""
+    indication_manager.authorize_filter(env, fltr, ns, classes, owner)
+
+def activate_filter (env, fltr, ns, classes, first_activation):
+    """ CIMOM callback."""
+    indication_manager.activate_filter(env, fltr, ns, classes, first_activation)
+
+def deactivate_filter(env, fltr, ns, classes, last_activation):
+    """ CIMOM callback."""
+    indication_manager.deactivate_filter(env, fltr, ns, classes,
+            last_activation)
+
+def enable_indications(env):
+    """ CIMOM callback."""
+    indication_manager.enable_indications(env)
+
+def disable_indications(env):
+    """ CIMOM callback."""
+    indication_manager.disable_indications(env)
