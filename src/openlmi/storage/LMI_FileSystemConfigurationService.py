@@ -33,6 +33,7 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
     def __init__(self, *args, **kwargs):
         super(LMI_FileSystemConfigurationService, self).__init__(
                 "LMI_FileSystemConfigurationService", *args, **kwargs)
+        self.broker = None
 
     @cmpi_logging.trace_method
     def cim_method_lmi_createfilesystem(self, env, object_name,
@@ -207,7 +208,6 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
 
         # enqueue the job
         self.job_manager.add_job(job)
-
         return (retvals.Method_Parameters_Checked___Job_Started,
                 outparams)
 

@@ -64,17 +64,21 @@ import openlmi.common.cmpi_logging as cmpi_logging
 from pywbem.cim_provider2 import CIMProvider2
 import socket
 
+# Too many instance attributes
+# pylint: disable-msg=R0902
 class Job(object):
     """
         Generic abstract class representing one CIM_ConcreteJob.
         It remembers input and output arguments, affected ManagedElements and
-        ownine ManagedElement (to be able to create associations to them)
+        owning ManagedElement (to be able to create associations to them)
         and all CIM_ConcreteJob properties.
         
-        Subclass must implement execute() and cancel() method.
+        Due to multiple threads processing the job, each job has its own 
+        lock to guard its status changes. It is expected that number of jobs
+        is quite low. 
     """
 
-    DEFAULT_TIME_BEFORE_REMOVAL = 5000  # in seconds
+    DEFAULT_TIME_BEFORE_REMOVAL = 60  # in seconds
 
     STATE_QUEUED = 1  # Job has not started yet
     STATE_RUNNING = 2  # Job is running
@@ -92,7 +96,7 @@ class Job(object):
     def __init__(self, job_manager, job_name, input_arguments,
             method_name, affected_elements, owning_element):
         """
-            Create new storage job. time_submitted is recorded.
+            Create new storage job.
         """
 
         self.job_manager = job_manager
@@ -177,7 +181,8 @@ class Job(object):
             Set callbacks, which will be called when the job is to be
             executed. It is expected that the callback will take some time
             to execute. The callback must change state of the job and
-            set output parameters and error.
+            set output parameters and error in a thread-safe way, i.e.
+            by calling finish_method().
         """
         self._execute = callback
         self._execargs = args
@@ -187,7 +192,7 @@ class Job(object):
     def set_cancel_action(self, callback, *args, **kwargs):
         """
             Set callbacks, which will be called when the job is to be
-            cancelled. The callback must be quick!
+            cancelled. The callback must be quick, the job is already locked!
         """
         self._cancel = callback
         self._cancelargs = args
@@ -199,25 +204,38 @@ class Job(object):
         """
             Mark the job as finished, with given return value,
             output parameters and error.
+            This method is thread-safe.
         """
+        self.lock()
         self.return_value = return_value
         self.return_value_type = return_type
         self.output_arguments = output_arguments
         self.error = error
         self.change_state(new_state, 100)
+        self.unlock()
 
     @cmpi_logging.trace_method
     def change_state(self, new_state, percent=None):
         """
             Change state of a job. (Re-)calculate various times
-            based on the state change.
+            based on the state change. Send indications as necessary.
+            This method is thread-safe.
         """
         self.lock()
 
         cmpi_logging.logger.debug("Job %s: %s changes state from %d to %d"
                 % (self.the_id, self.job_name, self.job_state, new_state))
 
+        # For sending indications
+        prev_instance = None
+        send_indication = False
+        indication_ids = []
+
         if self.job_state != new_state:
+            # Remember to send indications
+            prev_instance = self.job_manager.get_job_instance(self)
+            send_indication = True
+            indication_ids.append(JobManager.IND_JOB_CHANGED)
 
             # Check if the job has just finished
             if (self.job_state not in self.FINAL_STATES
@@ -227,14 +245,18 @@ class Job(object):
                 # Remember job execution time.
                 if self.start_time:
                     self.elapsed_time = self.finish_time - self.start_time
+                # Send indication
+                if self.job_state == self.STATE_FAILED:
+                    indication_ids.append(JobManager.IND_JOB_FAILED)
+                if self.job_state == self.STATE_SUSPENDED:
+                    indication_ids.append(JobManager.IND_JOB_SUCCEEDED)
 
             # Check if the job has just started
             if new_state == self.STATE_RUNNING:
                 self.start_time = datetime.utcnow()
 
-            self.job_state = new_state
             self.time_of_last_state_change = datetime.now()
-            # TODO: send indication?
+            self.job_state = new_state
 
         if percent is None:
             # guess the percentage from status
@@ -245,9 +267,18 @@ class Job(object):
             else:
                 percent = 100
         if self.percent_complete != percent:
+            # Remember to send indications
+            if not send_indication:
+                self.time_of_last_state_change = datetime.now()
+                prev_instance = self.job_manager.get_job_instance(self)
+                send_indication = True
+            indication_ids.append(JobManager.IND_JOB_PERCENT_UPDATED)
             self.percent_complete = percent
-            self.time_of_last_state_change = datetime.now()
-            # TODO: send indication
+
+        if send_indication:
+            current_instance = self.job_manager.get_job_instance(self)
+            self.job_manager.send_modify_indications(
+                    prev_instance, current_instance, indication_ids)
 
         # start / update the timer if necesasry
         self.restart_timer()
@@ -323,7 +354,7 @@ class Job(object):
     @cmpi_logging.trace_method
     def cancel(self):
         """
-            Cancels queued action. The action was not yet started.
+            Cancels queued action. The action must have not been started.
         """
         self.change_state(self.STATE_TERMINATED)
         if self._cancel:
@@ -372,7 +403,7 @@ class Job(object):
     def get_pre_call(self):
         """ 
             Return CIMInstance of CIM_InstMethodCall that describes the
-            pre-execution values of the extrinisic method invocation.
+            pre-execution values of the extrinsic method invocation.
         """
         path = pywbem.CIMInstanceName(
                 classname="CIM_InstMethodCall",
@@ -384,10 +415,10 @@ class Job(object):
                 path=path,
                 properties={
                         'MethodName' : self.method_name,
-#                        'MethodParameters' : pywbem.CIMProperty(
-                                # name="MethodParameters",
-                                # type='instance',
-                                # value=self._get_method_params(False)),
+                        'MethodParameters' : pywbem.CIMProperty(
+                                name="MethodParameters",
+                                type='instance',
+                                value=self._get_method_params(False)),
                         'PreCall' : True,
                 })
         src_instance = self._get_cim_instance()
@@ -399,7 +430,7 @@ class Job(object):
     def get_post_call(self):
         """ 
             Return CIMInstance of CIM_InstMethodCall that describes the
-            pre-execution values of the extrinisic method invocation.
+            pre-execution values of the extrinsic method invocation.
         """
         path = pywbem.CIMInstanceName(
                 classname="CIM_InstMethodCall",
@@ -411,14 +442,13 @@ class Job(object):
                 path=path,
                 properties={
                         'MethodName' : self.method_name,
-#                        'MethodParameters' : self._get_method_params(True),
+                        'MethodParameters' : self._get_method_params(True),
                         'PreCall' : False
         })
         src_instance = self._get_cim_instance()
         inst['SourceInstance'] = src_instance
         inst['SourceInstanceModelPath'] = str(src_instance.path)
 
-        return inst
         if self.return_value_type is not None:
             inst['ReturnValueType'] = self.return_value_type
         if self.return_value is not None:
@@ -438,7 +468,11 @@ class Job(object):
             Return CIMInstance of __MethodParameters for CIM_InstMethodCall
             indication.
         """
-        inst = pywbem.CIMInstance(classname="__MethodParameters")
+        path = pywbem.CIMInstanceName(
+                classname="__MethodParameters",
+                namespace=self.job_manager.namespace,
+                keybindings={})
+        inst = pywbem.CIMInstance(classname="__MethodParameters", path=path)
         for (name, value) in self.input_arguments.iteritems():
             inst[name] = value
         if output:
@@ -447,7 +481,9 @@ class Job(object):
                 inst[name] = value
         return inst
 
+    # pylint: disable-msg=R0903
     class ReturnValueType(object):
+        """ CIM_InstMethodCall.ReturnValueType values."""
         Boolean = pywbem.Uint16(2)
         String = pywbem.Uint16(3)
         Char16 = pywbem.Uint16(4)
@@ -471,8 +507,15 @@ class JobManager(object):
         In theory, it's possible to have LMI_XJob and LMI_YJob classes,
         managed by two JobManagers, but it was never tested.
     """
+
+    IND_JOB_PERCENT_UPDATED = "JobPercentUpdated"
+    IND_JOB_SUCCEEDED = "JobSucceeded"
+    IND_JOB_FAILED = "JobFailed"
+    IND_JOB_CHANGED = "JobChanged"
+    IND_JOB_CREATED = "JobCreated"
+
     @cmpi_logging.trace_method
-    def __init__(self, name, provider_environment, namespace):
+    def __init__(self, name, namespace, indication_manager):
         """ 
             Initialize new Manager.
             
@@ -483,24 +526,85 @@ class JobManager(object):
                 provider_environment (ProviderEnvironment) - CIMOM environment
                 
                 namespace (string): namespace of all providers.
+                
+                indication_manager(IndicationManager): a manager where
+                    indications and filters should be added. 
         """
+        # List of all jobs. Dictionary job_id -> Job.
         self.jobs = {}
+        # Queue of jobs scheduled to execute.
         self.queue = Queue()
-        self.worker = threading.Thread(target=self.worker_main)
-        self.worker.start()
+        # Last created job_id.
         self.last_instance_id = 0
+        # Classname infix.
         self.name = name
+        # CIMProvider2 instances for job classes.
         self.providers = {}
         self.namespace = namespace
+        self.indication_manager = indication_manager
 
+        # Start the worker thread (don't forget to register it at CIMOM)
+        self.worker = threading.Thread(target=self._worker_main)
+        self.worker.start()
+
+        # Various classnames for job-related classes, with correct infixes.
         self.job_classname = 'LMI_' + self.name + 'Job'
         self.method_result_classname = "LMI_" + self.name + "MethodResult"
         self.affected_classname = "LMI_Affected" + self.name + "JobElement"
         self.owning_classname = "LMI_Owning" + self.name + "JobElement"
         self.associated_result_classname = ('LMI_Associated' + self.name
                 + 'JobMethodResult')
+        self.indication_filter_classname = ('LMI_' + self.name
+                + 'JobIndicationFilter')
         self.job_provider = None
-        self.provider_environment = provider_environment
+        self._add_indication_filters()
+
+    @cmpi_logging.trace_method
+    def _add_indication_filters(self):
+        """
+            Add all job-related IndicationFilters to indication manager.
+        """
+        filters = {
+            self.IND_JOB_PERCENT_UPDATED: {
+                "Query" : "SELECT * FROM CIM_InstModification WHERE "
+                    "SourceInstance ISA CIM_ConcreteJob AND "
+                    "SourceInstance.CIM_ConcreteJob::PercentComplete <> "
+                    "PreviousInstance.CIM_ConcreteJob::PercentComplete",
+                "Description" : "Modification of Percentage Complete for a "
+                    "Concrete Job.",
+            },
+            self.IND_JOB_SUCCEEDED: {
+                "Query" : "SELECT * FROM CIM_InstModification WHERE "
+                    "SourceInstance ISA CIM_ConcreteJob AND ANY "
+                    "SourceInstance.CIM_ConcreteJob::OperationalStatus[*] = 17 "
+                    "AND ANY "
+                    "SourceInstance.CIM_ConcreteJob::OperationalStatus[*] = 2",
+                "Description": "Modification of Operational Status for a "
+                    "Concrete Job to 'Complete' and 'OK'.",
+            },
+            self.IND_JOB_FAILED: {
+                "Query" : "SELECT * FROM CIM_InstModification WHERE "
+                    "SourceInstance ISA CIM_ConcreteJob AND ANY "
+                    "SourceInstance.CIM_ConcreteJob::OperationalStatus[*] = 17 "
+                    "AND ANY "
+                    "SourceInstance.CIM_ConcreteJob::OperationalStatus[*] = 6",
+                "Description": "Modification of Operational Status for a "
+                    "Concrete Job to 'Complete' and 'Error'.",
+            },
+            self.IND_JOB_CHANGED: {
+                "Query" : "SELECT * FROM CIM_InstModification WHERE "
+                    "SourceInstance ISA CIM_ConcreteJob AND "
+                    "SourceInstance.CIM_ConcreteJob::JobState <> "
+                    "PreviousInstance.CIM_ConcreteJob::JobState",
+                "Description": "Modification of Job State for a ConcreteJob.",
+            },
+            self.IND_JOB_CREATED: {
+                "Query" : "SELECT * FROM CIM_InstCreation WHERE "
+                    "SourceInstance ISA CIM_ConcreteJob",
+                "Description": "Creation of a ConcreteJob.",
+            },
+        }
+        self.indication_manager.add_filters(filters)
 
     @cmpi_logging.trace_method
     def get_providers(self):
@@ -543,14 +647,25 @@ class JobManager(object):
     @cmpi_logging.trace_method
     def add_job(self, job):
         """
-            Add new job.
+            Add new job. Send indication when needed.
         """
         cmpi_logging.logger.debug("Job %s: '%s' enqueued"
                 % (job.the_id, job.job_name))
 
         self.jobs[job.the_id] = job
         self.queue.put(job)
-        # TODO: send indication?
+        # send indication
+        if self.indication_manager.is_subscribed(self.IND_JOB_CREATED):
+            job_instance = self.get_job_instance(job)
+            self.indication_manager.send_instcreation(
+                    job_instance, self.IND_JOB_CREATED)
+
+    def send_modify_indications(self, prev_instance, current_instance,
+            indication_ids):
+        """ Send InstModification. """
+        for _id in indication_ids:
+            self.indication_manager.send_instmodification(prev_instance,
+                    current_instance, _id)
 
     @cmpi_logging.trace_method
     def remove_job(self, job):
@@ -562,8 +677,8 @@ class JobManager(object):
                 % (job.the_id, job.job_name))
         del self.jobs[job.the_id]
         # The job may still be in the queue!
-        # There is no way, how to remove it.
-        # TODO: send indication?
+        # There is no way, how to remove it, it will be skipped by the
+        # worker thread.
 
     @cmpi_logging.trace_method
     def get_job_for_instance_id(self, instance_id, classname=None):
@@ -577,7 +692,7 @@ class JobManager(object):
             return None
 
     @cmpi_logging.trace_method
-    def worker_main(self):
+    def _worker_main(self):
         """
             This is the main loop of the job queue.
         """
@@ -603,13 +718,12 @@ class JobManager(object):
             else:
                 # just skip suspended and terminated jobs
                 job.unlock()
-
             self.queue.task_done()
 
     @cmpi_logging.trace_method
     def get_next_id(self):
         """
-            Return next unused id.
+            Return next unused job id.
         """
         self.last_instance_id += 1
         return self.last_instance_id
@@ -630,7 +744,7 @@ class JobManager(object):
                 namespace=self.namespace)
         inst = pywbem.CIMInstance(classname=self.job_classname, path=path)
         inst['InstanceID'] = job.get_instance_id()
-        return self.job_provider.get_instance(self.provider_environment, inst)
+        return self.job_provider.get_instance(None, inst)
 
 
 class LMI_ConcreteJob(CIMProvider2):
@@ -656,6 +770,32 @@ class LMI_ConcreteJob(CIMProvider2):
                 yield self.get_instance(env, model, job)
 
     @cmpi_logging.trace_method
+    def get_job_states(self, job):
+        """ Return JobState and OperationalStatus property values."""
+        if job.job_state == Job.STATE_QUEUED:
+            jobstate = self.Values.JobState.New
+            opstate = [self.Values.OperationalStatus.Dormant]
+        elif job.job_state == Job.STATE_RUNNING:
+            jobstate = self.Values.JobState.Running
+            opstate = [self.Values.OperationalStatus.OK]
+        elif job.job_state == Job.STATE_FINISHED_OK:
+            jobstate = self.Values.JobState.Completed
+            opstate = [self.Values.OperationalStatus.OK,
+                    self.Values.OperationalStatus.Completed]
+        elif job.job_state == Job.STATE_SUSPENDED:
+            jobstate = self.Values.JobState.Suspended
+            opstate = [self.Values.OperationalStatus.OK]
+        elif job.job_state == Job.STATE_FAILED:
+            jobstate = self.Values.JobState.Exception
+            opstate = [self.Values.OperationalStatus.Error,
+                    self.Values.OperationalStatus.Completed]
+        elif job.job_state == Job.STATE_TERMINATED:
+            jobstate = self.Values.JobState.Terminated
+            opstate = [self.Values.OperationalStatus.Stopped]
+        return jobstate, opstate
+
+    @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def get_instance(self, env, model, job=None):
         """
             Provider implementation of GetInstance intrinsic method.
@@ -699,7 +839,6 @@ class LMI_ConcreteJob(CIMProvider2):
                     type='datetime')
 
         model['Description'] = job.job_name
-
         model['LocalOrUtcTime'] = self.Values.LocalOrUtcTime.UTC_Time
         model['PercentComplete'] = pywbem.Uint16(job.percent_complete)
         if job.start_time:
@@ -711,32 +850,10 @@ class LMI_ConcreteJob(CIMProvider2):
                     type='datetime')
 
         model['TimeSubmitted'] = pywbem.CIMDateTime(job.time_submitted)
-
         # set correct state
-        if job.job_state == Job.STATE_QUEUED:
-            jobstate = self.Values.JobState.New
-            opstate = [self.Values.OperationalStatus.Dormant]
-        elif job.job_state == Job.STATE_RUNNING:
-            jobstate = self.Values.JobState.Running
-            opstate = [self.Values.OperationalStatus.OK]
-        elif job.job_state == Job.STATE_FINISHED_OK:
-            jobstate = self.Values.JobState.Completed
-            opstate = [self.Values.OperationalStatus.OK,
-                    self.Values.OperationalStatus.Completed]
-        elif job.job_state == Job.STATE_SUSPENDED:
-            jobstate = self.Values.JobState.Suspended
-            opstate = [self.Values.OperationalStatus.OK]
-        elif job.job_state == Job.STATE_FAILED:
-            jobstate = self.Values.JobState.Exception
-            opstate = [self.Values.OperationalStatus.Error,
-                    self.Values.OperationalStatus.Completed]
-        elif job.job_state == Job.STATE_TERMINATED:
-            jobstate = self.Values.JobState.Terminated
-            opstate = [self.Values.OperationalStatus.Stopped]
-
+        jobstate, opstate = self.get_job_states(job)
         model['JobState'] = jobstate
         model['OperationalStatus'] = opstate
-
         return model
 
     @cmpi_logging.trace_method
@@ -1201,6 +1318,7 @@ class LMI_MethodResult(CIMProvider2):
         self.job_manager = job_manager
 
     @cmpi_logging.trace_method
+    # pylint: disable-msg=W0221
     def get_instance(self, env, model, job=None):
         """Return an instance."""
         if not job:
@@ -1239,7 +1357,10 @@ class LMI_MethodResult(CIMProvider2):
                 yield self.get_instance(env, model, job)
 
 class LMI_AssociatedJobMethodResult(CIMProvider2):
-    """ Instrumentation of LMI_AssociatedJobMethodResult class and its subclasses."""
+    """ 
+        Instrumentation of LMI_AssociatedJobMethodResult class and its
+        subclasses.
+    """
 
     @cmpi_logging.trace_method
     def __init__(self, classname, job_manager):

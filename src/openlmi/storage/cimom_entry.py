@@ -134,7 +134,7 @@ def get_providers(env):
 
     providers = {}
 
-    job_manager = JobManager('Storage', env, config.namespace)
+    job_manager = JobManager('Storage', config.namespace, indication_manager)
 
     # common construction options
     opts = {'storage': storage,
