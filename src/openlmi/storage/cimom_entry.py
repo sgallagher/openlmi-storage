@@ -24,9 +24,6 @@
     This module instantiates all providers and registers them in CIMOM.
 """
 
-from pyanaconda import anaconda_log
-anaconda_log.init()
-
 from openlmi.storage.StorageConfiguration import StorageConfiguration
 from openlmi.storage.ProviderManager import ProviderManager
 from openlmi.storage.SettingManager import SettingManager
@@ -78,38 +75,64 @@ from openlmi.storage.JobManager import JobManager
 from openlmi.storage.IndicationManager import IndicationManager
 
 import openlmi.common.cmpi_logging as cmpi_logging
-import pyanaconda.storage
-import pyanaconda.platform
-import os
+import blivet
+import logging
 
 indication_manager = None
 
-def init_anaconda():
+def init_anaconda(log_manager, config):
     """ Initialize Anaconda storage module."""
     cmpi_logging.logger.info("Initializing Anaconda")
 
-    os.system('udevadm control --env=ANACONDA=1')
-    os.system('udevadm trigger --subsystem-match block')
-    os.system('udevadm settle')
-
-    # hack to insert RAID modules
-    for module in ('raid0', 'raid1', 'raid5', 'raid10'):
-        os.system('modprobe ' + module)
+    # set up logging
+    blivet_logger = logging.getLogger("blivet")
+    blivet_logger.addHandler(log_manager.cmpi_handler)
+    program_logger = logging.getLogger("program")
+    program_logger.addHandler(log_manager.cmpi_handler)
+    config.add_listener(change_anaconda_loglevel)
+    blivet_logger.info("Hello")
+    change_anaconda_loglevel(config)
 
     # set up storage class instance
-    # ugly hack to make it working on both F17 and F18
-    try:
-        # pylint: disable-msg=E1121
-        platform = pyanaconda.platform.getPlatform(None)
-    except TypeError:
-        # pylint: disable-msg=E1120
-        platform = pyanaconda.platform.getPlatform()
-    storage = pyanaconda.storage.Storage(platform=platform)
-
+    storage = blivet.Blivet()
     # identify the system's storage devices
-    storage.devicetree.populate()
-
+    storage.reset()
     return storage
+
+def change_anaconda_loglevel(config):
+    """
+    Callback called when configuration changes.
+    Apply any new blivet loglevel.
+    """
+    blivet_logger = logging.getLogger("blivet")
+    program_logger = logging.getLogger("program")
+    if config.blivet_tracing:
+        blivet_logger.setLevel(logging.DEBUG)
+        program_logger.setLevel(logging.DEBUG)
+    else:
+        blivet_logger.setLevel(logging.WARN)
+        program_logger.setLevel(logging.WARN)
+    if config.stderr:
+        # start sending to stderr
+        if not change_anaconda_loglevel.stderr_handler:
+            # create stderr handler
+            formatter = logging.Formatter(cmpi_logging.LogManager.FORMAT_STDERR)
+            stderr_handler = logging.StreamHandler()
+            stderr_handler.setLevel(logging.DEBUG)
+            stderr_handler.setFormatter(formatter)
+            blivet_logger.addHandler(stderr_handler)
+            program_logger.addHandler(stderr_handler)
+            change_anaconda_loglevel.stderr_handler = stderr_handler
+            blivet_logger.info("Started logging to stderr.")
+    else:
+        # stop sending to stderr
+        if change_anaconda_loglevel.stderr_handler:
+            blivet_logger.info("Stopped logging to stderr.")
+            blivet_logger.removeHandler(change_anaconda_loglevel.stderr_handler)
+            program_logger.removeHandler(
+                    change_anaconda_loglevel.stderr_handler)
+        change_anaconda_loglevel.stderr_handler = None
+change_anaconda_loglevel.stderr_handler = None
 
 def get_providers(env):
     """
@@ -130,7 +153,7 @@ def get_providers(env):
     manager = ProviderManager()
     setting_manager = SettingManager(config)
     setting_manager.load()
-    storage = init_anaconda()
+    storage = init_anaconda(log_manager, config)
 
     providers = {}
 

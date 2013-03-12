@@ -20,7 +20,7 @@
 
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
-import pyanaconda.storage
+import blivet
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_VGAssociatedComponentExtent(BaseProvider):
@@ -77,7 +77,7 @@ class LMI_VGAssociatedComponentExtent(BaseProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Cannot find PartComponent device")
 
-        if not isinstance(vg, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if not isinstance(vg, blivet.devices.LVMVolumeGroupDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "GroupComponent device is not volume group: " + vg.path)
         if not (pv in vg.pvs):

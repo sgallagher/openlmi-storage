@@ -19,7 +19,7 @@
 """ Module for FormatProvider."""
 
 from openlmi.storage.FormatProvider import FormatProvider
-import pyanaconda.storage.formats
+import blivet.formats
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_DataFormatProvider(FormatProvider):
@@ -39,18 +39,18 @@ class LMI_DataFormatProvider(FormatProvider):
     def provides_format(self, device, fmt):
         if fmt is None:
             return False
-        if isinstance(fmt, pyanaconda.storage.formats.mdraid.MDRaidMember):
+        if isinstance(fmt, blivet.formats.mdraid.MDRaidMember):
             return False
-        if isinstance(fmt, pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
+        if isinstance(fmt, blivet.formats.lvmpv.LVMPhysicalVolume):
             return False
-        if isinstance(fmt, pyanaconda.storage.formats.fs.FS):
+        if isinstance(fmt, blivet.formats.fs.FS):
             return False
 
         # skip 'Unknown' format
         if fmt.type is None:
             return False
         # skip partition tables
-        if isinstance(fmt, pyanaconda.storage.formats.disklabel.DiskLabel):
+        if isinstance(fmt, blivet.formats.disklabel.DiskLabel):
             return False
 
         return True

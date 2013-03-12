@@ -20,7 +20,7 @@
 
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
-import pyanaconda.storage
+import blivet
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_LVAllocatedFromStoragePool(BaseProvider):
@@ -78,10 +78,10 @@ class LMI_LVAllocatedFromStoragePool(BaseProvider):
                     "Cannot find Antecedent device")
 
         if not isinstance(device,
-                    pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+                    blivet.devices.LVMLogicalVolumeDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Dependend device is not logical volume: " + device.path)
-        if not isinstance(vg, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if not isinstance(vg, blivet.devices.LVMVolumeGroupDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_FOUND,
                     "Antecedent device is not volume vroup: " + vg.path)
         if vg != device.vg:

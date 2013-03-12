@@ -23,7 +23,7 @@ from openlmi.storage.LMI_DiskPartitionConfigurationSetting \
         import LMI_DiskPartitionConfigurationSetting
 from openlmi.storage.SettingManager import Setting
 import pywbem
-import pyanaconda.storage.formats
+import blivet.formats
 import parted
 import openlmi.common.cmpi_logging as cmpi_logging
 import openlmi.storage.util.units as units
@@ -195,12 +195,12 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             Return None if it does not have any partition capabilities.
         """
 
-        if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+        if isinstance(device, blivet.devices.PartitionDevice):
             if device.isExtended:
                 return self.get_capabilities_for_id(self.INSTANCE_ID_EMBR)
             return None
 
-        fmt_class = pyanaconda.storage.formats.disklabel.DiskLabel
+        fmt_class = blivet.formats.disklabel.DiskLabel
         if (not device.format) or (not isinstance(device.format, fmt_class)):
             return None
 
@@ -218,7 +218,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         if capabilities['PartitionStyle'] == self.Values.PartitionStyle.MBR:
             if (not device.format or not isinstance(
                             device.format,
-                            pyanaconda.storage.formats.disklabel.DiskLabel)):
+                            blivet.formats.disklabel.DiskLabel)):
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "There is no partition table on the Extent.")
             if device.format.labelType != "msdos":
@@ -228,7 +228,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         elif capabilities['PartitionStyle'] == self.Values.PartitionStyle.GPT:
             if (not device.format or not isinstance(
                             device.format,
-                            pyanaconda.storage.formats.disklabel.DiskLabel)):
+                            blivet.formats.disklabel.DiskLabel)):
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "There is no partition table on the Extent.")
             if device.format.labelType != "gpt":
@@ -238,7 +238,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
         else:
             # the device must be extended partition, find its disk
             if not isinstance(
-                    device, pyanaconda.storage.devices.PartitionDevice):
+                    device, blivet.devices.PartitionDevice):
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                         "The extent is not an partition.")
             if not device.isExtended:
@@ -288,7 +288,7 @@ class LMI_DiskPartitionConfigurationCapabilities(CapabilitiesProvider):
             size = param_size / (units.MEGABYTE * 1.0)
 
         # Find the best place
-        geometry = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
+        geometry = blivet.partitioning.getBestFreeSpaceRegion(
                 disk=device.format.partedDisk,
                 part_type=part_type,
                 req_size=size,

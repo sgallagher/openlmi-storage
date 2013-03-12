@@ -20,7 +20,7 @@
 
 from openlmi.storage.DeviceProvider import DeviceProvider
 import pywbem
-import pyanaconda.storage.formats
+import blivet.formats
 import openlmi.storage.util.storage as storage
 import openlmi.common.cmpi_logging as cmpi_logging
 
@@ -121,7 +121,7 @@ class ExtentProvider(DeviceProvider):
             total_blocks = device.partedDevice.length
             consumable_blocks = device.partedDevice.length
             if (device.format and isinstance(device.format,
-                    pyanaconda.storage.formats.disklabel.DiskLabel)):
+                    blivet.formats.disklabel.DiskLabel)):
                 # reduce by partition table size
                 consumable_blocks -= storage.get_partition_table_size(
                         device)
@@ -147,7 +147,7 @@ class ExtentProvider(DeviceProvider):
         """
         discriminator = []
         if device.format and isinstance(device.format,
-                    pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
+                    blivet.formats.lvmpv.LVMPhysicalVolume):
             discriminator.append(self.Values.Discriminator.Pool_Component)
         return discriminator
 

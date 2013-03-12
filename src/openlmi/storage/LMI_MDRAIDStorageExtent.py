@@ -19,7 +19,7 @@
 """ Module for LMI_MDRAIDStorageExtent class."""
 
 from openlmi.storage.ExtentProvider import ExtentProvider
-import pyanaconda.storage
+import blivet
 import pywbem
 import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.DeviceProvider import DeviceProvider
@@ -48,7 +48,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
         """
-        if  isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
+        if  isinstance(device, blivet.devices.MDRaidArrayDevice):
             return True
         return False
 
@@ -139,7 +139,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not path:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
+        if not isinstance(device, blivet.devices.MDRaidArrayDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -158,7 +158,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
         device = self.storage.devicetree.getDeviceByPath(path)
         if not path:
             return None
-        if not isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
+        if not isinstance(device, blivet.devices.MDRaidArrayDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -202,7 +202,7 @@ class LMI_MDRAIDStorageExtent(ExtentProvider, SettingHelper):
     def do_delete_instance(self, device):
         storage.log_storage_call("DELETE MDRAID",
                 {'device': device})
-        action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+        action = blivet.deviceaction.ActionDestroyDevice(device)
         storage.do_storage_action(self.storage, action)
 
     class Values(ExtentProvider.Values):

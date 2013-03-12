@@ -22,7 +22,7 @@ from openlmi.storage.ServiceProvider import ServiceProvider
 from openlmi.storage.LMI_DiskPartitionConfigurationSetting \
         import LMI_DiskPartitionConfigurationSetting
 import pywbem
-import pyanaconda.storage.formats
+import blivet.formats
 import openlmi.storage.util.storage as storage
 import openlmi.storage.util.units as units
 import parted
@@ -74,7 +74,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Cannot find the Extent.")
-        if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+        if isinstance(device, blivet.devices.PartitionDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                     "Creation of extended partitions is not supported.")
         if self.storage.deviceDeps(device):
@@ -130,8 +130,8 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         storage.log_storage_call("CREATE DISKLABEL",
                 {'label': label, 'device': device.path})
 
-        fmt = pyanaconda.storage.formats.getFormat('disklabel', labelType=label)
-        action = pyanaconda.storage.deviceaction.ActionCreateFormat(device, fmt)
+        fmt = blivet.formats.getFormat('disklabel', labelType=label)
+        action = blivet.deviceaction.ActionCreateFormat(device, fmt)
         storage.do_storage_action(self.storage, action)
 
         return self.Values.SetPartitionStyle.Success
@@ -183,7 +183,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                 "Cannot find the Partition.")
         if not isinstance(device,
-            pyanaconda.storage.devices.PartitionDevice):
+            blivet.devices.PartitionDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
                 "Parameter Partition does not refer to partition.")
         if device:
@@ -218,7 +218,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         if not device:
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                      "Cannot find the Extent.")
-        if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+        if isinstance(device, blivet.devices.PartitionDevice):
             values = LMI_DiskPartitionConfigurationSetting.Values.PartitionType
             if goal and int(goal['PartitionType']) != values.Logical:
                 raise pywbem.CIMError(pywbem.CIM_ERR_INVALID_PARAMETER,
@@ -350,7 +350,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
             return max(max_primary, max_logical)
         else:
             parted_disk = device.format.partedDisk
-            geom = pyanaconda.storage.partitioning.getBestFreeSpaceRegion(
+            geom = blivet.partitioning.getBestFreeSpaceRegion(
                     parted_disk,
                     partition_type,
                     1,
@@ -410,7 +410,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
         primary = False
 
         if not isinstance(device.format,
-                pyanaconda.storage.formats.disklabel.DiskLabel):
+                blivet.formats.disklabel.DiskLabel):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Cannot find partition table on the extent.")
 
@@ -462,7 +462,7 @@ class LMI_DiskPartitionConfigurationService(ServiceProvider):
                         "Goal.Hidden cannot be set for this Extent.")
 
         # finally, do the dirty job
-        action = pyanaconda.storage.deviceaction.ActionCreateDevice(partition)
+        action = blivet.deviceaction.ActionCreateDevice(partition)
         storage.do_storage_action(self.storage, action)
         size = partition.size * units.MEGABYTE
 

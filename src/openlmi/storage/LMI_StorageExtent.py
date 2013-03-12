@@ -19,7 +19,7 @@
 """ Module for LMI_StorageExtent class."""
 
 from openlmi.storage.ExtentProvider import ExtentProvider
-import pyanaconda.storage
+import blivet
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_StorageExtent(ExtentProvider):
@@ -43,21 +43,21 @@ class LMI_StorageExtent(ExtentProvider):
         """
 
         # check if this device has specialized provider
-        if  isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if  isinstance(device, blivet.devices.LVMVolumeGroupDevice):
             return False
 
-        if  isinstance(device, pyanaconda.storage.devices.MDRaidArrayDevice):
+        if  isinstance(device, blivet.devices.MDRaidArrayDevice):
             return False
 
-        if  isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+        if  isinstance(device, blivet.devices.PartitionDevice):
             return False
 
         if  isinstance(device,
-                pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+                blivet.devices.LVMLogicalVolumeDevice):
             return False
 
         # otherwise, if it is StorageDevice, we provide it
-        if isinstance(device, pyanaconda.storage.devices.StorageDevice):
+        if isinstance(device, blivet.devices.StorageDevice):
             return True
         return False
 

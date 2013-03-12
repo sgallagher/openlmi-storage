@@ -20,7 +20,7 @@
 
 from openlmi.storage.LocalFileSystemProvider import LocalFileSystemProvider
 import openlmi.common.cmpi_logging as cmpi_logging
-import pyanaconda.storage.formats
+import blivet.formats
 
 class LMI_LocalFileSystem(LocalFileSystemProvider):
     """
@@ -40,12 +40,12 @@ class LMI_LocalFileSystem(LocalFileSystemProvider):
         if fmt is None:
             return False
         # skip all non-filesystems
-        if not isinstance(fmt, pyanaconda.storage.formats.fs.FS):
+        if not isinstance(fmt, blivet.formats.fs.FS):
             return False
 
         # TODO: implement btrfs volumes
-        if isinstance(device, pyanaconda.storage.devices.BTRFSVolumeDevice) or \
-           isinstance(device, pyanaconda.storage.devices.BTRFSSubVolumeDevice):
+        if isinstance(device, blivet.devices.BTRFSVolumeDevice) or \
+           isinstance(device, blivet.devices.BTRFSSubVolumeDevice):
             return False
 
         # TODO: skip formats with its own classes (currently none)

@@ -26,7 +26,7 @@ class FormatProvider(BaseProvider):
     """
         Abstract provider for data formats and filesystems.
         Each provider must have .device_type property, which represents
-        pyanaconda.storage.formats.<DeviceFormat child>.type of format it
+        blivet.formats.<DeviceFormat child>.type of format it
         represents.
     """
     @cmpi_logging.trace_method

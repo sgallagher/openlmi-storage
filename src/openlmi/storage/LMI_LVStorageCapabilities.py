@@ -22,7 +22,7 @@ from openlmi.storage.CapabilitiesProvider import CapabilitiesProvider
 import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingManager import StorageSetting
 import pywbem
-import pyanaconda.storage.devices
+import blivet.devices
 from openlmi.storage.BaseProvider import BaseProvider
 
 class LMI_LVStorageCapabilities(CapabilitiesProvider):
@@ -46,7 +46,7 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         if not device:
             return None
         if not isinstance(device,
-                pyanaconda.storage.devices.LVMVolumeGroupDevice):
+                blivet.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMVolumeGroupDevice" % instance_id)
             return None
@@ -163,7 +163,7 @@ class LMI_LVStorageCapabilities(CapabilitiesProvider):
         if not device:
             return None
         if not isinstance(device,
-                pyanaconda.storage.devices.LVMVolumeGroupDevice):
+                blivet.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMVolumeGroupDevice" % instance_id)
             return None

@@ -40,6 +40,7 @@ class StorageConfiguration(object):
         'namespace' : 'root/cimv2',
         'systemclassname' : 'Linux_ComputerSystem',
         'tracing': 'false',
+        'blivet_tracing': 'false',
         'stderr': 'false',
     }
 
@@ -107,6 +108,11 @@ class StorageConfiguration(object):
     def tracing(self):
         """ Return True if tracing is enabled."""
         return self.config.getboolean('debug', 'tracing')
+
+    @property
+    def blivet_tracing(self):
+        """ Return True if blivet tracing is enabled."""
+        return self.config.getboolean('debug', 'blivet_tracing')
 
     @property
     def stderr(self):

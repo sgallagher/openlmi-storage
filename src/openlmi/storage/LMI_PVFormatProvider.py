@@ -19,7 +19,7 @@
 """ Module for FormatProvider."""
 
 from openlmi.storage.FormatProvider import FormatProvider
-import pyanaconda.storage.formats.lvmpv
+import blivet.formats.lvmpv
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_PVFormatProvider(FormatProvider):
@@ -35,7 +35,7 @@ class LMI_PVFormatProvider(FormatProvider):
 
     @cmpi_logging.trace_method
     def provides_format(self, device, fmt):
-        if  isinstance(fmt, pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume):
+        if  isinstance(fmt, blivet.formats.lvmpv.LVMPhysicalVolume):
             return True
         return False
 

@@ -19,7 +19,7 @@
 """ Module for LMI_LVStorageExtent class."""
 
 from openlmi.storage.ExtentProvider import ExtentProvider
-import pyanaconda.storage
+import blivet
 import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingHelper import SettingHelper
 from openlmi.storage.SettingManager import StorageSetting
@@ -46,7 +46,7 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
             StorageDevice class.
         """
         if  isinstance(device,
-                    pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+                    blivet.devices.LVMLogicalVolumeDevice):
             return True
         return False
 
@@ -111,7 +111,7 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
         if not path:
             return None
         if not isinstance(device,
-                pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+                blivet.devices.LVMLogicalVolumeDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -131,7 +131,7 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
         if not path:
             return None
         if not isinstance(device,
-                pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+                blivet.devices.LVMLogicalVolumeDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -179,5 +179,5 @@ class LMI_LVStorageExtent(ExtentProvider, SettingHelper):
     @cmpi_logging.trace_method
     def do_delete_instance(self, device):
         cmpi_logging.logger.info("DELETE LV: %s" % (device.path))
-        action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+        action = blivet.deviceaction.ActionDestroyDevice(device)
         storage.do_storage_action(self.storage, action)

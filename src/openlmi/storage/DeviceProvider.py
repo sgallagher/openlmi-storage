@@ -35,7 +35,7 @@ class DeviceProvider(BaseProvider):
     def __init__(self, *args, **kwargs):
         """
             Initialize the provider.
-            Store reference to pyanaconda.storage.Storage.
+            Store reference to blivet.Blivet.
             Store reference to StorageConfiguration.
             Register at given ProviderManager.
         """

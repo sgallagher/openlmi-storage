@@ -20,7 +20,7 @@
 
 from openlmi.storage.ServiceProvider import ServiceProvider
 import pywbem
-import pyanaconda.storage.formats
+import blivet.formats
 import openlmi.common.cmpi_logging as cmpi_logging
 import openlmi.storage.util.units as units
 import openlmi.storage.util.storage as storage
@@ -152,7 +152,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             newsize = device.vg.align(float(size) / units.MEGABYTE, True)
             oldsize = device.vg.align(device.size, False)
             if newsize != oldsize:
-                action = pyanaconda.storage.deviceaction.ActionResizeDevice(
+                action = blivet.deviceaction.ActionResizeDevice(
                         device, newsize)
                 storage.do_storage_action(self.storage, action)
                 self.storage.devicetree.processActions(dryRun=False)
@@ -187,7 +187,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         storage.log_storage_call("CREATE LV", args)
 
         lv = self.storage.newLV(**args)
-        action = pyanaconda.storage.deviceaction.ActionCreateDevice(lv)
+        action = blivet.deviceaction.ActionCreateDevice(lv)
         storage.do_storage_action(self.storage, action)
 
         newsize = lv.size * units.MEGABYTE
@@ -242,7 +242,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Cannot find the TheElement device.")
         if not isinstance(device,
-            pyanaconda.storage.devices.LVMLogicalVolumeDevice):
+            blivet.devices.LVMLogicalVolumeDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                 "The TheElement parameter is not LMI_LVStorageExtent.")
         return device
@@ -263,7 +263,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "Cannot find the InPool device.")
         if not isinstance(pool,
-            pyanaconda.storage.devices.LVMVolumeGroupDevice):
+            blivet.devices.LVMVolumeGroupDevice):
             raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                     "The InPool parameter is not LMI_VGStoragePool.")
         return pool
@@ -423,9 +423,9 @@ class LMI_StorageConfigurationService(ServiceProvider):
             # TODO: check if it is unused!
             if not (device.format
                     and isinstance(device.format,
-                        pyanaconda.storage.formats.lvmpv.LVMPhysicalVolume)):
+                        blivet.formats.lvmpv.LVMPhysicalVolume)):
                 # create the pv format there
-                pv = pyanaconda.storage.formats.getFormat('lvmpv')
+                pv = blivet.formats.getFormat('lvmpv')
                 self.storage.formatDevice(device, pv)
 
         args = {}
@@ -438,7 +438,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         storage.log_storage_call("CREATE VG", args)
 
         vg = self.storage.newVG(**args)
-        action = pyanaconda.storage.ActionCreateDevice(vg)
+        action = blivet.ActionCreateDevice(vg)
         storage.do_storage_action(self.storage, action)
 
         newsize = vg.size * units.MEGABYTE
@@ -710,7 +710,7 @@ class LMI_StorageConfigurationService(ServiceProvider):
         storage.log_storage_call("CREATE MDRAID", args)
 
         raid = self.storage.newMDArray(**args)
-        action = pyanaconda.storage.ActionCreateDevice(raid)
+        action = blivet.ActionCreateDevice(raid)
         storage.do_storage_action(self.storage, action)
 
         newsize = raid.size * units.MEGABYTE

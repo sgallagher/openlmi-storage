@@ -18,7 +18,7 @@
 # -*- coding: utf-8 -*-
 """ Module for LMI_FileSystemConfigurationService class."""
 
-import pyanaconda.storage.formats
+import blivet.formats
 import openlmi.storage.util
 from openlmi.storage.JobManager import Job
 from openlmi.storage.ServiceProvider import ServiceProvider
@@ -183,7 +183,7 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
                     "Creation of requested filesystem is not supported.")
 
         # create the format
-        fmt = pyanaconda.storage.formats.getFormat(fsname)
+        fmt = blivet.formats.getFormat(fsname)
         if not fmt:
             raise pywbem.CIMError(pywbem.CIM_ERR_NOT_SUPPORTED,
                     "Creation of requested filesystem is not supported.")
@@ -244,7 +244,7 @@ class LMI_FileSystemConfigurationService(ServiceProvider):
                 raise pywbem.CIMError(pywbem.CIM_ERR_FAILED,
                         "One of the devices disappeared: " + devname)
             devices.append(device)
-        action = pyanaconda.storage.ActionCreateFormat(devices[0],
+        action = blivet.ActionCreateFormat(devices[0],
                 format=fmt)
         openlmi.storage.util.storage.do_storage_action(
                 self.storage, action)

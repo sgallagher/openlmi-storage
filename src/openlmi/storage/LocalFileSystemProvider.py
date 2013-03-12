@@ -29,7 +29,7 @@ class LocalFileSystemProvider(FormatProvider, SettingHelper):
     """
         Abstract provider for local filesystems.
         Each provider must have .device_type property, which represents
-        pyanaconda.storage.formats.<DeviceFormat child>.type of format it
+        blivet.formats.<DeviceFormat child>.type of format it
         represents.
     """
 

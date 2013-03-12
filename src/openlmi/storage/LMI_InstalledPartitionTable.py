@@ -18,7 +18,7 @@
 # -*- coding: utf-8 -*-
 """ Module for LMI_InstalledPartitionTable class."""
 
-import pyanaconda.storage.formats
+import blivet.formats
 from openlmi.storage.BaseProvider import BaseProvider
 import pywbem
 import openlmi.common.cmpi_logging as cmpi_logging
@@ -78,7 +78,7 @@ class LMI_InstalledPartitionTable(BaseProvider):
         model.path.update({'Dependent': None, 'Antecedent': None})
 
         for device in self.storage.devices:
-            fmt_class = pyanaconda.storage.formats.disklabel.DiskLabel
+            fmt_class = blivet.formats.disklabel.DiskLabel
             if device.format and isinstance(device.format, fmt_class):
                 model['Antecedent'] = self.provider_manager.get_name_for_device(
                         device)

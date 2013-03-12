@@ -19,7 +19,7 @@
 """ Module for LMI_DiskPartition class."""
 
 from openlmi.storage.ExtentProvider import ExtentProvider
-import pyanaconda.storage
+import blivet
 import pywbem
 import openlmi.storage.util.storage as storage
 import openlmi.common.cmpi_logging as cmpi_logging
@@ -42,7 +42,7 @@ class LMI_DiskPartition(ExtentProvider):
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
         """
-        if  isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+        if  isinstance(device, blivet.devices.PartitionDevice):
             if device.disk.format.labelType == 'msdos':
                 return True
         return False

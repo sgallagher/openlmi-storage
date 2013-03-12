@@ -22,7 +22,7 @@ import subprocess
 import os
 import parted
 import pywbem
-import pyanaconda.storage
+import blivet
 import openlmi.common.cmpi_logging as cmpi_logging
 
 GPT_TABLE_SIZE = 34 * 2  # there are two copies
@@ -102,7 +102,7 @@ def get_available_sectors(device):
                     _align_up(MBR_TABLE_SIZE, alignment),
                     _align_down(size - 1, alignment))
 
-    if isinstance(device, pyanaconda.storage.devices.PartitionDevice):
+    if isinstance(device, blivet.devices.PartitionDevice):
         if device.isExtended:
             return(
                     _align_up(0, alignment),
@@ -115,7 +115,7 @@ def remove_partition(storage, device):
     """
         Remove PartitionDevice from system, i.e. delete a partition.
     """
-    action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+    action = blivet.deviceaction.ActionDestroyDevice(device)
     do_storage_action(storage, action)
 
 @cmpi_logging.trace_function
@@ -128,29 +128,29 @@ def do_storage_action(storage, action):
     cmpi_logging.logger.trace_info("    on device " + repr(action.device))
 
     do_partitioning = False
-    if (isinstance(action.device, pyanaconda.storage.devices.PartitionDevice)
+    if (isinstance(action.device, blivet.devices.PartitionDevice)
             and isinstance(action,
-                    pyanaconda.storage.deviceaction.ActionCreateDevice)):
+                    blivet.deviceaction.ActionCreateDevice)):
         do_partitioning = True
     storage.devicetree.registerAction(action)
 
     do_raid = False
-    if isinstance(action.device, pyanaconda.storage.devices.MDRaidArrayDevice):
+    if isinstance(action.device, blivet.devices.MDRaidArrayDevice):
         do_raid = True
     try:
         if do_partitioning:
             # this must be called when creating a partition
             cmpi_logging.logger.trace_verbose("Running doPartitioning()")
-            pyanaconda.storage.partitioning.doPartitioning(storage=storage)
+            blivet.partitioning.doPartitioning(storage=storage)
 
         storage.devicetree.processActions(dryRun=False)
         if not isinstance(action,
-                pyanaconda.storage.deviceaction.ActionDestroyDevice):
+                blivet.deviceaction.ActionDestroyDevice):
             cmpi_logging.logger.trace_verbose("Result: " + repr(action.device))
         if do_raid:
             # work around mdadm not waiting for device to appear/disappear
             if isinstance(action,
-                    pyanaconda.storage.deviceaction.ActionDestroyDevice):
+                    blivet.deviceaction.ActionDestroyDevice):
                 # remove the metadata, otherwise reset() still recognizes
                 # the array
                 for device in action.device.parents:
@@ -179,7 +179,7 @@ def log_storage_call(msg, args):
     """
     print_args = {}
     for (key, value) in args.iteritems():
-        if isinstance(value, pyanaconda.storage.devices.StorageDevice):
+        if isinstance(value, blivet.devices.StorageDevice):
             value = value.path
         if key == 'parents':
             value = [d.path for d in value]

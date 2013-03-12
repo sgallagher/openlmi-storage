@@ -25,7 +25,7 @@ import openlmi.common.cmpi_logging as cmpi_logging
 class BaseProvider(CIMProvider2):
     """
         CIM Provider for LMI. It adds access to ProviderManager, configuration
-        and pyanaconda.storage.Storage instance.
+        and blivet.Blivet instance.
 
         In addition to CIM provider methods, this class and its subclasses
         can convert CIM InstanceName to Anaconda's StorageDevice instance
@@ -36,7 +36,7 @@ class BaseProvider(CIMProvider2):
             job_manager, *args, **kwargs):
         """
             Initialize the provider.
-            Store reference to pyanaconda.storage.Storage.
+            Store reference to blivet.Blivet.
             Store reference to StorageConfiguration.
             Register at given ProviderManager.
         """

@@ -20,7 +20,7 @@
 
 from openlmi.storage.DeviceProvider import DeviceProvider
 import pywbem
-import pyanaconda.storage
+import blivet
 import openlmi.common.cmpi_logging as cmpi_logging
 from openlmi.storage.SettingHelper import SettingHelper
 from openlmi.storage.SettingManager import StorageSetting
@@ -63,7 +63,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
             Returns True, if this class is provider for given Anaconda
             StorageDevice class.
         """
-        if  isinstance(device, pyanaconda.storage.devices.LVMVolumeGroupDevice):
+        if  isinstance(device, blivet.devices.LVMVolumeGroupDevice):
             return True
         return False
 
@@ -290,7 +290,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         if not path:
             return None
         if not isinstance(device,
-                pyanaconda.storage.devices.LVMVolumeGroupDevice):
+                blivet.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -310,7 +310,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
         if not path:
             return None
         if not isinstance(device,
-                pyanaconda.storage.devices.LVMVolumeGroupDevice):
+                blivet.devices.LVMVolumeGroupDevice):
             cmpi_logging.logger.trace_warn(
                     "InstanceID %s is not LVMLogicalVolumeDevice" % instance_id)
             return None
@@ -379,7 +379,7 @@ class LMI_VGStoragePool(DeviceProvider, SettingHelper):
     def do_delete_instance(self, device):
         storage.log_storage_call("DELETE VG",
                 {'device': device})
-        action = pyanaconda.storage.deviceaction.ActionDestroyDevice(device)
+        action = blivet.deviceaction.ActionDestroyDevice(device)
         storage.do_storage_action(self.storage, action)
 
 

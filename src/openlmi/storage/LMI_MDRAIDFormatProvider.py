@@ -19,7 +19,7 @@
 """ Module for FormatProvider."""
 
 from openlmi.storage.FormatProvider import FormatProvider
-import pyanaconda.storage.formats.mdraid
+import blivet.formats.mdraid
 import openlmi.common.cmpi_logging as cmpi_logging
 
 class LMI_MDRAIDFormatProvider(FormatProvider):
@@ -35,7 +35,7 @@ class LMI_MDRAIDFormatProvider(FormatProvider):
 
     @cmpi_logging.trace_method
     def provides_format(self, device, fmt):
-        if  isinstance(fmt, pyanaconda.storage.formats.mdraid.MDRaidMember):
+        if  isinstance(fmt, blivet.formats.mdraid.MDRaidMember):
             return True
         return False
 
